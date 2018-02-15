@@ -1,0 +1,386 @@
+---
+title: "MetaStatistics"
+author: "Tara Eicher"
+date: "March 31, 2017"
+output: html_document
+---
+
+Load the CSV data for all H1 data and concatenate.
+```{r}
+chroms = c(as.character(seq(1,22)), "x", "y")
+chroms_non = c(as.character(c(5, 10)))
+fseqH1StatList = vector("list", 24)
+fseqH1NonStatList = vector("list", 2)
+fseqH1ProximalStatList = vector("list", 24)
+fseqH1DistalStatList = vector("list", 24)
+for(i in 1:length(chroms)){
+  fileName = paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_fseq10_csvs\\chr", chroms[i], ".csv", sep = "")
+  proximalFileName = paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_fseq10_proximal\\chr", chroms[i], ".csv", sep = "")
+  distalFileName = paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_fseq10_distal\\chr", chroms[i], ".csv", sep = "")
+  names = c("Size", "Min", "Max", "Mean", "Variance", "Skewness", "Kurtosis")
+  if (file.size(fileName) > 0){
+    tempFrame = read.csv(fileName)
+    names(tempFrame) = names
+    fseqH1StatList[[i]] = tempFrame
+  }
+  if (file.size(proximalFileName) > 0){
+    tempProximalFrame = read.csv(proximalFileName)
+    names(tempProximalFrame) = names
+    fseqH1ProximalStatList[[i]] = tempProximalFrame
+  }
+  if (file.size(distalFileName) > 0){
+    tempDistalFrame = read.csv(distalFileName)
+    names(tempDistalFrame) = names
+    fseqH1DistalStatList[[i]] = tempDistalFrame
+  }
+  ind = match(i, chroms_non)
+  if(!(is.na(ind))){
+    tempNonFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_fseq10_non_csvs\\chr", chroms_non[[ind]], ".csv", sep = ""))
+    names(tempNonFrame) = names(tempFrame)
+    fseqH1NonStatList[[ind]] = tempNonFrame
+  }
+}
+fseqH1AllPeaks = do.call("rbind", fseqH1StatList[1:24])
+fseqH1AllNonPeaks = do.call("rbind", fseqH1NonStatList[1:2])
+fseqH1AllProximalPeaks = do.call("rbind", fseqH1ProximalStatList[1:24])
+fseqH1AllDistalPeaks = do.call("rbind", fseqH1DistalStatList[1:24])
+macs2_broadH1StatList = vector("list", 24)
+macs2_broadH1NonStatList = vector("list", 2)
+macs2_broadH1ProximalStatList = vector("list", 24)
+macs2_broadH1DistalStatList = vector("list", 24)
+for(i in 1:length(chroms)){
+  tempFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_broad_csvs\\chr", chroms[i], ".csv", sep = ""))
+  tempProximalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_broad_proximal\\chr", chroms[i], ".csv", sep = ""))
+  tempDistalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_broad_distal\\chr", chroms[i], ".csv", sep = ""))
+  names(tempFrame) = c("Size", "Min", "Max", "Mean", "Variance", "Skewness", "Kurtosis")
+  names(tempProximalFrame) = names(tempFrame)
+  names(tempDistalFrame) = names(tempFrame)
+  macs2_broadH1StatList[[i]] = tempFrame
+  macs2_broadH1ProximalStatList[[i]] = tempProximalFrame
+  macs2_broadH1DistalStatList[[i]] = tempDistalFrame
+  ind = match(i, chroms_non)
+  if(!(is.na(ind))){
+    tempNonFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_broad_non_csvs\\PeakStatschr", chroms_non[[ind]], ".csv", sep = ""))
+    names(tempNonFrame) = names(tempFrame)
+    macs2_broadH1NonStatList[[ind]] = tempNonFrame
+  }
+}
+macs2_broadH1AllPeaks = do.call("rbind", macs2_broadH1StatList[1:24])
+macs2_broadH1AllNonPeaks = do.call("rbind", macs2_broadH1NonStatList[1:2])
+macs2_broadH1AllProximalPeaks = do.call("rbind", macs2_broadH1ProximalStatList[1:24])
+macs2_broadH1AllDistalPeaks = do.call("rbind", macs2_broadH1DistalStatList[1:24])
+macs2_narrowH1StatList = vector("list", 24)
+macs2_narrowH1NonStatList = vector("list", 2)
+macs2_narrowH1ProximalStatList = vector("list", 24)
+macs2_narrowH1DistalStatList = vector("list", 24)
+for(i in 1:length(chroms)){
+  tempFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_narrow_csvs\\chr", chroms[i], ".csv", sep = ""))
+  tempProximalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_narrow_proximal\\chr", chroms[i], ".csv", sep = ""))
+  tempDistalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_narrow_distal\\chr", chroms[i], ".csv", sep = ""))
+  names(tempFrame) = c("Size", "Min", "Max", "Mean", "Variance", "Skewness", "Kurtosis")
+  names(tempProximalFrame) = names(tempFrame)
+  names(tempDistalFrame) = names(tempFrame)
+  macs2_narrowH1StatList[[i]] = tempFrame
+  macs2_narrowH1ProximalStatList[[i]] = tempProximalFrame
+  macs2_narrowH1DistalStatList[[i]] = tempDistalFrame
+  ind = match(i, chroms_non)
+  if(!(is.na(ind))){
+    tempNonFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_macs2_narrow_non_csvs\\peakStatschr", chroms_non[[ind]], ".csv", sep = ""))
+    names(tempNonFrame) = names(tempFrame)
+    macs2_narrowH1NonStatList[[ind]] = tempNonFrame
+  }
+}
+macs2_narrowH1AllPeaks = do.call("rbind", macs2_narrowH1StatList[1:24])
+macs2_narrowH1AllNonPeaks = do.call("rbind", macs2_narrowH1NonStatList[1:2])
+macs2_narrowH1AllProximalPeaks = do.call("rbind", macs2_narrowH1ProximalStatList[1:24])
+macs2_narrowH1AllDistalPeaks = do.call("rbind", macs2_narrowH1DistalStatList[1:24])
+peakdeckH1StatList = vector("list", 24)
+peakdeckH1NonStatList = vector("list", 2)
+peakdeckH1ProximalStatList = vector("list", 24)
+peakdeckH1DistalStatList = vector("list", 24)
+for(i in 1:length(chroms)){
+  tempFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_peakdeck_csvs\\peakStatschr", chroms[i], ".csv", sep = ""))
+  tempProximalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_peakdeck_proximal\\chr", chroms[i], ".csv", sep = ""))
+  tempDistalFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_peakdeck_distal\\chr", chroms[i], ".csv", sep = ""))
+  names(tempFrame) = c("Size", "Min", "Max", "Mean", "Variance", "Skewness", "Kurtosis")
+  names(tempProximalFrame) = names(tempFrame)
+  names(tempDistalFrame) = names(tempFrame)
+  peakdeckH1StatList[[i]] = tempFrame
+  peakdeckH1ProximalStatList[[i]] = tempProximalFrame
+  peakdeckH1DistalStatList[[i]] = tempDistalFrame
+  ind = match(i, chroms_non)
+  if(!(is.na(ind))){
+    tempNonFrame = read.csv(paste("C:\\Users\\tarae\\OneDrive\\Documents\\PhD\\Research\\PeakCalling\\H1_peakdeck_non_csvs\\peakStatschr", chroms_non[[ind]], ".csv", sep = ""))
+    names(tempNonFrame) = names(tempFrame)
+    peakdeckH1NonStatList[[ind]] = tempNonFrame
+  }
+}
+peakdeckH1AllPeaks = do.call("rbind", peakdeckH1StatList[1:24])
+peakdeckH1AllNonPeaks = do.call("rbind", peakdeckH1NonStatList[1:2])
+peakdeckH1AllProximalPeaks = do.call("rbind", peakdeckH1ProximalStatList[1:24])
+peakdeckH1AllDistalPeaks = do.call("rbind", peakdeckH1DistalStatList[1:24])
+```
+Look at histogram of each statistic.
+```{r}
+if (!require(hexbin)){
+  install.packages("hexbin")
+  library(hexbin)
+}
+if (!require(grid)){
+  install.packages("grid")
+  library(grid)
+}
+if (!require(gridExtra)){
+  install.packages("gridExtra")
+  library(gridExtra)
+}
+## Loading required package: hexbin
+maxKurtFseq = max(fseqH1AllPeaks$Kurtosis)
+minKurtFseq = min(fseqH1AllPeaks$Kurtosis)
+maxKurtMacs2Broad = max(macs2_broadH1AllPeaks$Kurtosis)
+minKurtMacs2Broad = min(macs2_broadH1AllPeaks$Kurtosis)
+maxKurtMacs2Narrow = max(macs2_narrowH1AllPeaks$Kurtosis)
+minKurtMacs2Narrow = min(macs2_narrowH1AllPeaks$Kurtosis)
+maxKurtPeakdeck = max(peakdeckH1AllPeaks$Kurtosis)
+minKurtPeakdeck = min(peakdeckH1AllPeaks$Kurtosis)
+
+maxKurtFseqNon = max(fseqH1AllNonPeaks$Kurtosis)
+minKurtFseqNon = min(fseqH1AllNonPeaks$Kurtosis)
+maxKurtMacs2BroadNon = max(macs2_broadH1AllNonPeaks$Kurtosis)
+minKurtMacs2BroadNon = min(macs2_broadH1AllNonPeaks$Kurtosis)
+maxKurtMacs2NarrowNon = max(macs2_narrowH1AllNonPeaks$Kurtosis)
+minKurtMacs2NarrowNon = min(macs2_narrowH1AllNonPeaks$Kurtosis)
+maxKurtPeakdeckNon = max(peakdeckH1AllNonPeaks$Kurtosis)
+minKurtPeakdeckNon = min(peakdeckH1AllNonPeaks$Kurtosis)
+
+maxKurtFseqProx = max(fseqH1AllProximalPeaks$Kurtosis)
+minKurtFseqProx = min(fseqH1AllProximalPeaks$Kurtosis)
+maxKurtMacs2BroadProx = max(macs2_broadH1AllProximalPeaks$Kurtosis)
+minKurtMacs2BroadProx = min(macs2_broadH1AllProximalPeaks$Kurtosis)
+maxKurtMacs2NarrowProx = max(macs2_narrowH1AllProximalPeaks$Kurtosis)
+minKurtMacs2NarrowProx = min(macs2_narrowH1AllProximalPeaks$Kurtosis)
+maxKurtPeakdeckProx = max(peakdeckH1AllProximalPeaks$Kurtosis)
+minKurtPeakdeckProx = min(peakdeckH1AllProximalPeaks$Kurtosis)
+
+maxKurtFseqDist = max(fseqH1AllDistalPeaks$Kurtosis)
+minKurtFseqDist = min(fseqH1AllDistalPeaks$Kurtosis)
+maxKurtMacs2BroadDist = max(macs2_broadH1AllDistalPeaks$Kurtosis)
+minKurtMacs2BroadDist = min(macs2_broadH1AllDistalPeaks$Kurtosis)
+maxKurtMacs2NarrowDist = max(macs2_narrowH1AllDistalPeaks$Kurtosis)
+minKurtMacs2NarrowDist = min(macs2_narrowH1AllDistalPeaks$Kurtosis)
+maxKurtPeakdeckDist = max(peakdeckH1AllDistalPeaks$Kurtosis)
+minKurtPeakdeckDist = min(peakdeckH1AllDistalPeaks$Kurtosis)
+```
+Min by Size
+```{r}
+fseqAll = hexbinplot((fseqH1AllPeaks[,2] ~ fseqH1AllPeaks[,1]), main = "F-Seq Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,2000), ylim = c(-5,10))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,2] ~ fseqH1AllNonPeaks[,1]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,12), ylim = c(-5,10))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,2] ~ fseqH1AllProximalPeaks[,1]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,2000), ylim = c(-5,10))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,2] ~ fseqH1AllDistalPeaks[,1]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,2000), ylim = c(-5,10), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,2] ~ macs2_broadH1AllPeaks[,1]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,200), ylim = c(-5,20))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,2] ~ macs2_broadH1AllNonPeaks[,1]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,12), ylim = c(-5,20))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,2] ~ macs2_broadH1AllProximalPeaks[,1]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,200), ylim = c(-5,20))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,2] ~ macs2_broadH1AllDistalPeaks[,1]), main = "MACS2 Broad Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,200), ylim = c(-5,20))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,2] ~ macs2_narrowH1AllPeaks[,1]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,100), ylim = c(-5,20))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,2] ~ macs2_narrowH1AllNonPeaks[,1]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,12), ylim = c(-5,20))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,2] ~ macs2_narrowH1AllProximalPeaks[,1]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,100), ylim = c(-5,20))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,2] ~ macs2_narrowH1AllDistalPeaks[,1]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,100), ylim = c(-5,20))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,2] ~ peakdeckH1AllPeaks[,1]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,60), ylim = c(-5,25))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,2] ~ peakdeckH1AllNonPeaks[,1]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,12), ylim = c(-5,25))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,2] ~ peakdeckH1AllProximalPeaks[,1]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,60), ylim = c(-5,25))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,2] ~ peakdeckH1AllDistalPeaks[,1]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Min", xlim = c(-5,60), ylim = c(-5,25))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Max by Size
+```{r}
+fseqAll = hexbinplot((fseqH1AllPeaks[,3] ~ fseqH1AllPeaks[,1]), main = "F-Seq Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,2000), ylim = c(-5,50))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,3] ~ fseqH1AllNonPeaks[,1]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,12), ylim = c(-5,50))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,3] ~ fseqH1AllProximalPeaks[,1]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,2000), ylim = c(-5,50))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,3] ~ fseqH1AllDistalPeaks[,1]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,2000), ylim = c(-5,50), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,3] ~ macs2_broadH1AllPeaks[,1]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,200), ylim = c(-5,50))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,3] ~ macs2_broadH1AllNonPeaks[,1]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,12), ylim = c(-5,50))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,3] ~ macs2_broadH1AllProximalPeaks[,1]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,200), ylim = c(-5,50))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,3] ~ macs2_broadH1AllDistalPeaks[,1]), main = "MACS2 Broad Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,200), ylim = c(-5,50))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,3] ~ macs2_narrowH1AllPeaks[,1]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,100), ylim = c(-5,50))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,3] ~ macs2_narrowH1AllNonPeaks[,1]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,12), ylim = c(-5,50))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,3] ~ macs2_narrowH1AllProximalPeaks[,1]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,100), ylim = c(-5,50))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,3] ~ macs2_narrowH1AllDistalPeaks[,1]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,100), ylim = c(-5,50))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,3] ~ peakdeckH1AllPeaks[,1]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,50), ylim = c(-5,50))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,3] ~ peakdeckH1AllNonPeaks[,1]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,12), ylim = c(-5,50))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,3] ~ peakdeckH1AllProximalPeaks[,1]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,50), ylim = c(-5,50))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,3] ~ peakdeckH1AllDistalPeaks[,1]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Max", xlim = c(-5,50), ylim = c(-5,50))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+
+
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+
+
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+
+
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Mean by Size
+```{r}
+fseqAll = hexbinplot((fseqH1AllPeaks[,4] ~ fseqH1AllPeaks[,1]), main = "F-Seq Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,2000), ylim = c(-5,30))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,4] ~ fseqH1AllNonPeaks[,1]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,12), ylim = c(-5,30))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,4] ~ fseqH1AllProximalPeaks[,1]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,2000), ylim = c(-5,30))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,4] ~ fseqH1AllDistalPeaks[,1]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,2000), ylim = c(-5,30), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,4] ~ macs2_broadH1AllPeaks[,1]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,150), ylim = c(-5,40))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,4] ~ macs2_broadH1AllNonPeaks[,1]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,12), ylim = c(-5,40))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,4] ~ macs2_broadH1AllProximalPeaks[,1]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,150), ylim = c(-5,40))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,4] ~ macs2_broadH1AllDistalPeaks[,1]), main = "MACS2 Broad Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,150), ylim = c(-5,40))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,4] ~ macs2_narrowH1AllPeaks[,1]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,100), ylim = c(-5,40))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,4] ~ macs2_narrowH1AllNonPeaks[,1]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,12), ylim = c(-5,40))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,4] ~ macs2_narrowH1AllProximalPeaks[,1]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,100), ylim = c(-5,40))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,4] ~ macs2_narrowH1AllDistalPeaks[,1]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,100), ylim = c(-5,40))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,4] ~ peakdeckH1AllPeaks[,1]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,50), ylim = c(-5,40))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,4] ~ peakdeckH1AllNonPeaks[,1]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,12), ylim = c(-5,40))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,4] ~ peakdeckH1AllProximalPeaks[,1]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,50), ylim = c(-5,40))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,4] ~ peakdeckH1AllDistalPeaks[,1]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Mean", xlim = c(-5,50), ylim = c(-5,40))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+
+
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+
+
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+
+
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Variance by Size
+```{r}
+fseqAll = hexbinplot((fseqH1AllPeaks[,5] ~ fseqH1AllPeaks[,1]), main = "F-Seq Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,2000), ylim = c(-5,300))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,5] ~ fseqH1AllNonPeaks[,1]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,12), ylim = c(-5,300))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,5] ~ fseqH1AllProximalPeaks[,1]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,2000), ylim = c(-5,300))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,5] ~ fseqH1AllDistalPeaks[,1]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,2000), ylim = c(-5,300), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,5] ~ macs2_broadH1AllPeaks[,1]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,200), ylim = c(-5,350))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,5] ~ macs2_broadH1AllNonPeaks[,1]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,12), ylim = c(-5,350))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,5] ~ macs2_broadH1AllProximalPeaks[,1]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,200), ylim = c(-5,350))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,5] ~ macs2_broadH1AllDistalPeaks[,1]), main = "Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,200), ylim = c(-5,350))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,5] ~ macs2_narrowH1AllPeaks[,1]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,100), ylim = c(-5,350))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,5] ~ macs2_narrowH1AllNonPeaks[,1]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,12), ylim = c(-5,350))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,5] ~ macs2_narrowH1AllProximalPeaks[,1]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,100), ylim = c(-5,350))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,5] ~ macs2_narrowH1AllDistalPeaks[,1]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,100), ylim = c(-5,350))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,5] ~ peakdeckH1AllPeaks[,1]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,50), ylim = c(-5,300))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,5] ~ peakdeckH1AllNonPeaks[,1]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,12), ylim = c(-5,300))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,5] ~ peakdeckH1AllProximalPeaks[,1]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,50), ylim = c(-5,300))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,5] ~ peakdeckH1AllDistalPeaks[,1]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Variance", xlim = c(-5,50), ylim = c(-5,300))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+
+
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+
+
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+
+
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Kurtosis by Size
+```{r}
+fseqAll = hexbinplot(fseqH1AllPeaks[,7] ~ fseqH1AllPeaks[,1], main = "F-Seq Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,2000), ylim = c(-5,60))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,7] ~ fseqH1AllNonPeaks[,1]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,12), ylim = c(-5,60))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,7] ~ fseqH1AllProximalPeaks[,1]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,2000), ylim = c(-5,60))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,7] ~ fseqH1AllDistalPeaks[,1]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,2000), ylim = c(-5,60), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,7] ~ macs2_broadH1AllPeaks[,1]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,200), ylim = c(-5,50))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,7] ~ macs2_broadH1AllNonPeaks[,1]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,12), ylim = c(-5,50))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,7] ~ macs2_broadH1AllProximalPeaks[,1]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,200), ylim = c(-5,50))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,7] ~ macs2_broadH1AllDistalPeaks[,1]), main = "Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,200), ylim = c(-5,50))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,7] ~ macs2_narrowH1AllPeaks[,1]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,80), ylim = c(-5,15))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,7] ~ macs2_narrowH1AllNonPeaks[,1]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,12), ylim = c(-5,15))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,7] ~ macs2_narrowH1AllProximalPeaks[,1]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,80), ylim = c(-5,15))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,7] ~ macs2_narrowH1AllDistalPeaks[,1]), main = "MACS2 Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,80), ylim = c(-5,15))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,7] ~ peakdeckH1AllPeaks[,1]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,50), ylim = c(-5,10))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,7] ~ peakdeckH1AllNonPeaks[,1]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,12), ylim = c(-5,10))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,7] ~ peakdeckH1AllProximalPeaks[,1]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-5,50), ylim = c(-5,10))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,7] ~ peakdeckH1AllDistalPeaks[,1]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Width", ylab = "Peak Kurtosis", xlim = c(-10,50), ylim = c(-5,10))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+
+
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+
+
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+
+
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Kurtosis by Variance
+```{r}
+fseqAll = hexbinplot(fseqH1AllPeaks[,7] ~ fseqH1AllPeaks[,5], main = "F-Seq Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,7] ~ fseqH1AllNonPeaks[,5]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,7] ~ fseqH1AllProximalPeaks[,5]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,7] ~ fseqH1AllDistalPeaks[,5]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,7] ~ macs2_broadH1AllPeaks[,5]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,7] ~ macs2_broadH1AllNonPeaks[,5]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,7] ~ macs2_broadH1AllProximalPeaks[,5]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,7] ~ macs2_broadH1AllDistalPeaks[,5]), main = "MACS2 Broad Distal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,60))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,7] ~ macs2_narrowH1AllPeaks[,5]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,15))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,7] ~ macs2_narrowH1AllNonPeaks[,5]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,15))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,7] ~ macs2_narrowH1AllProximalPeaks[,5]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,15))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,7] ~ macs2_narrowH1AllDistalPeaks[,5]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,15))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,7] ~ peakdeckH1AllPeaks[,5]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,10))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,7] ~ peakdeckH1AllNonPeaks[,5]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,10))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,7] ~ peakdeckH1AllProximalPeaks[,5]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,10))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,7] ~ peakdeckH1AllDistalPeaks[,5]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Variance", ylab = "Peak Kurtosis", xlim = c(-5,300), ylim = c(-5,10))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
+Kurtosis by Skewness
+```{r}
+fseqAll = hexbinplot(fseqH1AllPeaks[,6] ~ fseqH1AllPeaks[,7], main = "F-Seq Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+fseqNon = hexbinplot((fseqH1AllNonPeaks[,6] ~ fseqH1AllNonPeaks[,7]), main = "F-Seq Non-Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+fseqProx = hexbinplot((fseqH1AllProximalPeaks[,6] ~ fseqH1AllProximalPeaks[,7]), main = "F-Seq Proximal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+fseqDist = hexbinplot((fseqH1AllDistalPeaks[,6] ~ fseqH1AllDistalPeaks[,7]), main = "F-Seq Distal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10), xbnds = "panel")
+
+macs2BroadAll = hexbinplot((macs2_broadH1AllPeaks[,6] ~ macs2_broadH1AllPeaks[,7]), main = "MACS2 Broad Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2BroadNon = hexbinplot((macs2_broadH1AllNonPeaks[,6] ~ macs2_broadH1AllNonPeaks[,7]), main = "MACS2 Broad Non-Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2BroadProx = hexbinplot((macs2_broadH1AllProximalPeaks[,6] ~ macs2_broadH1AllProximalPeaks[,7]), main = "MACS2 Broad Proximal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2BroadDist = hexbinplot((macs2_broadH1AllDistalPeaks[,6] ~ macs2_broadH1AllDistalPeaks[,7]), main = "MACS2 Broad Distal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+
+macs2NarrowAll = hexbinplot((macs2_narrowH1AllPeaks[,6] ~ macs2_narrowH1AllPeaks[,7]), main = "MACS2 Narrow Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2NarrowNon = hexbinplot((macs2_narrowH1AllNonPeaks[,6] ~ macs2_narrowH1AllNonPeaks[,7]), main = "MACS2 Narrow Non-Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2NarrowProx = hexbinplot((macs2_narrowH1AllProximalPeaks[,6] ~ macs2_narrowH1AllProximalPeaks[,7]), main = "MACS2 Narrow Proximal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+macs2NarrowDist = hexbinplot((macs2_narrowH1AllDistalPeaks[,6] ~ macs2_narrowH1AllDistalPeaks[,7]), main = "MACS2 Narrow Distal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+
+peakdeckAll = hexbinplot((peakdeckH1AllPeaks[,6] ~ peakdeckH1AllPeaks[,7]), main = "PeaKDEck Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+peakdeckNon = hexbinplot((peakdeckH1AllNonPeaks[,6] ~ peakdeckH1AllNonPeaks[,7]), main = "PeaKDEck Non-Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+peakdeckProx = hexbinplot((peakdeckH1AllProximalPeaks[,6] ~ peakdeckH1AllProximalPeaks[,7]), main = "PeaKDEck Proximal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+peakdeckDist = hexbinplot((peakdeckH1AllDistalPeaks[,6] ~ peakdeckH1AllDistalPeaks[,7]), main = "PeaKDEck Distal Peaks", aspect = 1, xlab = "Peak Skewness", ylab = "Peak Kurtosis", xlim = c(-5,60), ylim = c(-3,10))
+
+grid.arrange(fseqAll, fseqNon, fseqProx, fseqDist)
+grid.arrange(macs2BroadAll, macs2BroadNon, macs2BroadProx, macs2BroadDist)
+grid.arrange(macs2NarrowAll, macs2NarrowNon, macs2NarrowProx, macs2NarrowDist)
+grid.arrange(peakdeckAll, peakdeckNon, peakdeckProx, peakdeckDist)
+```
