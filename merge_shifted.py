@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import math
 import common_ops as co
+import os
 
 """
 If one cluster is a shift of another, merge them.
@@ -22,38 +23,39 @@ def main():
 		#Open the file containing the SOM centroids.
 		#Add all centroids to the list of data to cluster.
 		som_centroids = []
-		file = open(file_path + str(win), 'r')
-		next_line = file.readline()
-		while next_line:
-			som_centroids.append([float(i) for i in next_line.split(",")])
+		if os.path.exists(file_path + str(win)):
+			file = open(file_path + str(win), 'r')
 			next_line = file.readline()
-		
-		#Compare each cluster to all clusters after it.
-		#If the clusters should be merged, shift the prior one as needed,
-		#then delete the latter one.
-		#A threshold of 0.75 is used like in CoSBI
-		length = len(som_centroids)
-		prev_j = 0
-		for i in range(length - 1):
-			j = i + 1
-			while j < length:
+			while next_line:
+				som_centroids.append([float(i) for i in next_line.split(",")])
+				next_line = file.readline()
 			
-				#If i and j should be merged, merge them, get the new length,
-				#and leave the comparison index as is. Else, increment.
-				if should_merge(i, j, som_centroids, 0.75):
-					shift_cluster(i, j, som_centroids)
-					length = len(som_centroids)
-				else:
-					j += 1
-						
-		#Print shifted cluster centroids.
-		file = open(output_path + str(win), 'w')
-		for cluster in range(len(som_centroids)):
-			for val in range(len(som_centroids[cluster])):
-				file.write(str(som_centroids[cluster][val]))
-				if val < len(som_centroids[cluster]) - 1:
-					file.write(",")
-			file.write("\n")
+			#Compare each cluster to all clusters after it.
+			#If the clusters should be merged, shift the prior one as needed,
+			#then delete the latter one.
+			#A threshold of 0.75 is used like in CoSBI
+			length = len(som_centroids)
+			prev_j = 0
+			for i in range(length - 1):
+				j = i + 1
+				while j < length:
+				
+					#If i and j should be merged, merge them, get the new length,
+					#and leave the comparison index as is. Else, increment.
+					if should_merge(i, j, som_centroids, 0.75):
+						shift_cluster(i, j, som_centroids)
+						length = len(som_centroids)
+					else:
+						j += 1
+							
+			#Print shifted cluster centroids.
+			file = open(output_path + str(win), 'w')
+			for cluster in range(len(som_centroids)):
+				for val in range(len(som_centroids[cluster])):
+					file.write(str(som_centroids[cluster][val]))
+					if val < len(som_centroids[cluster]) - 1:
+						file.write(",")
+				file.write("\n")
 		
 	#Print message to user.
 	print("Merging complete for all windows.")

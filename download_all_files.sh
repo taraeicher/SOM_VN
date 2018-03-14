@@ -22,6 +22,7 @@ cp ENCFF059BEU.bam H1.bam
 wget https://www.encodeproject.org/files/ENCFF226FCY/@@download/ENCFF226FCY.bam
 wget https://www.encodeproject.org/files/ENCFF982IRZ/@@download/ENCFF982IRZ.bam
 cat ENCFF226FCY.bam ENCFF982IRZ.bam > Brain.bam
+samtools sort -o Brain_sorted.bam -T Brain_tmp.bam Brain.bam
 
 #K562 histone marks
 #H3K4me3 - https://www.encodeproject.org/experiments/ENCSR668LDD/
@@ -80,17 +81,20 @@ bedtools sort -i IMR90_h3k4me3.bed > IMR90_h3k4me3_sorted.bed
 wget https://www.encodeproject.org/files/ENCFF810VGL/@@download/ENCFF810VGL.bed.gz
 gunzip ENCFF810VGL.bed.gz
 cp ENCFF810VGL.bed H1_h3k27me3.bed
-bedtools sort -i H1_h3k27me3.bed > H1_h3k27me3_sorted.bed 
+awk {'printf ("%s\t%s\t%s\thh3k27me3\n", $1, $2, $3)'} H1_h3k27me3.bed > H1_h3k27me3_piece.bed
 #H3K4me3 - https://www.encodeproject.org/experiments/ENCSR443YAS/
 wget https://www.encodeproject.org/files/ENCFF958TAD/@@download/ENCFF958TAD.bed.gz
 gunzip ENCFF958TAD.bed.gz
 cp ENCFF958TAD.bed H1_h3k4me3.bed
-bedtools sort -i H1_h3k4me3.bed > H1_h3k4me3_sorted.bed 
+awk {'printf ("%s\t%s\t%s\thh3k4me3\n", $1, $2, $3)'} H1_h3k4me3.bed > H1_h3k4me3_piece.bed
 #H3K27ac - https://www.encodeproject.org/experiments/ENCSR880SUY/
 wget https://www.encodeproject.org/files/ENCFF714VTU/@@download/ENCFF714VTU.bed.gz
 gunzip ENCFF714VTU.bed.gz
 cp ENCFF714VTU.bed H1_h3k27ac.bed
-bedtools sort -i H1_h3k27ac.bed > H1_h3k27ac_sorted.bed 
+awk {'printf ("%s\t%s\t%s\thh3k27ac\n", $1, $2, $3)'} H1_h3k27ac.bed > H1_h3k27ac_piece.bed
+cat H1_h3k27me3_piece.bed H1_h3k4me3_piece.bed H1_h3k27ac_piece.bed > H1_histone_unsorted.bed
+bedtools sort -i H1_histone_unsorted.bed > H1_histone.bed
+bedtools merge -o distinct -c 4 -i H1_histone.bed > H1_histone_merged.bed
 
 #Brain tissue histone marks
 #H3K4me3 - https://www.encodeproject.org/experiments/ENCSR780FXX/
@@ -98,8 +102,13 @@ wget https://www.encodeproject.org/files/ENCFF297ZIH/@@download/ENCFF297ZIH.bed.
 gunzip ENCFF297ZIH.bed.gz 
 cp ENCFF297ZIH.bed Brain_h3k4me3.bed
 bedtools sort -i Brain_h3k4me3.bed > Brain_h3k4me3_sorted.bed
+awk {'printf ("%s\t%s\t%s\th3k4me3\n", $1, $2, $3)'} Brain_h3k4me3.bed > Brain_h3k4me3_piece.bed
 #H3K27me3 - https://www.encodeproject.org/experiments/ENCSR997YTW/
 wget https://www.encodeproject.org/files/ENCFF928EQD/@@download/ENCFF928EQD.bed.gz
 gunzip ENCFF928EQD.bed.gz
 cp ENCFF928EQD.bed Brain_h3k27me3.bed
 bedtools sort -i Brain_h3k27me3.bed > Brain_h3k27me3_sorted.bed
+awk {'printf ("%s\t%s\t%s\th3k27me3\n", $1, $2, $3)'} Brain_h3k27me3.bed > Brain_h3k27me3_piece.bed
+cat Brain_h3k27me3_piece.bed Brain_h3k4me3_piece.bed > Brain_histone_unsorted.bed
+bedtools sort -i Brain_histone_unsorted.bed > Brain_histone.bed
+bedtools merge -o distinct -c 4 -i Brain_histone.bed > Brain_histone_merged.bed

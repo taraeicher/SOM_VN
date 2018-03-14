@@ -20,7 +20,7 @@ import glob, os
 
 #Import sys for obtaining command line args.
 import sys
-import common_ops
+import common_ops as ops
 
 """
 Main function accomplishes the following tasks:
@@ -35,12 +35,13 @@ in the original training data.
 def main():
 
 	#Input, output, and windows.
-	window_count = [10, 20, 40, 80, 160, 320, 640]
+	window_sizes = [10, 20, 40, 80, 160, 320, 640]
 	input_dir = sys.argv[1]
 	output_dir = sys.argv[2]
 	num_window_sizes = len(window_sizes)
 	wig_file = open(sys.argv[3], 'r')
-	intensity_threshold = get_intensity_percentile(0.995, wig_file)
+	intensity_threshold = ops.get_intensity_percentile(0.995, wig_file)
+	print("INTENSITY THRESHOLD: " + str(intensity_threshold))
 	
 	#Create grids for labeling SOM nodes with cluster indices.
 	som_centroids = []
@@ -52,7 +53,7 @@ def main():
 	cluster_count = 0
 	
 	#Open all input files.
-	files = [open(input_dir + file, 'r') for file in sorted(os.listdir(input_dir))]
+	files = [open(file, 'r') for file in sorted(glob.glob(input_dir + "*"))]
 	if len(files) == num_window_sizes:
 		#Notify the user that files were found
 		print("Using the following files:")
@@ -80,19 +81,21 @@ def train_som(window_sizes, file_name, win, som_centroids, som_centroid_counts, 
 	#Open file.
 	file = open(file_name, "r")
 	
-	#Create new SOM
-	som = SOM(window_sizes[win], file, intensity_threshold)
-	
-	#Train new SOM
-	som.train(som.batch_size, file, window_sizes[win])
-	
-	#Print centroids
-	som_centroids[win].append(som.get_centroids())
-	som_centroid_counts[win].append(som.get_centroid_counts())
-	print_centroids(som_centroids, som_centroid_counts, win, out_dir, file_name, window_sizes[win])
+	#If file is not empty, learn SOM.
+	if os.stat(file_name).st_size != 0:
+		#Create new SOM
+		som = SOM(window_sizes[win], file, intensity_threshold)
+		
+		#Train new SOM
+		som.train(som.batch_size, file, window_sizes[win])
+		
+		#Print centroids
+		som_centroids[win].append(som.get_centroids())
+		som_centroid_counts[win].append(som.get_centroid_counts())
+		print_centroids(som_centroids, som_centroid_counts, win, out_dir, file_name, window_sizes[win])
 
 	#Print message to user.
-	print("Grid for " + file_name + " window " + str(win) + " is complete.")
+	print("Grid for " + file_name + " is complete.")
 
 """
 Print SOM node centroids and other metrics.
@@ -198,7 +201,7 @@ class SOM(object):
 			def get_peak_count(weights):
 					
 				#Obtain a crude peak count by locating peaks and troughs based on cutoffs.
-				peak_count = np.apply_along_axis(find_peak_count, 1, weights, intensity_threshold))
+				peak_count = np.apply_along_axis(ops.find_peak_count, 1, weights, intensity_threshold)
 					
 				#Return the estimated peak count.
 				return peak_count.astype(float)

@@ -28,6 +28,7 @@ def main():
 	input_dir = sys.argv[1]
 	cluster_dir = sys.argv[2]
 	output_dir = sys.argv[3]
+	#clust_out_dir = sys.argv[4]
 
 	#Create grids for labeling SOM nodes with cluster indices.
 	som_centroids = []
@@ -39,36 +40,34 @@ def main():
 	cluster_count = 0
 	
 	#Open all input files.
-	in_files = [open(input_dir + file, 'r') for file in sorted(os.listdir(input_dir))]
-	cluster_files = [open(cluster_dir + file, 'r') for file in sorted(os.listdir(cluster_dir))]
-	
-	if len(in_files) == num_window_sizes:
-		#Notify the user that files were found
-		print("Using the input files:")
-		for file in in_files:
-			print(file.name)
-			
-		if len(cluster_files) == num_window_sizes:
-			#Notify the user that files were found
-			print("Using the cluster files:")
-			for cfile in cluster_files:
-				print(cfile.name)
-
-			#Match the inputs to clusters and close the files.
-			#Parallel(n_jobs=num_window_sizes)(delayed(match_clusters)(in_files[i].name, i, cluster_files[i].name, output_dir) for i in range(0, num_window_sizes))
-			Parallel(n_jobs=2)(delayed(match_clusters)(in_files[i].name, i, cluster_files[i].name, output_dir) for i in range(0, num_window_sizes))
-			for file in in_files:
-				file.close()
-			for file in cluster_files:
-				cfile.close()
-			
-		#Print an error if number of files incorrect.
+	in_files_all = [open(file, 'r') for file in sorted(glob.glob(input_dir + "*"))]
+	cluster_files = [open(file, 'r') for file in sorted(glob.glob(cluster_dir + "*"))]
+	#cluster_out_files = [open(clust_out_dir + file.split(input_dir)[1], 'w') for file in sorted(glob.glob(input_dir + "*"))]
+	in_files = []
+	for i in range(0,len(in_files_all)):
+		if i < len(cluster_files):
+			in_files.append(in_files_all[i])
 		else:
-			print("Error: number of files in cluster directory not equal to number of window sizes.")
-		
-	#Print an error if number of files incorrect.
-	else:
-		print("Error: number of files in input directory not equal to number of window sizes.")
+			in_files_all[i].close()
+
+	#Notify the user that files were found
+	
+	print("Using the input files:")
+	for file in in_files:
+		print(file.name)
+
+	#Notify the user that files were found
+	print("Using the cluster files:")
+	for cfile in cluster_files:
+		print(cfile.name)
+
+	#Match the inputs to clusters and close the files.
+	#Parallel(n_jobs=num_window_sizes)(delayed(match_clusters)(in_files[i].name, i, cluster_files[i].name, output_dir) for i in range(0, num_window_sizes))
+	Parallel(n_jobs=len(in_files))(delayed(match_clusters)(in_files[i].name, i, cluster_files[i].name, output_dir) for i in range(0, len(in_files)))
+	for file in in_files:
+		file.close()
+	for file in cluster_files:
+		cfile.close()
 	
 """
 Match each input with the given window size to the nearest cluster for that window size.
@@ -81,7 +80,8 @@ def match_clusters(in_file_name, win, cluster_file_name, out_dir):
 	cluster_file = open(cluster_file_name, "r")
 	
 	#Open output file.
-	out_file = open(out_dir + "map" + str(win) + ".bed", "w")
+	out_file = open(out_dir + "map" + str(win), "w")
+	#cluster_file_out = open(cluster_out + "window" + str(win), "w")
 	
 	#Read in cluster data.
 	clusters = []
@@ -107,12 +107,12 @@ def match_clusters(in_file_name, win, cluster_file_name, out_dir):
 			input = [float(i) for i in inputStr]
 			
 			#Match the data to the nearest cluster and obtain the match and the ambiguity metric.
-			[match, ambig] = match_datum(input, clusters)
+			[match, ambig, out_str] = match_datum(input, clusters)
 			
 			#Print match to BED file. Format is:
 			#chrom	start	end	cluster_num	1 - ambiguity
 			#Score is the opposite of the ambiguity metric.
-			out_file.write("chr" + labels[0] + "\t" + labels[1] + "\t" + labels[2] + "\t" + str(match) + "\t" + str(1 - ambig) + "\n")
+			out_file.write("chr" + labels[0] + "\t" + labels[1] + "\t" + labels[2] + "\t" + str(match) + "\t" + str(1 - ambig) + "\t" + out_str + "\n")
 
 			#Read the next line in the file.			
 			next_line = in_file.readline()
@@ -134,22 +134,38 @@ def match_datum(datum, clusters):
 	#Create array to hold distances between datum and clusters.
 	max_crosscorr = 0
 	match = 0
+	opt_delay = 0
 	crosscorr_list = []
 	
 	#For each cluster, determine the datum's distance from it.
 	for i in range(len(clusters)):
 		cluster = clusters[i]
-		crosscorr_list.append(get_max_crosscorr(datum, cluster))
+		crosscorr, d = get_max_crosscorr(datum, cluster)
+		crosscorr_list.append(crosscorr)
 		if crosscorr_list[i] > max_crosscorr:
 			max_crosscorr = crosscorr_list[i]
 			match = i
+			opt_delay = d
+
+	#Calculate the ambiguity metric. Only do so if not all cross-correlations are zero.
+	#If they are all zero, set ambiguity to 1 (completely ambiguous) and assign it to the
+	#last cluster (artificially created, with all 0.1).
+	ambig = 1.0
+	if not max_crosscorr == 0:
+		ambig = get_ambiguity(crosscorr_list, datum)
+	else:
+		match = len(clusters) - 1
 	
-	#Calculate the ambiguity metric
-	ambig = get_ambiguity(crosscorr_list, datum)
+	#Write the cluster values to a separate file.
+	#This file will be used for cluster validity analysis.
+	
+	comma = ","
+	out_str = comma.join(str(e) for e in datum[int(opt_delay):len(clusters[0]) + int(opt_delay)])
+	#cluster_out_file.write(out_str + "\n")
 			
 	#The ambiguity metric is the ratio of the closest cluster's distance
 	#to the distance of the second closest cluster.
-	return [match, ambig]
+	return [match, ambig, out_str]
 
 """
 Compute the ambiguity metric. It is equivalent to the smallest distance
@@ -172,17 +188,21 @@ def get_max_crosscorr(datum, cluster):
 	#Since the datum is twice the size of the cluster, search along the datum and match at the best point.
 	maximum = 0
 	crosscorr = 0
-	for delay in range(0, len(cluster)):
+	opt_delay = 0
+	step = len(cluster) / 10
+	for i in range(0, 10):
 		try:
-			crosscorr = co.get_crosscorr(datum, cluster, delay, 0.25, 0, False, False)
+			delay = i * step
+			crosscorr = co.get_crosscorr(datum, cluster, int(delay), 0.75, 0, False, False)
 				
 			#If the distance is the smallest so far, update.
 			if crosscorr > maximum:
 				maximum = crosscorr
+				opt_delay = delay
 		except ValueError:
 			pass
 	#Return the smallest distance
-	return max(crosscorr, 0.01)
+	return [crosscorr, delay]
 	
 """
 Find the minimum distance between the datum and shifted cluster.

@@ -35,6 +35,9 @@ def main():
 	annotation_list = ["1_TssA", "2_TssFlnk", "3_TssFlnkU", "4_TssFlnkD", "5_Tx", "6_TxWk",\
 	"7_EnhG1", "8_EnhG2", "9_EnhA1", "10_EnhA2", "11_EnhWk", "12_ZNF/Rpts", "13_Het", "14_TssBiv",\
 	"15_EnhBiv", "16_ReprPC", "17_ReprPCWk", "18_Quies"]
+	#annotation_list = ["1_TssA", "2_TssFlnk", "3_TssFlnkU", "4_TssFlnkD", "5_Tx", "6_TxWk",\
+	#"7_EnhG1", "8_EnhG2", "9_EnhA1", "10_EnhA2", "11_EnhWk", "12_ZNF/Rpts", "13_Het", "14_TssBiv",\
+	#"15_EnhBiv", "16_ReprPC", "17_ReprPCWk", "18_Quies"]
 	#annotation_list = ["1_TssA", "2_TssAFlnk", "3_TxFlnk", "4_Tx", "5_TxWk", "6_EnhG", "7_Enh", \
 	#"8_ZNF/Rpts", "9_Het", "10_TssBiv", "11_BivFlnk", "12_EnhBiv", "13_ReprPC", "14_ReprPCWk", "15_Quies"]
 	#rangeOfVals = range(1, 51)

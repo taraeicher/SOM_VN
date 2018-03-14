@@ -177,7 +177,7 @@ void* printIntervals(void* argBundle)
 				//Go through until reaching the end of the file.
 				//Fill in the counts for each signal level.
 				while(atEnd != NULL)
-				{
+				{if(intervalStart == 354000){printf("%d That's all folks!\n",intervalEnd);}
 					//Initialize signal data for region.
 					int j;
 					for(j = 0; j < windowSize / args->resolution; j++)
@@ -274,7 +274,7 @@ void* printIntervals(void* argBundle)
 						}
 						if(belowCutoff == 0)
 						{
-							//Print out the chromosome and the interval.	
+							//Print out the chromosome and the interval.
 							fputs(chrom, outFile);
 							fputs(",", outFile);
 							char intStart[51];
@@ -282,6 +282,7 @@ void* printIntervals(void* argBundle)
 							char peakCount[10];
 							sprintf(intStart, "%d", intervalStart);
 							sprintf(intEnd, "%d", intervalEnd);
+							if((strcmp(intStart,"")==0)||(strcmp(intEnd,"")==0)||(strcmp(chrom,"")==0)){printf("%s\t%s\t%s\n", chrom, intStart, intEnd);}
 							fputs(intStart, outFile);
 							fputs(",", outFile);
 							fputs(intEnd, outFile);
