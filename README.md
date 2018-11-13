@@ -42,7 +42,7 @@
 <h3>Description of Helper Scripts</h3>
 <ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the database, the signals for each region, and the WIG file.</li>
 <li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
-<ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li></ul>
+<li><b>get_file_data.c:</b> Segments WIG file into regions for annotation.</li></ul>
 <h1>Appending to a Database</h1>
 <p>The code you will need for this task is in the folder <b>database_building_scripts</b>. You should only need to run <b>build_database.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable on line 23.</p>
 <h3>Additional Dependencies</h3>
