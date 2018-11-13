@@ -1,0 +1,100 @@
+"""
+Requires gap statistic. Need to import from https://github.com/minddrummer/gap/blob/master/gap/gap.py
+"""
+"""
+from urllib import request
+
+def download(url):
+	filename = url.split('/')[-1]
+	print("Downloading" + str(filename))
+	with request.urlopen('http://python.org/') as f:
+		data = f.read()
+		f.close()
+	with open(filename, 'wb') as myfile:
+		myfile.write(data)
+
+# get repository
+download('https://github.com/minddrummer/gap/blob/master/gap/gap.py')
+"""
+from sklearn.cluster import KMeans
+import numpy as np
+import sys
+import os
+import imp
+
+gap = imp.load_source('gap', '/users/PAS0272/osu5316/miniconda3/lib/python3.5/site-packages/gap/gap.py')
+#gap_src.gap()
+"""
+from setuptools import setup
+
+setup(name='kmeans_centroids.py',
+      version='0.1',
+      author='Tara Eicher',
+      dependency_links=['https://github.com/minddrummer/gap/blob/master/gap/gap.py'])
+"""
+#from gap import gap
+
+"""
+Cluster the SOM using hierarchical clustering.
+"""
+def main():
+
+	num_windows = int(sys.argv[1])
+	file_path = sys.argv[2]
+	output_path = sys.argv[3]
+
+	#For each file, obtain the SOM centroids and cluster them.
+	for win in range(0, num_windows):
+	
+		#Open the file containing the SOM centroids.
+		#Add all centroids to the list of data to cluster.
+		som_centroids = []
+		if os.path.exists(file_path + str(win)):
+			file = open(file_path + str(win), 'r')
+			next_line = file.readline()
+			while next_line:
+				som_centroids.append([float(i) for i in next_line.split(",")])
+				next_line = file.readline()
+			
+			#Compute the gap statistic and use it to find the best k-value.
+			gaps, s_k, K = gap.gap_statistic(np.array(som_centroids), refs=None, B=10, K=range(1,len(som_centroids)), N_init = 10)
+			bestKValue = gap.find_optimal_k(gaps, s_k, K)
+			
+			#Print message to user.
+			print("Optimal K for window " + str(win) + " is " + str(bestKValue))
+			
+			#Perform k-means clustering.
+			kmeans = KMeans(n_clusters=bestKValue, random_state=0).fit(np.array(som_centroids))
+							
+			#Print cluster centroids from hierarchical clustering.
+			file = open(output_path + str(win), 'w')
+			print_centroids(kmeans.cluster_centers_, som_centroids, file)
+			
+	#Print message to user.
+	print("Clustering complete for all windows.")
+	
+#Print out the cluster centroids
+def print_centroids(cluster_centers, som_centroids, file):
+
+	#Find the number of clusters.
+	num_clusters = len(cluster_centers)
+	
+	#Print each cluster center.
+	for c in range(0, num_clusters):
+		#Print the cluster center.
+		for val in range(len(cluster_centers[0])):
+			file.write(str(cluster_centers[c][val]))
+			if val < len(cluster_centers[0]) - 1:
+				file.write(",")
+		file.write("\n")
+		
+	#Print an additional cluster with low intensities.
+	low_intensity = 0.1
+	for val in range(len(cluster_centers[0])):
+		file.write(str(low_intensity))
+		if val < len(cluster_centers[0]) - 1:
+			file.write(",")
+	file.write("\n")
+
+if __name__ == "__main__":
+	main()
