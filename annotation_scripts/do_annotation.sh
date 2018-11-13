@@ -1,20 +1,46 @@
+#PBS -l nodes=1:ppn=28
+#PBS -l walltime=48:00:00 
+#!/bin/bash  
 #Enable job control.
 	set -m
 
 #Variables
-	CELL_LINE="Brain"
-	BASE_FILENAME="/fs/project/PAS0272/Tara/DNase_SOM"
-    CHROMS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y"
-	WIG_SPLIT_PATH="$HOME/taolib/Scripts/"
-	BIN_SIZE=50
-	PYTHON_VERSION=2.7	
-    WINDOW_INDEX=3
+    CELL_LINE=""
+    BASE_FILENAME=""
+    SHAPES=""
+    BAM=""
+    WIG_SPLIT_PATH=""
+    BIN_SIZE=50
+    REGION_SIZE=4000
+    while getopts n:d:s:b:i:w:r: option; do
+        case "${option}" in
+            n) CELL_LINE=$OPTARG;;
+            d) BASE_FILENAME=$(realpath $OPTARG);;
+            s) SHAPES=$(realpath $OPTARG);;
+            b) BAM=$(realpath $OPTARG);;
+            i) BIN_SIZE=$OPTARG;;
+            w) WIG_SPLIT_PATH=$(realpath $OPTARG);;
+            r) REGION_SIZE=$OPTARG;;
+        esac
+    done
 	
-#Create all needed directories.
-    BAM="$BASE_FILENAME/bam/$CELL_LINE.bam"
+    CHROMS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y"
+	PYTHON_VERSION=2.7	
     WIG="$BASE_FILENAME/$CELL_LINE/$CELL_LINE.wig"
-    TO_ANNOTATE="$BASE_FILENAME/$CELL_LINE/annotation_files"
-    DATABASE="$BASE_FILENAME/A549/database"
+    TO_ANNOTATE="$BASE_FILENAME/$CELL_LINE/annotation_files_test"
+
+#Print message to user.
+    echo "Annotating with the following settings:"
+    echo "Name is $CELL_LINE"
+    echo "Base directory is $BASE_FILENAME"
+    echo "Shape file is $SHAPES"
+    echo "BAM file is $BAM"
+    echo "Bin size in WIG file is $BIN_SIZE"
+    echo "wig_split path is $WIG_SPLIT_PATH"
+    echo "Region size for annotation is $REGION_SIZE"
+    echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
+
+#Create all needed directories.
     
 	if [[ ! -e $TO_ANNOTATE ]]; then
 		mkdir $TO_ANNOTATE
@@ -37,49 +63,49 @@
 	fi
     
 #Output RPKM intensities in a WIG file.
-	# gosr binbam -f 0 -n 1000 -t $CELL_LINE $BAM $BIN_SIZE $CELL_LINE > $WIG
-	# echo -e "------------------------------------------------------WIG file complete.-------------------------------------------------\n"
+    module load python/$PYTHON_VERSION
+	#gosr binbam -f 0 -n 1000 -t $CELL_LINE $BAM $BIN_SIZE $CELL_LINE > $WIG
+	echo -e "------------------------------------------------------WIG file complete.-------------------------------------------------\n"
 
 #Split WIG files by chromosome.
-	# python $WIG_SPLIT_PATH/wig_split.py $WIG $WIGS/$CELL_LINE
-	# find $WIGS/ -type f -name '*chrM*' -delete
-	# find $WIGS/ -type f -name '*chrEBV*' -delete
-	# find $WIGS/ -type f -name '*random*' -delete
-	# find $WIGS/ -type f -name '*chrUn*' -delete
-	# find $WIGS/ -type f -name '*GL*' -delete
-	# find $WIGS/ -type f -name '*KI*' -delete
-	# echo -e "-----------------------------------------------------Splitting complete.------------------------------------------------\n"
+	python $WIG_SPLIT_PATH/wig_split.py $WIG $WIGS/$CELL_LINE
+	find $WIGS/ -type f -name '*chrM*' -delete
+	find $WIGS/ -type f -name '*chrEBV*' -delete
+	find $WIGS/ -type f -name '*random*' -delete
+	find $WIGS/ -type f -name '*chrUn*' -delete
+	find $WIGS/ -type f -name '*GL*' -delete
+	find $WIGS/ -type f -name '*KI*' -delete
+	echo -e "-----------------------------------------------------Splitting complete.------------------------------------------------\n"
 	
 #Data preprocessing
-	# gcc -pthread -lm -o runGetData getFileData.c
-	# echo -e "-----------------------------------------------------Compiling complete.------------------------------------------------\n"
+	gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
+	echo -e "-----------------------------------------------------Compiling complete.------------------------------------------------\n"
 
     run_pipeline() {
         local c=$1
-        
-        #Formatting the regions for annotation.
-        # ./runGetData $WIGS/$CELL_LINE.chr$c.wig $BIN_SIZE 0 N $c $TO_ANNOTATE/chrom${c}
-        # echo -e "-------------------------------------Data formatting complete for chrom $c.------------------------------------------------\n"
-        
-        # #Annotating the regions.
-        #python make_annotated_bed.py $TO_ANNOTATE/chrom${c}window${WINDOW_INDEX} $DATABASE $ANNOTATED/anno${c} $WIGS/${CELL_LINE}.chr${c}.wig 0.0
-        #echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
-        
-        # #Sorting the annotated regions.
-        bedtools sort -i  $ANNOTATED/anno${c} > $ANNOTATED_SORTED/anno${c}
-        bedtools sort -i  $ANNOTATED/anno${c}clust > $ANNOTATED_SORTED/anno${c}.clust
 
-        # #Consolidating the sorted annotated regions.
-		python consolidate_bed.py $ANNOTATED_SORTED/anno${c} $ANNOTATED_CONSOLIDATED/anno${c}
-        #python consolidate_bed.py $ANNOTATED_SORTED/anno${c}clust $ANNOTATED_CONSOLIDATED/anno${c}clust
-		echo -e "------------------------------------------------Consolidation complete for chrom $c.------------------------------------------------\n"
+        #Formatting the regions for annotation.
+        ./run_get_data $WIGS/$CELL_LINE.chr$c.wig $BIN_SIZE 0 N $c $TO_ANNOTATE/chrom${c} $REGION_SIZE
+        
+        # # #Annotating the regions.
+        # #python make_annotated_bed.py $TO_ANNOTATE/chrom${c}window${WINDOW_INDEX} $SHAPES $ANNOTATED/anno${c} $WIGS/${CELL_LINE}.chr${c}.wig 0.0
+        # #echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
+        
+        # # #Sorting the annotated regions.
+        # bedtools sort -i  $ANNOTATED/anno${c} > $ANNOTATED_SORTED/anno${c}
+        # bedtools sort -i  $ANNOTATED/anno${c}clust > $ANNOTATED_SORTED/anno${c}.clust
+
+        # # #Consolidating the sorted annotated regions.
+		# python consolidate_bed.py $ANNOTATED_SORTED/anno${c} $ANNOTATED_CONSOLIDATED/anno${c}
+        # #python consolidate_bed.py $ANNOTATED_SORTED/anno${c}clust $ANNOTATED_CONSOLIDATED/anno${c}clust
+		# echo -e "------------------------------------------------Consolidation complete for chrom $c.------------------------------------------------\n"
 		
-        # Creating BED, cluster, and score files.
-        cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/anno${c}.bed
-        cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c}.clust > $ANNOTATED_CONSOLIDATED/anno${c}clust.bed
-        awk '{ print $6}' $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/clusters_anno${c}
-        cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
-		echo -e "\n------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------"
+        # # Creating BED, cluster, and score files.
+        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/anno${c}.bed
+        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c}.clust > $ANNOTATED_CONSOLIDATED/anno${c}clust.bed
+        # awk '{ print $6}' $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/clusters_anno${c}
+        # cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
+		# echo -e "\n------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------"
     }
 #Run the pipeline for each chromosome separately.
     for f in $CHROMS;
