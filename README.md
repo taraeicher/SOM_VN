@@ -23,12 +23,13 @@
 <h1>Annotating New Samples</h1>
 <p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable on line 7.</p>
 <h3>Options</h3>
-<p><b>--name:</b> The name you wish to assign to your sample. <em>Required</em></p>
-<p><b>--base_dir:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
-<p><b>--database:</b> The path to the database used for annotation. <em>Required</em></p>
-<p><b>--bam:</b> The path to the input BAM file. <em>Required</em></p>
-<p><b>--bin_size:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to create the database.</em></p>
-<p><b>--region_size:</b> The size of region you wish to annotate (in bp). The default is 4000. </p>
+<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
+<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
+<p><b>-s:</b> The path to the shape file to use for annotation. <em>Required</em></p>
+<p><b>-b:</b> The path to the input BAM file. <em>Required</em></p>
+<p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to create the database.</em></p>
+<p><b>-w:</b> The path to wig_split. <em>Required</em></p>
+<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 4000. </p>
 <h3>Output</h3>
 <ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
 <li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
@@ -40,7 +41,8 @@
 <li>A file with only the signal data for each annotation in the directory <b>annotated_consolidated</b>.</li></ul>
 <h3>Description of Helper Scripts</h3>
 <ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the database, the signals for each region, and the WIG file.</li>
-<li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li></ul>
+<li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
+<ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li></ul>
 <h1>Appending to a Database</h1>
 <p>The code you will need for this task is in the folder <b>database_building_scripts</b>. You should only need to run <b>build_database.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable on line 23.</p>
 <h3>Additional Dependencies</h3>
@@ -70,7 +72,7 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <li>The database containing a consolidated list of shapes merged using cross-correlation in the file you specified.</li>
 <li>Figures corresponding to the breakdown of ChromHMM annotations in each of our shapes in the directory <b>annotation_distribution_figs</b>.</li></ul>
 <h3>Description of Helper Scripts</h3>
-<ul><li><b>getFileData.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li>
+<ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li>
  <li><b>shift_input.py:</b> Collects sub-regions to use in training the SOM-VN given the training regions with margins.</li>
  <li><b>som_auto.py:</b> The central SOM-VN script. It learnes the shapes given the input regions.</li>
  <li><b>remove_by_cutoff.py:</b> Removes shapes learned by the SOM-VN that did not have any regions mapping to them in the last iteration of the algorithm.</li>
