@@ -29,7 +29,7 @@
 <p><b>-b:</b> The path to the input BAM file. <em>Required</em></p>
 <p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to create the database.</em></p>
 <p><b>-w:</b> The path to wig_split. <em>Required</em></p>
-<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 4000. </p>
+<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
 <h3>Output</h3>
 <ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
 <li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
