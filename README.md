@@ -21,7 +21,7 @@
 <li>The directory containing the python packages for gosr.</li>
 <li>The directory containing wig_split.py.</li></ul>
 <h1>Annotating New Samples</h1>
-<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable on line 7.</p>
+<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
 <h3>Options</h3>
 <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
 <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
