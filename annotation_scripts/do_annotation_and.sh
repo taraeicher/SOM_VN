@@ -10,9 +10,10 @@
     SHAPES=""
     BAM=""
     WIG_SPLIT_PATH=""
+    TDD_DIR=""
     BIN_SIZE=50
     REGION_SIZE=8000
-    while getopts n:d:s:b:i:w:r: option; do
+    while getopts n:d:s:b:i:w:r:t: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
             d) BASE_FILENAME=$(realpath $OPTARG);;
@@ -21,6 +22,7 @@
             i) BIN_SIZE=$OPTARG;;
             w) WIG_SPLIT_PATH=$(realpath $OPTARG);;
             r) REGION_SIZE=$OPTARG;;
+            t) TSS_DIR=$OPTARG;;
         esac
     done
 	
@@ -77,8 +79,16 @@
 	find $WIGS/ -type f -name '*KI*' -delete
 	echo -e "-----------------------------------------------------Splitting complete.------------------------------------------------\n"
 	
+#Split TSS by chromosome.
+file_list=$(ls $TSS_DIR/chr*)
+for f in $file_list; 
+    do
+        chrbed=$(echo $f | awk -F"chr" '{print $2}')
+        awk '{if($4 == "Promoter"){print $1,$2,$3}}' $TSS_DIR/chr$chrbed > $TSS_DIR/promoter$chrbed
+    done
+    
 #Data preprocessing
-	gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
+	#gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
 	echo -e "-----------------------------------------------------Compiling complete.------------------------------------------------\n"
 
     run_pipeline() {
@@ -88,7 +98,7 @@
         ./run_get_data $WIGS/$CELL_LINE.chr$c.wig $BIN_SIZE 0 N $c $TO_ANNOTATE/chrom${c} $REGION_SIZE
         
         #Annotating the regions.
-        python make_annotated_bed.py $TO_ANNOTATE/chrom${c} $SHAPES $ANNOTATED/anno${c} $WIGS/${CELL_LINE}.chr${c}.wig 0.0
+        python make_annotated_bed_intersectTSS.py $TO_ANNOTATE/chrom${c} $SHAPES $ANNOTATED/anno${c} $WIGS/${CELL_LINE}.chr${c}.wig 0.0 ${TSS_DIR}/promoter${c}.bed
         echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
         
         # Sorting the annotated regions.

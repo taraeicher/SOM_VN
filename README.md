@@ -21,7 +21,7 @@
 <li>The directory containing the python packages for gosr.</li>
 <li>The directory containing wig_split.py.</li></ul>
 <h1>Annotating New Samples</h1>
-<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
+<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
 <h3>Options</h3>
 <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
 <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
@@ -30,6 +30,7 @@
 <p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to create the database.</em></p>
 <p><b>-w:</b> The path to wig_split. <em>Required</em></p>
 <p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
+<p><b>-t:</b> The path to the TSS regions. <em>Required, TSS AND model only</em></p>
 <h3>Output</h3>
 <ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
 <li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>

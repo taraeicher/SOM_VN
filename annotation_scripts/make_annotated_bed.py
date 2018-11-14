@@ -23,9 +23,9 @@ def main():
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
-    som_centroid_counts = []
+    learned_shapes_counts = []
     learned_shapes.append(list())
-    som_centroid_counts.append(list())
+    learned_shapes_counts.append(list())
     shape_names = [[]]
     shape_count = 0
     
