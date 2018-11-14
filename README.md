@@ -30,7 +30,12 @@
 <p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to create the database.</em></p>
 <p><b>-w:</b> The path to wig_split. <em>Required</em></p>
 <p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
-<p><b>-t:</b> The path to the TSS regions. <em>Required, TSS AND model only</em></p>
+<p></p>
+<p><b>Note:</b> If running the TSS AND model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
+<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
+<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
+<p><b>-t:</b> The path to a file containing the transcription start sites.  <em>Required</em></p>
+<p><b>-g:</b> The path to a file containing the chromosome sizes for the genome.  <em>Required</em></p>
 <h3>Output</h3>
 <ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
 <li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
