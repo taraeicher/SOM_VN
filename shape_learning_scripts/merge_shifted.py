@@ -1,9 +1,10 @@
 from scipy import cluster
 import numpy as np
 import sys
-import math
-import common_ops as co
 import os
+import math
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 
 """
 If one cluster is a shift of another, merge them.
@@ -66,7 +67,7 @@ def should_merge(clust1, clust2, cluster_list, threshold, min_val):
     max_cc = 0
     for delay in range(int(-shift), int(shift)):
         try:
-            cross_correlation = co.get_crosscorr(cluster_list[clust1], cluster_list[clust2], delay, threshold, 2, True, True, min_val)
+            cross_correlation = wsu.get_crosscorr(cluster_list[clust1], cluster_list[clust2], delay, threshold, 2, True, True, min_val)
             if cross_correlation > max_cc:
                 max_cc = cross_correlation
 
