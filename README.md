@@ -49,7 +49,7 @@
 <ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the shapes, the signals for each region, and the WIG file.</li>
 <li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
 <li><b>get_file_data.c:</b> Segments WIG file into regions for annotation.</li></ul>
-<h1>Appending to a shapes</h1>
+<h1>Creating / Appending to a Shape List</h1>
 <p>The code you will need for this task is in the folder <b>shape_learning_scripts</b>. You should only need to run <b>learn_shapes.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
 <h3>Additional Dependencies</h3>
 This code requires the Tensorflow framework, which can be installed here: https://www.tensorflow.org/install/. It also requires the imp module to import the gap statistic code from an external repository. Alternatively, you can download the gap statistic code here: https://github.com/minddrummer/gap.
