@@ -7,6 +7,7 @@ import numpy as np
 
 #Import sys for obtaining command line args.
 import sys
+import os
 sys.path.append(os.path.abspath("../annotation_scripts"))
 import make_annotated_bed as mab
 
@@ -114,7 +115,7 @@ def match_region(region, shapes, min_val):
     #For each shape, determine the region's distance from it.
     for i in range(len(shapes)):
         shape = shapes[i]
-        crosscorr, d = mab.get_max_crosscorr(region, shape, min_val)
+        crosscorr, d = mab.get_max_crosscorr(region, shape)
         crosscorr_list.append(crosscorr)
         if crosscorr_list[i] > max_crosscorr:
             max_crosscorr = crosscorr_list[i]

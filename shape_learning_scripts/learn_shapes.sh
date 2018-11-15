@@ -52,31 +52,31 @@
     echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
 	
 #Create all needed directories.
-    SOM_OUT="$BASE_PATH/som_output_test"
+    SOM_OUT="$BASE_PATH/som_output"
     if [[ ! -e $SOM_OUT ]]; then
         mkdir $SOM_OUT
     fi
-    TRAINING_FILES="$BASE_PATH/training_allchrom"
+    TRAINING_FILES="$BASE_PATH/training"
     if [[ ! -e $TRAINING_FILES ]]; then
         mkdir $TRAINING_FILES
     fi
-    TRAINING_ANNOTATION_FILES="$BASE_PATH/training_anno"
+    TRAINING_ANNOTATION_FILES="$BASE_PATH/training_anno_allchrom"
     if [[ ! -e $TRAINING_ANNOTATION_FILES ]]; then
         mkdir $TRAINING_ANNOTATION_FILES
     fi
-    TRAINING_SHIFTED="$BASE_PATH/training_shifted_allchrom"
+    TRAINING_SHIFTED="$BASE_PATH/training_shifted"
     if [[ ! -e $TRAINING_SHIFTED ]]; then
         mkdir $TRAINING_SHIFTED
     fi
-    SOM_OUT_FILTERED="$BASE_PATH/som_output_filtered_test"
+    SOM_OUT_FILTERED="$BASE_PATH/som_output_filtered"
     if [[ ! -e $SOM_OUT_FILTERED ]]; then
         mkdir $SOM_OUT_FILTERED
     fi
-    SOM_OUT_SHIFTED="$BASE_PATH/som_output_shifted_test"
+    SOM_OUT_SHIFTED="$BASE_PATH/som_output_shifted"
     if [[ ! -e $SOM_OUT_SHIFTED ]]; then
         mkdir $SOM_OUT_SHIFTED
     fi
-    SOM_OUT_FINAL="$BASE_PATH/som_output_final_test"
+    SOM_OUT_FINAL="$BASE_PATH/som_output_final_allchrom"
     if [[ ! -e $SOM_OUT_FINAL ]]; then
         mkdir $SOM_OUT_FINAL
     fi
@@ -163,24 +163,24 @@
 		echo -e "----------------------------------------------Shifting complete for chrom $c.-----------------------------------------\n"
 		
 		#Run the SOM.
-		python som_vn.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
+		#python som_vn.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
 		echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
 		
-		# #Remove all shapes to which no regions map.
-		# python remove_by_cutoff.py $SOM_OUT/chrom${c}som_centroid 1 $SOM_OUT_FILTERED/chrom${c}som_centroid
-		# echo -e "------------------------------------------------Removal complete for chrom $c.---------------------------------------\n"
+		#Remove all shapes to which no regions map.
+		#python remove_by_cutoff.py $SOM_OUT/chrom${c}som_centroid 1 $SOM_OUT_FILTERED/chrom${c}som_centroid
+		echo -e "------------------------------------------------Removal complete for chrom $c.---------------------------------------\n"
 		
-		# #Merge shifted regions.
-		# python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid
-		# echo -e "------------------------------------------------Merging complete for chrom $c.----------------------------------------\n"
+		#Merge shifted regions.
+		#python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid 0
+		echo -e "------------------------------------------------Merging complete for chrom $c.----------------------------------------\n"
 		
-		# #Remove duplicate shapes using kmeans.
+		#Remove duplicate shapes using kmeans.
 		# python kmeans_shapes.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
-		# echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
+		echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
 		
-		# #Annotate regions with shape.
-		# python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c} $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c
-        # echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
+		#Annotate regions with shape.
+		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
+        echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
         
         # bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
         # python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
