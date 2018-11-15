@@ -3,22 +3,19 @@ import scipy as sp
 import sys
 import os
 import math
-import common_ops as ops
 from scipy import stats
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib import rc
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 
 
 """
-For each of the annotations, find its information gain for each cluster.
-For those cluster-annotation pairs that are significant, print them to a list.
+For each of the annotations, find its information gain for each shape.
+For those shape-annotation pairs that are significant, print them to a list.
 """
 BIN_SIZE = 50
 def main():
 
-    #Read in the bed file and cluster data.
+    #Read in the bed file and shape data.
     bed = np.genfromtxt(sys.argv[1], delimiter='\t', dtype = str)
     output = sys.argv[3]
     wig = sys.argv[4]
@@ -27,40 +24,40 @@ def main():
     anno_file = sys.argv[7]
     min_val = float(sys.argv[8])
         
-    #Cluster annotations are in column 3. Biological annotations are in column 4.
-    cluster_col = 3
+    #shape annotations are in column 3. Biological annotations are in column 4.
+    shape_col = 3
     bio_col = 8
-    cluster_start = 1
-    cluster_end = 2
+    shape_start = 1
+    shape_end = 2
     bio_start = 6
     bio_end = 7
     bio_len = 9
     
-    #Get list of clusters.
-    clusters = []
-    cluster_file = open(sys.argv[2], 'r')
-    next_clust = cluster_file.readline()
+    #Get list of shapes.
+    shapes = []
+    shape_file = open(sys.argv[2], 'r')
+    next_clust = shape_file.readline()
     while next_clust:
-        clusters.append(next_clust)
-        next_clust = cluster_file.readline()
-    unique_clusts = sorted(list(set(bed[:,cluster_col])), key=lambda x: float(x))
+        shapes.append(next_clust)
+        next_clust = shape_file.readline()
+    unique_clusts = sorted(list(set(bed[:,shape_col])), key=lambda x: float(x))
 
-    #Get percentage of each cluster and each chromHMM annotation and each chromHMM annotation per cluster.
+    #Get percentage of each shape and each chromHMM annotation and each chromHMM annotation per shape.
     wig_file = open(wig, "r")
-    threshold = ops.get_intensity_percentile(0.75, wig_file, min_val)
+    threshold = wsu.get_intensity_percentile(0.75, wig_file, min_val)
     wig_file.close()
-    total_percent_clusters = get_cluster_percentages(cluster_col, cluster_start, cluster_end, unique_clusts, bed)
-    total_percent_anno = get_anno_percentages(bio_col, cluster_start, cluster_end, bio_len, bed)
-    [total_percent_all, total_sums_all] = get_all_percentage_pairs(cluster_col, bio_col, cluster_start, cluster_end, bio_start, bio_end,  bio_len, unique_clusts, bed, threshold, anno_file, clusters)
+    total_percent_shapes = get_shape_percentages(shape_col, shape_start, shape_end, unique_clusts, bed)
+    total_percent_anno = get_anno_percentages(bio_col, shape_start, shape_end, bio_len, bed)
+    [total_percent_all, total_sums_all] = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, unique_clusts, bed, threshold, anno_file, shapes)
 
-    #Print all clusters with significant annotations, along with their annotations.
-    save_significant(total_percent_all, unique_clusts, clusters, wig, output, chromosome, cell, min_val)
+    #Print all shapes with significant annotations, along with their annotations.
+    save_significant(total_percent_all, unique_clusts, shapes, wig, output, chromosome, cell, min_val)
    
-#Get the percentage of the chromosome belonging to each cluster.
-def get_cluster_percentages(anno, start, end, clusters, bed):
+#Get the percentage of the chromosome belonging to each shape.
+def get_shape_percentages(anno, start, end, shapes, bed):
 
     #Set up dividends and divisor.
-    sum_vec = np.zeros(len(clusters))
+    sum_vec = np.zeros(len(shapes))
     cumulative = 0
     
     #Loop through bed file to compute percentage for each region.
@@ -84,7 +81,7 @@ def get_cluster_percentages(anno, start, end, clusters, bed):
         current_start = next_line[start]
         current_end = next_line[end]
         current_clust = next_line[anno]
-        idx = clusters.index(current_clust)
+        idx = shapes.index(current_clust)
             
         #Add to the total sum if the current start and end are not equal to the previous ones.
         if prev_start != current_start:
@@ -92,7 +89,7 @@ def get_cluster_percentages(anno, start, end, clusters, bed):
             cumulative += int(current_end) - int(current_start)
     
     #Get the set of percentages.
-    cumulative_vec = cumulative * np.ones(len(clusters))
+    cumulative_vec = cumulative * np.ones(len(shapes))
     return sum_vec / cumulative_vec
 
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
@@ -147,12 +144,12 @@ def get_anno_percentages(chrom_hmm_anno, start, end, chrom_hmm_len, bed):
     cumulative_vec = cumulative * np.ones(5)
     return sum_vec / cumulative_vec
     
-#Compute percentage for each cluster-annotation pair.
-def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, chrom_hmm_end, chrom_hmm_len, clusters, bed, thresh, signals_path, cluster_str):
+#Compute percentage for each shape-annotation pair.
+def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, chrom_hmm_end, chrom_hmm_len, shapes, bed, thresh, signals_path, shape_str):
     
     #Set up percentage matrix.
-    sum_matrix = np.zeros((4, len(clusters)))
-    cumulative_vec = np.zeros(len(clusters))
+    sum_matrix = np.zeros((4, len(shapes)))
+    cumulative_vec = np.zeros(len(shapes))
     
     #Loop through bed file to compute percentage for each region.
     current_start = -1
@@ -181,10 +178,9 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             current_end = int(next_line[end])
             current_clust = next_line[anno]
             a = next_line[chrom_hmm_anno]
-            idx = clusters.index(current_clust)
+            idx = shapes.index(current_clust)
 
-            #print(current_clust + " " + str(len(cluster_str)))
-            clust_sig = [float(i) for i in cluster_str[idx].split(",")]
+            clust_sig = [float(i) for i in shape_str[idx].split(",")]
             #Get the signal data.
             if (prev_start >= int(next_signal[1]) or current_start > int(next_signal[1])) and current_start > prev_start:
                 next_signal = sigs.readline().split(",")
@@ -207,31 +203,28 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
                 #Add to the total sum if the current start and end are not equal to the previous ones.
                 #if(prev_start != current_start and prev_start != "-1"):
             cumulative_vec[idx] = np.sum(sum_matrix[:,idx])
-        
-    #Add the last cumulative sum.
-    #cumulative_vec[clusters.index(prev_clust)] += int(int(prev_end) - int(prev_start)) if (count_null == 0) else count_null
     
     #Get the set of percentages.
     cumulative_matrix = np.tile(cumulative_vec, (4, 1))
     return [sum_matrix / cumulative_matrix, np.sum(sum_matrix, 0)]
    
-#Save the clusters that are significant.
-def save_significant(percentages, cluster_names, clusters, wig_name, out_name, chrom, cell, min_val):
+#Save the shapes that are significant.
+def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom, cell, min_val):
     
     #Get threshold to use in printing.
     wig = open(wig_name, 'r')
     out = open(out_name, 'a')
     percentage_out = open(out_name + "_" + cell + "/" + chrom + "percentages", 'w')
-    intensity = ops.get_intensity_percentile(0.995, wig, min_val)
+    intensity = wsu.get_intensity_percentile(0.995, wig, min_val)
     print("\n")
     wig.close()
     scale = 5.0 / intensity
     perc_string = percentages.astype(str)
     
-    #Print significant clusters with labels.
+    #Print significant shapes with labels.
     labels = ["Promoter", "Enhancer", "Polycomb", "Weak"]
     for j in range(0, percentages.shape[1]):
-        split_clust = clusters[j].split(",")
+        split_clust = shapes[j].split(",")
         scaled_clust = [float(i) for i in split_clust] * np.tile(scale, len(split_clust))
         scaled_clust_str = [str(i) for i in scaled_clust]
         joined = ','.join(scaled_clust_str)
@@ -239,12 +232,12 @@ def save_significant(percentages, cluster_names, clusters, wig_name, out_name, c
         for i in range(0, percentages.shape[0]):
             other_percents = percentages[np.arange(percentages.shape[0])!=i,j]
             if percentages[i,j] > 0.5 and np.max(other_percents) <= percentages[i,j] / 2:
-                out.write(labels[i] + "\t" + cell + "_" + chrom + "_" + cluster_names[j] + "\t" + joined)
+                out.write(labels[i] + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + joined)
                 if joined.find('\n') != len(joined) - 1:
                     out.write("\n")
                 was_significant = True
         if not was_significant:
-            out.write("Unknown" + "\t" + cell + "_" + chrom + "_" + cluster_names[j] + "\t" + joined)
+            out.write("Unknown" + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + joined)
             if joined.find('\n') != len(joined) - 1:
                 out.write("\n")
         #Print all percentages to a file to use later.
@@ -254,34 +247,6 @@ def save_significant(percentages, cluster_names, clusters, wig_name, out_name, c
     wig.close()
     out.close()
     percentage_out.close()
-
-#Save a bar chart with the ChromHMM distribution for each cluster, compared to the baseline.  
-def save_line_charts(percentages, anno_percentages, cluster_names, path, chr, w):
-
-    # plot
-    names = cluster_names
-    greenline = np.asarray(list(percentages[0,:]))
-    orangeline = np.asarray(list(percentages[1,:]))
-    blueline = np.asarray(list(percentages[2,:]))
-    redline = np.asarray(list(percentages[3,:]))
-    r = range(0, len(names))
-    plt.figure(figsize=(12,6)) 
-    # Create green Bars
-    plt.plot(r, greenline, color='#008000', label = "Promoter")
-    # Create orange Bars
-    plt.plot(r,  orangeline, color='#ffa500', label = "Enhancer")
-    # Create blue Bars
-    plt.plot(r, blueline, color='#0000ff', label = "Polycomb")
-    # Create red Bars
-    plt.plot(r, redline, color='#ff0000', label = "Weak")
-    
-    # Add title, axis, and legend. Save plot.
-    plt.xticks(r, names)
-    plt.legend()
-    plt.xlabel("Shape")
-    plt.ylabel("Percentage")
-    plt.title("Chromosome " + chr)
-    plt.savefig(path + chr + ".png")
 
 def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
     count = 0
