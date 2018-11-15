@@ -205,24 +205,6 @@ def get_max_crosscorr(region, shape):
             pass
     #Return the smallest distance
     return [crosscorr, delay]
-    
-"""
-Find the minimum distance between the region and shifted shape.
-"""
-def get_min_shifted_distance(region, shape):
-
-    #Since the region is twice the size of the shape, search along the region and match at the best point.
-    min_dist = sum(region)
-    for delay in range(0, len(shape)):
-        region_array = np.asarray(region[delay:len(shape) + delay])
-        clust_array = np.asarray(shape)
-        dist = np.linalg.norm(clust_array - region_array)
-            
-        #If the distance is the smallest so far, update.
-        if dist < min_dist and np.max(np.asarray(region)) == np.max(region_array):
-            min_dist = dist
-    #Return the smallest distance
-    return min_dist
 
 if __name__ == "__main__":
     main()
