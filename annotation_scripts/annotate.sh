@@ -36,7 +36,7 @@ bedtools sort -i  $ANNOTATED_TGT/anno${c} > $ANNOTATED_SORTED_TGT/anno${c}
 bedtools sort -i  $ANNOTATED_TGT/anno${c}clust > $ANNOTATED_SORTED_TGT/anno${c}.clust
 
 #Consolidating the sorted annotated regions.
-python consolidate_bed.py $ANNOTATED_SORTED_TGT/anno${c} $ANNOTATED_CONSOLIDATED_TGT/anno${c}
+python ../common_scripts/consolidate_bed.py $ANNOTATED_SORTED_TGT/anno${c} $ANNOTATED_CONSOLIDATED_TGT/anno${c}
     
 # Creating BED, cluster, and score files.
 cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED_TGT/anno${c} > $ANNOTATED_CONSOLIDATED_TGT/anno${c}.bed
