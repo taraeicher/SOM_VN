@@ -16,7 +16,8 @@ import glob, os
 
 #Import sys for obtaining command line args.
 import sys
-import common_ops as ops
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 
 """
 Main function accomplishes the following tasks:
@@ -30,26 +31,26 @@ in the original training data.
 """
 def main():
 
-    #Input, output, and windows.
+    #Input, output, and regions.
     input = open(sys.argv[1], 'r')
     output_dir = sys.argv[2]
     wig_file = open(sys.argv[3], 'r')
-    window_size = int(sys.argv[4])
+    region_size = int(sys.argv[4])
     bin_size = int(sys.argv[5])
     lowest = float(sys.argv[6])
-    percentile = float(sys.argv[7])
-    fine_calculation = bool(sys.argv[8])
-    intensity_threshold = ops.get_intensity_percentile(percentile, wig_file, fine_calculation)
+    percentile = 0.995
+    fine_calculation = bool(sys.argv[7])
+    intensity_threshold = wsu.get_intensity_percentile(percentile, wig_file, lowest, fine_calculation)
     print("INTENSITY THRESHOLD: " + str(intensity_threshold))
     
-    #Create grids for labeling SOM nodes with cluster indices.
+    #Create grids for labeling SOM nodes with shape indices.
     som_centroids = []
     som_centroid_counts = []
     cluster_names = []
     cluster_count = 0
 
     #Create and train the SOMs and close the input files.
-    train_som(input, som_centroids, som_centroid_counts, output_dir, intensity_threshold, window_size, bin_size, lowest)
+    train_som(input, som_centroids, som_centroid_counts, output_dir, intensity_threshold, region_size, bin_size, lowest)
 
     #Close files.
     input.close()
@@ -63,16 +64,16 @@ def train_som(file, som_centroids, som_centroid_counts, out_dir, intensity_thres
     #If file is not empty, learn SOM.
     if os.stat(file.name).st_size != 0:
         #Create new SOM
-        window_size = window / bin
-        som = SOM(window_size, file, intensity_threshold, lowest)
+        region_size = window / bin
+        som = SOM(region_size, file, intensity_threshold, lowest)
         
         #Train new SOM
-        som.train(som.batch_size, file, window_size)
+        som.train(som.batch_size, file, region_size)
         
         #Print centroids
         som_centroids.append(som.get_centroids())
         som_centroid_counts.append(som.get_centroid_counts())
-        print_centroids(som_centroids, som_centroid_counts, out_dir, file, window_size)
+        print_centroids(som_centroids, som_centroid_counts, out_dir, file, region_size)
 
     #Print message to user.
     print("Grid for " + file.name + " is complete.")
@@ -172,44 +173,41 @@ class SOM(object):
             
             ##PLACEHOLDERS FOR TRAINING INPUTS
             self.batch_input = tf.placeholder(tf.float32, shape = [batch_size, dim])
-            self.input_peak_count = tf.placeholder(tf.float32, shape = [batch_size, 1])
+            self.input_num_crossings = tf.placeholder(tf.float32, shape = [batch_size, 1])
             self.label = tf.placeholder(tf.string, shape = [batch_size, 3])
             self.iteration_input = tf.placeholder("float")
             
             """
-            Estimate the number of peaks in each node in the grid.
+            Get the number of crossings over the threshold in each node in the grid.
             """
-            def get_peak_count(weights, lowest):
+            def get_num_crossings(weights, lowest):
                     
-                #Obtain a crude peak count by locating peaks and troughs based on cutoffs.
-                peak_count = np.apply_along_axis(ops.find_peak_count, 1, weights, intensity_threshold, lowest)
-                    
-                #Return the estimated peak count.
-                return peak_count.astype(float)
+                num_crossings = np.apply_along_axis(wsu.find_crossing_count, 1, weights, intensity_threshold, lowest)
+                return num_crossings.astype(float)
                 
             #Calculate peak counts for all weightage vects.
-            peak_counts_64 = tf.py_func(get_peak_count, [self.weightage_vects, self.lowest], tf.float64)
-            self.peak_counts = tf.cast(peak_counts_64, tf.float32)
+            num_crossings_64 = tf.py_func(get_num_crossings, [self.weightage_vects, self.lowest], tf.float64)
+            self.num_crossings = tf.cast(num_crossings_64, tf.float32)
             
             #To compute the Best Matching Unit given a vector
             #Basically calculates the Euclidean distance between every
             #neuron's weightage vector and the input, and returns the
             #index of the neuron which gives the least value
             weightage_vects_stack = tf.stack([self.weightage_vects for i in range(batch_size)], axis = 2)
-            peak_count_stack = tf.stack([self.peak_counts for i in range(batch_size)], axis = 1)
+            num_crossings_stack = tf.stack([self.num_crossings for i in range(batch_size)], axis = 1)
             batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])
-            input_peak_count_stack = tf.transpose(tf.contrib.layers.flatten(tf.stack([self.input_peak_count for i in range(m*n)], axis = 1)))
+            input_num_crossings_stack = tf.transpose(tf.contrib.layers.flatten(tf.stack([self.input_num_crossings for i in range(m*n)], axis = 1)))
             diff = tf.subtract(weightage_vects_stack, batch_input_stack)
             total_max = tf.maximum(tf.reduce_max(weightage_vects_stack, axis = 1), tf.reduce_max(batch_input_stack, axis = 1))
-            peak_count_max = tf.maximum(input_peak_count_stack, peak_count_stack)
-            max_scales = tf.maximum(0.01, peak_count_max)
+            num_crossings_max = tf.maximum(input_num_crossings_stack, num_crossings_stack)
+            max_scales = tf.maximum(0.01, num_crossings_max)
             bmu_indices = tf.argmin(tf.multiply(max_scales, tf.reduce_sum(tf.pow(diff, 2), 1)), axis = 0)
             
             #This will extract the location of the BMU based on the BMU's index)
             self.bmu_locations = tf.gather(self.location_vects, bmu_indices)
             self.bmu_weights = tf.gather(self.weightage_vects, bmu_indices)
-            self.peak_count_weights = tf.gather(self.peak_counts, bmu_indices)
-            self.lambdas = tf.maximum(0.01, self.peak_count_weights)
+            self.num_crossings_weights = tf.gather(self.num_crossings, bmu_indices)
+            self.lambdas = tf.maximum(0.01, self.num_crossings_weights)
             
             #To compute the alpha and sigma values based on iteration number
             learning_rate_op = tf.subtract(1.0, tf.divide(self.iteration_input, self.iterations))
@@ -267,7 +265,7 @@ class SOM(object):
         label_batch = []
         batch_data = []
         first_lines = []
-        peak_count = []
+        num_crossings = []
         iters = 0
         
         #Track count of regions mapping to each centroid.
@@ -282,23 +280,20 @@ class SOM(object):
                     loop_count = 0
                     while True:
                         #Get data for training.
-                        self.fill_in_data(file, label_batch, batch_data, first_lines, loop_count, dim, batch_size, peak_count)
+                        self.fill_in_data(file, label_batch, batch_data, first_lines, loop_count, dim, batch_size, num_crossings)
                         
                         #Update location counts if we are on the last iteration.
                         if iters == self.iterations - 1:
-                            locations = self.bmu_locations.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_peak_count: peak_count})
+                            locations = self.bmu_locations.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_num_crossings: num_crossings})
                             for loc in range(batch_size):
                                 map_count[locations[loc][0], locations[loc][1]] += 1
 
                         #Train the model.
-                        #if dim == 640:
-                        #   deltas = self.add_delta.eval(session = self.sess, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters)})
-                        #   print(str(deltas))
-                        self.peak = list(self.peak_counts.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_peak_count: peak_count}))
+                        self.peak = list(self.num_crossings.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_num_crossings: num_crossings}))
                         if dim == 640:
                             print(str(np.mean(np.amax(self.peak)))  + " " + str(np.mean(self.peak)))
-                        self.sess.run(self.shrink_weightage, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_peak_count: peak_count})
-                        self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_peak_count: peak_count})
+                        self.sess.run(self.shrink_weightage, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_num_crossings: num_crossings})
+                        self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(iters), self.input_num_crossings: num_crossings})
                         
                         #For every 1,000 samples, print a dot.
                         if loop_count % 1000 == 0:
@@ -309,7 +304,7 @@ class SOM(object):
                         #Re-set lists.
                         label_batch = []
                         batch_data = []
-                        peak_count = []
+                        num_crossings = []
                             
                         #Update weightages.
                         self.weightages = list(self.weightage_vects.value().eval())
@@ -339,7 +334,7 @@ class SOM(object):
     """
     Fills in the label and data values needed for training.
     """
-    def fill_in_data(self, file, labels, inputs, first_lines, loop_count, dim, batch_size, peak_count):
+    def fill_in_data(self, file, labels, inputs, first_lines, loop_count, dim, batch_size, num_crossings):
         #Data strings
         inputStr = []
         
@@ -353,7 +348,7 @@ class SOM(object):
                 if column > 0:
                     for k in range(column, batch_size, 1):
                         labels.append(first_lines[k][0:3])
-                        peak_count.append([split_line[3]])
+                        num_crossings.append([split_line[3]])
                         inputStr.append(first_lines[k][4:dim + 4])
                         column += 1
                 else:
@@ -362,7 +357,7 @@ class SOM(object):
             else:
                 split_line = next_line.split(",")
                 labels.append(list(split_line[0:3]))
-                peak_count.append([split_line[3]])
+                num_crossings.append([split_line[3]])
                 inputStr.append(list(split_line[4:dim + 4]))
                 
                 #Initialize beginning of file to use when end is reached and mini-batch is not filled in completely.

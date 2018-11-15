@@ -8,7 +8,7 @@ Do this by checking the number of trough-peak-trough triples,
 where trough and peak are signals within a threshold of the
 max and min.
 """ 
-def find_peak_count(region, threshold, lowest):
+def find_crossing_count(region, threshold, lowest):
     #cutoffs = [0.5, 1.25]
     #max_val = np.max(np.asarray(region))
     #min_val = np.min(np.asarray(region))
@@ -35,61 +35,7 @@ def find_peak_count(region, threshold, lowest):
         if peak_count == 0:
             peak_count = (np.max(region) - lowest) / (threshold - lowest)
         return peak_count
-    
-# """
-# Returns the Xth percentile of intensity for all records in the file. 
- # """
-# def get_intensity_percentile(percentile, file):
-    
-    # #Count of the number of inputs with each FDI and max.
-    # #Note: for window size of 10, fdi_threshold is about 6.
-    # #FDI scaling factor allows us to store the FDI data at
-    # #a finer granularity.
-    # max_threshold = 10000
-    # counts = np.zeros(max_threshold * 4)        
-    # file_line_count = 0
-    
-    # #Use each entry in the file to calculate running metadata.
-    # next_line = file.readline()
-    
-    # while next_line:
-        # split_line = next_line.split()
-        # if len(split_line) == 2:
-            # val = float(split_line[1])
-            
-            # #Increment the count of lines in the file.
-            # file_line_count += 1
-            
-            # #Get the maximum value and increment the appropriate location in the array.
-            # counts[int(math.ceil(4 * val))] += 1
-            
-            # #Let the user know we are still processing.
-            # if file_line_count % 10000 == 0:
-                # sys.stdout.write('.')
-                
-        # #Read the next line.
-        # next_line = file.readline()
         
-    # #Find percentile of maxes.
-    # target_count = int(file_line_count * percentile)
-    # running_sum = 0
-    # i = 0
-    # percentile_found = False
-    # max_sig_percentile = 0.0
-    # while i < len(counts) - 1 and not percentile_found:
-        # running_sum += counts[i]
-        # if running_sum >= target_count:
-            # max_sig_percentile = i / 4.0
-            # percentile_found = True
-        # i += 1
-    # i = 0
-    # percentile_found = False
-    # running_sum = 0
-        
-    # #Return values.
-    # #print(max_sig_percentile)
-    # return max_sig_percentile
-    
 """
 Returns the Xth percentile of intensity for all records in the file. 
  """

@@ -3,7 +3,10 @@ import sys
 import math
 from joblib import Parallel, delayed
 import multiprocessing
-import common_ops as co
+import sys
+import os
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 
 """
 Input regions will be 1 1/2 times the expected size. Shift them to find the best
@@ -20,23 +23,23 @@ def main():
     file_path = sys.argv[1]
     output_path = sys.argv[2]
     bin_size = int(sys.argv[3])
-    window_size = int(sys.argv[4])
+    region_size = int(sys.argv[4])
     wig_file = open(sys.argv[5], 'r')
-    percentile = float(sys.argv[6])
-    fine = bool(sys.argv[7])
-    minimum_intensity = float(sys.argv[8])
+    percentile = 0.995
+    fine = bool(sys.argv[6])
+    minimum_intensity = float(sys.argv[7])
     
-    threshold = co.get_intensity_percentile(percentile, wig_file, minimum_intensity, fine)
+    threshold = wsu.get_intensity_percentile(percentile, wig_file, minimum_intensity, fine)
     print(str(threshold))
     
-    shiftRegions(file_path, output_path, bin_size, window_size, threshold, minimum_intensity)
+    shiftRegions(file_path, output_path, bin_size, region_size, threshold, minimum_intensity)
     
     #Print message to user.
     print("Shifting complete for all windows.")
 
-#Find the best representation of each cluster by maximizing
+#Find the best representation of each region by maximizing
 #the sum of RPKM signals multiplied by the weight vector.
-def shiftRegions(file_path, output_path, bin_size, window_size, threshold, minimum_intensity):
+def shiftRegions(file_path, output_path, bin_size, region_size, threshold, minimum_intensity):
 
     #Print message to user.
     print("Shifting regions")
@@ -48,7 +51,7 @@ def shiftRegions(file_path, output_path, bin_size, window_size, threshold, minim
     next_line = input.readline()
     
     #Initialize the weight vector to use in finding the best representation.
-    dim = int(window_size / bin_size)
+    dim = int(region_size / bin_size)
     weightVector = np.zeros(dim)
     factor = 3 * dim / 8
     for i in range(0, dim):
@@ -68,8 +71,8 @@ def shiftRegions(file_path, output_path, bin_size, window_size, threshold, minim
         finalIntensities, d = findBestRep(intensities, weightVector)
         finalIntensities = np.asarray(finalIntensities) + minimum_intensity
         
-        #Estimate the number of peaks.
-        peak_count = co.find_peak_count(finalIntensities, threshold, minimum_intensity)
+        #Get number of crossings across threshold.
+        crossings = wsu.find_crossing_count(finalIntensities, threshold, minimum_intensity)
         
         #Update the labels.
         labels[1] = str(int(labels[1]) + d * bin_size)
@@ -79,7 +82,7 @@ def shiftRegions(file_path, output_path, bin_size, window_size, threshold, minim
         for label in labels:
             output.write(label)
             output.write(",")
-        output.write(str(peak_count))
+        output.write(str(crossings))
         output.write(",")
         for val in range(0, dim):
             output.write(str(finalIntensities[val]))
@@ -91,7 +94,7 @@ def shiftRegions(file_path, output_path, bin_size, window_size, threshold, minim
         next_line = input.readline()
         ctr += 1
     
-#Find the best representation of each cluster by maximizing
+#Find the best representation of each region by maximizing
 #the sum of RPKM signals multiplied by the weight vector.
 def findBestRep(sigs, w):
 
