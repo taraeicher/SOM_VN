@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import sys
-import common_ops as co
+import os
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 BIN_SIZE = 50
 """
 Given the WIG file, predict using RPKM percentile and write to a BED file.
@@ -29,8 +31,8 @@ def annotate_all_bin_bed(wig_f, out_f, chrom):
     out = open(out_f, "w")
     
     #We choose the 97th and the 90th percentiles for promoter and enhancer, respectively.
-    promoter_cutoff = co.get_intensity_percentile(0.97, wig, True)
-    enhancer_cutoff = co.get_intensity_percentile(0.90, wig, True)
+    promoter_cutoff = wsu.get_intensity_percentile(0.97, wig, 0)
+    enhancer_cutoff = wsu.get_intensity_percentile(0.90, wig, 0)
 
     #Loop through the WIG file and annotate each region. Skip the first two lines, which are the header.
     junk = wig.readline()

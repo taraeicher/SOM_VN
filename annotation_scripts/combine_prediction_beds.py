@@ -10,7 +10,7 @@ Otherwise, leave it as is.
 """
 def main():
     
-    #Get list of clusters.
+    #Get list of shapes.
     tss_anno = np.genfromtxt(sys.argv[2], delimiter = "\t", dtype = str)
     our_anno = np.genfromtxt(sys.argv[1], delimiter = "\t", dtype = str)
     out_file = open(sys.argv[3], 'w')
@@ -25,10 +25,7 @@ def main():
 For each line in the file, handle the following cases:
 2. If the position-based prediction is not a
     promoter, output our region.
-3. If the position-based prediction is a promoter, expand and output.
-    a. If it can be expanded to fit between existing annotations,
-        expand it. Position-based promoters must be expanded to 4000 bp. 
-    b. Otherwise, replace the existing annotation.
+3. If the position-based prediction is a promoter, output.
 Each time we output something, increment in that file.
 """    
 def make_new_file(tss, ours, out):
@@ -55,9 +52,8 @@ def make_new_file(tss, ours, out):
         #If we've reached the end of our annotations, print and increment TSS.
         if j >= len(ours) and i < len(tss):
             if tss_line[annotation] == "Promoter":
-                [new_line, overlaps_second] = get_expanded(tss_line, previous_region, "", previous_promoter, start, end, annotation)
-                out.write(new_line + "\n")
-                previous_promoter = new_line.split("\t")
+                out.write("\t".join(tss_line) + "\t" + "1.0" + "\n")
+                previous_promoter = tss_line
             if i < len(tss):
                 i += 1
         
@@ -92,15 +88,16 @@ def make_new_file(tss, ours, out):
           
             #Skip everything that overlaps with the existing region.
             region_after = our_line
+            overlaps_second = False
             while j < len(ours) and has_overlap(int(tss_line[start]), int(tss_line[end]), int(ours[j][start]), int(ours[j][end])):
                 j += 1
                 region_after = ""
                 if j < len(ours):
                     our_line = ours[j]
                     region_after = our_line
-            [new_line, overlaps_second] = get_expanded(tss_line, previous_region, region_after, previous_promoter, start, end, annotation)
-            out.write(new_line + "\n")
-            previous_promoter = new_line.split("\t")
+                    overlaps_second = has_overlap(int(tss_line[start]), int(tss_line[end]), int(region_after[start]), int(region_after[end]))
+            out.write("\t".join(tss_line) + "\t" + "1.0" + "\n")
+            previous_promoter = tss_line
             if overlaps_second:
                 j += 1
             i += 1
@@ -123,17 +120,6 @@ def has_overlap(start1, end1, start2, end2):
     elif start2 >= start1 and start2 < end1:
         return_value = True
     return return_value
-   
-"""
-Find the next region that does not overlap with the current transcription start site.
-"""    
-# def find_next_region(tss, shape, tss_i, shape_i):
-
-    # #As long as the regions still overlap, find the next shape-based annotation.
-    # while has_overlap(int(tss[tss_i][start]), int(tss[tss_i][end]), int(shape[shape_i][start]), int(shape[shape_i][end])):
-        # shape_i += 1
-    # #Return the first shape-based annotation not to overlap.
-    # return shape[shape_i]
     
 """
 Expand the TSS promoter region so that it does not overlap existing regions.

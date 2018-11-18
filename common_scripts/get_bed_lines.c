@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<math.h>
-#include "getBedLines.h"
+#include "get_bed_lines.h"
 
 int counter;
 int gapFractionAllowed = 0;
