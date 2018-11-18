@@ -1,17 +1,10 @@
 import numpy as np
-import scipy as sp
 import sys
-import os
-import math
-import re
-import common_ops as ops
-from scipy import stats
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 plt.rcParams.update({'font.size': 20})
-import glob, os
 
 
 """
@@ -71,12 +64,9 @@ def save_unknown_chart(file_dir, output, cell, chrom_names, training):
     plt.plot(r, weaks, color = "silver", label = "Weak")
     # Create other line
     plt.plot(r, other, color = "gray", linestyle = '--', label = "Other")
-    # Create black line
-    #plt.plot(r, unknowns, color = "black", label = "Total Unknown")
     
     # Add title, axis, and legend. Save plot.
     plt.xticks(r, chrom_names)
-    #plt.legend(loc="upper left")
     plt.xlabel("Chromosome")
     plt.ylabel("Percentage")
     plt.title(training + " to " + cell)
@@ -88,7 +78,6 @@ def save_unknown_chart(file_dir, output, cell, chrom_names, training):
                         Line2D([0], [0], marker=None, label='Weak', color = 'silver'),
                         Line2D([0], [0], marker=None, label='Other', color = 'gray', linestyle = '--'),
                        ]
-    #fig, ax = plt.subplots()
     plt.legend(handles=legend_elements, loc="lower right")
     plt.savefig(output + "/legend.png")
     plt.close()

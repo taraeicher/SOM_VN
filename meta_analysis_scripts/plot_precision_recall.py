@@ -2,7 +2,6 @@ import numpy as np
 import scipy as sp
 import sys
 import math
-import common_ops as ops
 from scipy import stats
 from scipy import interp
 import matplotlib
@@ -11,8 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
-import common_ops as ops
 import glob, os
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_recall_curve
@@ -29,12 +29,11 @@ def main():
     plot_out = sys.argv[11]
     pr_path = sys.argv[12]
     unknown_path = sys.argv[13]
-    win = sys.argv[15]
-    cell = sys.argv[16]
-    src = sys.argv[17]
-    avg_across = int(sys.argv[18])
+    cell = sys.argv[15]
+    src = sys.argv[16]
+    avg_across = int(sys.argv[17])
     indices_to_highlight = [3, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']#, 'X', 'Y']
+    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
     precision_all = np.zeros((3, len(all_chroms)))
     recall_all = np.zeros((3, len(all_chroms)))
     precision_tss = np.zeros((2, len(all_chroms)))
@@ -43,8 +42,6 @@ def main():
     recall_or_all = np.zeros((3, len(all_chroms)))
     precision_and_all = np.zeros((3, len(all_chroms)))
     recall_and_all = np.zeros((3, len(all_chroms)))
-    #precision_perm_all = np.zeros((3, len(all_chroms)))
-    #recall_perm_all = np.zeros((3, len(all_chroms)))
     precision_rpkm_all = np.zeros((3, len(all_chroms)))
     recall_rpkm_all = np.zeros((3, len(all_chroms)))
     predictions_all = []
@@ -57,22 +54,21 @@ def main():
     for chrom in all_chroms:
         #Get files for each category.
         our_bed = sys.argv[1] + "anno" + str(chrom) + ".bed"
-        our_sig = sys.argv[5] + "clusters_anno" + str(chrom)
+        our_sig = sys.argv[5] + "shapes_anno" + str(chrom)
         tss_bed = sys.argv[2] + "anno" + str(chrom) + ".bed"
-        tss_sig = sys.argv[6] + "clusters" + str(chrom)
+        tss_sig = sys.argv[6] + "shapes" + str(chrom)
         or_bed = sys.argv[1] + "anno" + str(chrom) + "_tss.bed"
-        or_sig = sys.argv[7] + "clusters" + str(chrom)
+        or_sig = sys.argv[7] + "shapes" + str(chrom)
         and_bed = sys.argv[1] + "anno" + str(chrom) + "_tss_and.bed"
-        and_sig = sys.argv[8] + "clusters_anno" + str(chrom)
+        and_sig = sys.argv[8] + "shapes_anno" + str(chrom)
         perm_bed = sys.argv[4] + "anno" + str(chrom) + ".bed"
-        perm_sig = sys.argv[10] + "clusters_anno" + str(chrom)
+        perm_sig = sys.argv[10] + "shapes_anno" + str(chrom)
         rpkm_bed = sys.argv[3] + "anno" + str(chrom) + "_final.bed"
-        rpkm_sig = sys.argv[9] + "clusters_anno" + str(chrom)
+        rpkm_sig = sys.argv[9] + "shapes_anno" + str(chrom)
         wig = sys.argv[14] + str(chrom) + ".wig"
         
         #Get all precision and recall values.
-        #[precision, recall, precision_or, recall_or, precision_perm, recall_perm, precision_rpkm, recall_rpkm, total, threshold, predictions, ground_truth] = get_all_precision_and_recall(our_bed, our_sig, tss_bed, tss_sig, or_bed, or_sig, perm_bed, perm_sig, rpkm_bed, rpkm_sig, wig, chrom, win, cell)
-        [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, total, threshold, predictions, ground_truth, predictions_and, ground_truth_and] = get_all_precision_and_recall(our_bed, our_sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, win, cell)
+        [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, total, threshold, predictions, ground_truth, predictions_and, ground_truth_and] = get_all_precision_and_recall(our_bed, our_sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, cell)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
         predictions_all_and.append(predictions_and)
@@ -85,8 +81,6 @@ def main():
             recall_or_all[i,c] = recall_or[i]
             precision_and_all[i,c] = precision_and[i]
             recall_and_all[i,c] = recall_and[i]
-            #precision_perm_all[i,c] = precision_perm[i]
-            #recall_perm_all[i,c] = recall_perm[i]
             precision_rpkm_all[i,c] = precision_rpkm[i]
             recall_rpkm_all[i,c] = recall_rpkm[i]
             
@@ -98,11 +92,10 @@ def main():
         c += 1
         
         #Output reports for all types of annotations, including unknown.
-       # print_report(precision, recall, precision_or, recall_or, precision_perm, recall_perm, precision_rpkm, recall_rpkm, chrom, cell, win, pr_path)
-        #print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, win, pr_path)
+        print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr_path)
         
         #Print plots of unknown percentages for each chromosome.
-        #print_unknown_percentages(our_bed, our_sig, wig, unknown_path, total, chrom, win, cell, threshold)
+        print_unknown_percentages(our_bed, our_sig, wig, unknown_path, total, chrom, cell, threshold)
         
     #Save a scatterplot with all precision and recall values.
     if avg_across == 1:
@@ -150,11 +143,10 @@ def main():
     
 #Plot the ROC curve based on ground truth and prediction for each cutoff. Plot separate lines for each
 #annotation type. Consolidate all chromosomes.
-#def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, perm_bed, perm_sig, rpkm_bed, rpkm_sig, wig, chrom, win, cell):
-def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, win, cell):
+def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, cell):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
-    threshold = ops.get_intensity_percentile(0.75, open(wig, 'r'), 0)
+    threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), 0)
     annotations = ["Promoter", "Enhancer", "Weak"]
     length = len(annotations)
     ground_truth_list = []
@@ -190,14 +182,6 @@ def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, and
         precision_and[i] = precision_score(gt_and[:, i], pred_and[:, i])
         recall_and[i] = recall_score(gt_and[:, i], pred_and[:, i])
         
-    # #Get precision and recall for permuted annotations.
-    # # [pred_perm, gt_perm] = get_labels_and_ground_truth(perm_bed, perm_sig, wig, annotations, threshold)
-    # # precision_perm = dict()
-    # # recall_perm = dict()
-    # # for i in range(length):
-        # # precision_perm[i] = precision_score(gt_perm[:, i], pred_perm[:, i])
-        # # recall_perm[i] = recall_score(gt_perm[:, i], pred_perm[:, i])
-        
     #Get precision and recall for RPKM annotations.
     [pred_rpkm, gt_rpkm] = get_labels_and_ground_truth(rpkm_bed, rpkm_sig, wig, annotations, threshold)
     precision_rpkm = dict()
@@ -206,20 +190,16 @@ def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, and
         precision_rpkm[i] = precision_score(gt_rpkm[:, i], pred_rpkm[:, i])
         recall_rpkm[i] = recall_score(gt_rpkm[:, i], pred_rpkm[:, i])
         
-    #return [precision, recall, precision_or, recall_or, precision_perm, recall_perm, precision_rpkm, recall_rpkm, pred.shape[0], threshold, pred, gt]
     return [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, pred.shape[0], threshold, pred, gt, pred_and, gt_and]
     
 """
 Print precision and recall for all chromosomes.
 """ 
-#def print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_perm, recall_perm, precision_rpkm, recall_rpkm, chrom, win, cell, pr):
-def print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, win, cell, pr):
+def print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr):
     #Print the cell line, chromosome, and window information
-    #Weak   (Shape, TSS + Shape, Perm)
     report = open(pr + "/report_" + chrom, "w")
     report.write(cell + "\n")
     report.write(chrom + "\n")
-    report.write(win + "\n\n")
     
     #All shape-based predictions
     for i in range(0, 3):
@@ -243,10 +223,6 @@ def print_report(precision, recall, precision_or, recall_or, precision_and, reca
     for i in range(0, 3):
         report.write(str(precision_and[i]) + "\t" + str(recall_and[i]) + "\n")
     report.write("\n")
-    
-    # #Permuted predictions
-    # for i in range(0, 3):
-        # report.write(str(precision_perm[i]) + "\t" + str(recall_perm[i]) + "\n")
         
     #RPKM predictions
     for i in range(0, 3):
@@ -256,7 +232,6 @@ def print_report(precision, recall, precision_or, recall_or, precision_and, reca
     report.close()
 
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
-#def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_precision, or_recall, perm_precision, perm_recall, rpkm_precision, rpkm_recall, out, cell, src, indices_to_highlight, chroms, separate_legend):
 def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_precision, or_recall, and_precision, and_recall, rpkm_precision, rpkm_recall, out, cell, src, indices_to_highlight, chroms, separate_legend, make_big):
 
     #Set colors and symbols for plotting.
@@ -303,9 +278,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         
         #Plot TSS data.
         plt.scatter(tss_precision[0,0], tss_recall[0,0], c = promoter_color, marker = tss_symbol, edgecolor = "black", s = tss_size * factor)
-        #plt.scatter(tss_precision[1,0], tss_recall[1,0], c = distal_color, marker = tss_symbol, edgecolor = "black", s = tss_size * factor)
         plt.scatter(tss_precision[0,1], tss_recall[0,1], c = promoter_color, marker = tss_symbol, s = tss_size * factor)
-        #plt.scatter(tss_precision[1,1], tss_recall[1,1], c = distal_color, marker = tss_symbol, s = tss_size * factor)
         
          #Plot combined (OR) data.
         plt.scatter(or_precision[0,0], or_recall[0,0], c = promoter_color, marker = or_symbol, edgecolor = "black", s = plus_size * factor)
@@ -345,7 +318,6 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
             
         #Plot TSS data.
         plt.scatter(tss_precision[0,:], tss_recall[0,:], c = promoter_color, marker = tss_symbol, s = tss_size * factor)
-        #plt.scatter(tss_precision[1,:], tss_recall[1,:], c = distal_color, marker = tss_symbol)
         
         #Plot combined (OR) data.
         plt.scatter(or_precision[0,:], or_recall[0,:], c = promoter_color, marker = or_symbol, s = plus_size * factor)
@@ -356,11 +328,6 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         plt.scatter(and_precision[0,:], and_recall[0,:], c = promoter_color, marker = and_symbol, s = plus_size * factor)
         plt.scatter(and_precision[1,:], and_recall[1,:], c = enhancer_color, marker = and_symbol, s = plus_size * factor)
         plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = and_symbol, s = plus_size * factor)
-        
-        # #Plot permuted data.
-        # #plt.scatter(perm_precision[0,:], perm_recall[0,:], c = "white", marker = perm_symbol, edgecolor = promoter_color)
-        # #plt.scatter(perm_precision[1,:], perm_recall[1,:], c = "white", marker = perm_symbol, edgecolor = enhancer_color)
-        # #plt.scatter(perm_precision[2,:], perm_recall[2,:], c = "white", marker = perm_symbol, edgecolor = weak_color)
         
         #Plot rpkm data.
         plt.scatter(rpkm_precision[0,:], rpkm_recall[0,:], c = promoter_color, marker = rpkm_symbol, s = rpkm_size * factor)
@@ -375,7 +342,6 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
     legend_elements = [Patch(facecolor=enhancer_color, label='Enhancer'),
                         Patch(facecolor=promoter_color, label='Promoter'),
                         Patch(facecolor=weak_color, label='Weak'),
-                        #Patch(facecolor=distal_color, label='TSS Distal'),
                         Line2D([0], [0], marker=our_symbol, markerfacecolor='black', label='Shape-Based', color = 'white',
                            markersize=our_size),
                         Line2D([0], [0], marker=tss_symbol, markerfacecolor='black', label='TSS-Based', color = 'white',
@@ -384,11 +350,9 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
                            markersize=plus_size),
                         Line2D([0], [0], marker=and_symbol, markerfacecolor='black', label='Shape AND TSS', color = 'white',
                            markersize=plus_size),
-                        #Line2D([0], [0], marker=perm_symbol, markerfacecolor="None", markeredgecolor = 'black', color = 'white', label='Permuted', s=perm_size * factor),
                         Line2D([0], [0], marker=rpkm_symbol, markerfacecolor='black', markeredgecolor = 'black', color = 'white', label='RPKM-Based',
                            markersize=rpkm_size),
                        ]
-    #fig, ax = plt.subplots()
     plt.legend(handles=legend_elements, loc="lower right")
     
     #Save the plot.
@@ -458,11 +422,6 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
                     sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[1] += anno_length
-            # elif a == "13_ReprPC" or a == "ReprPCWk":
-                # if total_peak_size > 0:
-                    # sum_vec[3] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
-                # else:
-                    # sum_vec[3] += anno_length
             elif a == "9_Het" or a == "15_Quies":
                 if total_peak_size > 0:
                     sum_vec[2] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
@@ -615,7 +574,7 @@ def get_tss_labels_and_ground_truth(bed_file, sig_file, wig, annotations, thresh
     return [np.stack(vec_pred), np.stack(vec_gt)]
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
-def print_unknown_percentages(bed_file, sig_file, wig, out_path, total_regions, chrom, win, cell, threshold):
+def print_unknown_percentages(bed_file, sig_file, wig, out_path, total_regions, chrom, cell, threshold):
     
     #Set up counts of promoter and non-promoter.
     vec_gt = list()
@@ -672,11 +631,6 @@ def print_unknown_percentages(bed_file, sig_file, wig, out_path, total_regions, 
                     sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[1] += anno_length
-            # elif a == "13_ReprPC" or a == "ReprPCWk":
-                # if total_peak_size > 0:
-                    # sum_vec[3] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
-                # else:
-                    # sum_vec[3] += anno_length
             elif a == "9_Het" or a == "15_Quies":
                 if total_peak_size > 0:
                     sum_vec[2] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
@@ -747,12 +701,6 @@ def save_misprediction_heatmap(predictions, ground_truth, path, cell, src, enhan
     promoter_pred_vec = np.sum(promoters, axis = 0) / promoters.shape[0]
     where_enhancers = np.where(ground_truth[:,1] == 1)[0]
     mispredictions = np.zeros(2)
-    # if src == "H1" and enhancer:
-        # where_weaks = np.where(ground_truth[:,2] == 1)[0]
-        # weaks = predictions_new[where_weaks]
-        # weak_pred_vec = np.sum(weaks, axis = 0) / weaks.shape[0]
-        # mispredictions = np.stack([promoter_pred_vec, weak_pred_vec])
-    # else:
     enhancers = predictions_new[where_enhancers]
     enhancer_pred_vec = np.sum(enhancers, axis = 0) / enhancers.shape[0]
     where_weaks = np.where(ground_truth[:,2] == 1)[0]
@@ -788,7 +736,6 @@ def save_misprediction_heatmap(predictions, ground_truth, path, cell, src, enhan
     heatmap = sns.heatmap(mispredictions, cbar=True, cmap="binary", fmt="d", vmin = 0, vmax = 1, xticklabels = names_x, yticklabels = names_y, cbar_kws={'label': 'Percentage of Predictions'})
     ax = plt.axes()
     ax.set_title(src + " to " + cell)
-    #plt.title("Composition of Predictions per ChromHMM Regulatory Category from " + src + " to " + cell)
     plt.ylabel("True Regulatory Category")
     plt.xlabel("Predicted Regulatory Category")
     plt.yticks(rotation = 0)
