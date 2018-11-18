@@ -3,18 +3,26 @@
 #!/bin/bash   
 #Need to install seaborn
 
-SRC="H1"
-enhancer=1
-SOM="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/som_output_final"
-#DATABASE_ALL="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/percentage"
-#DATABASE="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/chromHmm_merged"
-#LOG="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/ig_chromHmm_log"
-DATABASE_ALL="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/database_all"
-DATABASE="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/database"
-LOG="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/database_log"
-VAL="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/cluster_validity" 
-SHAPEFILE_FIGS="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/annotation_figs/${SRC}"
-ANNOTATED_ALL_WIN="/fs/project/PAS0272/Tara/DNase_SOM/$SRC/anno_beds_final"
+SRC=""
+BASE_FILENAME=""
+ANNOTATED_ALL_REG=""
+SHAPES_COMPREHENSIVE=""
+SHAPES=""
+LOG=""
+while getopts n:d:s:m:l:r: option; do
+        case "${option}" in
+            n) SRC=$OPTARG;;
+            d) BASE_FILENAME=$(realpath $OPTARG);;
+            s) SHAPES_COMPREHENSIVE=$(realpath $OPTARG);;
+            m) SHAPES=$(realpath $OPTARG);;
+            l) LOG=$(realpath $OPTARG);;
+            r) ANNOTATED_ALL_REG=$(realpath $OPTARG);;
+        esac
+    done
+enhancer=0
+SOM="$BASE_FILENAME/$SRC/som_output_final"
+VAL="$BASE_FILENAME/$SRC/cluster_validitytest" 
+SHAPEFILE_FIGS="$BASE_FILENAME/$SRC/annotation_figs/${SRC}test"
 
 #Create all needed directories.
 if [[ ! -e $SHAPEFILE_FIGS ]]; then
@@ -22,12 +30,6 @@ if [[ ! -e $SHAPEFILE_FIGS ]]; then
 fi
 
 # Plot the cluster validity heatmap.
-#python compute_validity.py $ANNOTATED_ALL_WIN/ $SOM/ $ANNOTATED_ALL_WIN/ $VAL
+#python compute_validity.py $ANNOTATED_ALL_REG/ $SOM/ $ANNOTATED_ALL_REG/ $VAL
 
-#Plot the database similarity heatmap for each window size.
-# for window in '2' '3' '4' '5' '6';
-	# do 
-        # python annotation_similarity_heatmap.py ${DATABASE_ALL}${window} ${LOG}${window} ${SHAPEFILE_FIGS}ratio${window} ${SHAPEFILE_FIGS}heatmap${window} ${window} ${DATABASE}${window}
-	# done
-# cd "/fs/project/PAS0272/Tara/DNase_SOM/scripts"
-python annotation_similarity_heatmap.py ${DATABASE_ALL} ${LOG} ${SHAPEFILE_FIGS}_ratio ${SHAPEFILE_FIGS}_heatmap ${DATABASE} $enhancer $SRC
+python annotation_similarity_heatmap.py ${SHAPES_COMPREHENSIVE} ${LOG} ${SHAPEFILE_FIGS}_ratio ${SHAPEFILE_FIGS}_heatmap ${SHAPES} $enhancer $SRC

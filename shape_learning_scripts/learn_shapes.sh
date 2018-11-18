@@ -103,8 +103,8 @@
     if [[ ! -e ${SHAPES_COMPREHENSIVE}_${CELL_LINE} ]]; then
         mkdir ${SHAPES_COMPREHENSIVE}_${CELL_LINE}
     fi
-    SHAPES="$BASE_PATH/shapes_allchrom"
-    SHAPES_LOG="$BASE_PATH/shapes_log_allchrom"
+    SHAPES="$BASE_PATH/shapes"
+    SHAPES_LOG="$BASE_PATH/shapes_log"
 
 #Output RPKM intensities in a WIG file.
     module load python/$PYTHON_VERSION

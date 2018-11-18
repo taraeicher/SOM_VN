@@ -12,7 +12,7 @@ Output a heatmap of the counts of each type of match.
 def main():
 
     #Files needed for program
-    all_clusters_path = sys.argv[1]
+    all_shapes_path = sys.argv[1]
     match_log_path = sys.argv[2]
     ratio_out_path = sys.argv[3]
     heatmap_out_path = sys.argv[4]
@@ -24,7 +24,7 @@ def main():
     annotations = ["Promoter", "Enhancer", "Weak", "Unknown"]
     if exclude_enhancer:
         annotations = ["Promoter", "Weak", "Unknown"]
-    count_each = get_total_counts(all_clusters_path, annotations, 0)
+    count_each = get_total_counts(all_shapes_path, annotations, 0)
     count_merged = get_total_counts(merged_path, annotations, 1)
     match_counts = get_all_counts(match_log_path, annotations, count_each)
         

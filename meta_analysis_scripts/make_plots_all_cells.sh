@@ -6,7 +6,6 @@
 WIG_BRAIN="/fs/project/PAS0272/Tara/DNase_SOM/Brain/wig_chroms/"
 WIG_A549="/fs/project/PAS0272/Tara/DNase_SOM/A549/wig_chroms/"
 WIG_H1="/fs/project/PAS0272/Tara/DNase_SOM/H1/wig_chroms/"
-#awk '!seen[$0]++' /fs/project/PAS0272/Tara/DNase_SOM/TSS_hg38_first3cols.bed > /fs/project/PAS0272/Tara/DNase_SOM/TSS_hg38_dedupe.bed
 TSS="/fs/project/PAS0272/Tara/DNase_SOM/TSS_hg38_dedupe.bed"
 WIG_DISTRIB="/fs/project/PAS0272/Tara/DNase_SOM/wig_distribs"
 CHROMHMM_BRAIN="/fs/project/PAS0272/Tara/DNase_SOM/chromHmm/Brain_chromhmm_15_liftOver.bed"
