@@ -1,5 +1,6 @@
 #Import sys for obtaining command line args.
 import sys
+import numpy as np
 
 #Import matplotlib for plots.
 import matplotlib
@@ -44,7 +45,7 @@ def main():
         rand_cc_weak.extend(get_crosscorr_anno(in_file_rand,"Weak"))
         in_file.close()
         in_file_rand.close()
-        
+
     #Plot all cross-correlations.
     plot_densities(cc_prom, cc_enh, cc_weak, rand_cc_prom, rand_cc_enh, rand_cc_weak, output, cell)
 

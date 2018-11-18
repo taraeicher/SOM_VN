@@ -6,17 +6,27 @@
 	set -m
 
 #Variables
-    CELL_LINE="A549"
-	BASE_PATH="/fs/project/PAS0272/Tara/DNase_SOM/$CELL_LINE"
-	#CHROMS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y"
-    CHROMS="10 11 12 15 16 17 19 20"
-    WINDOW_INDEX=3
-    WINDOW_SIZE=4000
+    CELL_LINE=""
+	BASE_FILENAME=""
+	CHROMS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y"
+    REGION_SIZE=4000
 	BIN_SIZE=50
-    CHROMHMM="/fs/project/PAS0272/Tara/DNase_SOM/chromHmm/${CELL_LINE}_chromhmm_15_liftOver.bed"
+    CHROMHMM=""
+    WIG_ORIG=""
+    while getopts n:d:c:i:r:w: option; do
+        case "${option}" in
+            n) CELL_LINE=$OPTARG;;
+            d) BASE_FILENAME=$(realpath $OPTARG);;
+            c) CHROMHMM=$(realpath $OPTARG);;
+            i) BIN_SIZE=$OPTARG;;
+            r) REGION_SIZE=$OPTARG;;
+            w) WIG_ORIG=$(realpath $OPTARG);;
+        esac
+    done
+    BASE_PATH=$BASE_FILENAME/$CELL_LINE
+    PYTHON_VERSION=2.7	
 	
 #Create all needed directories.
-    cd "/fs/project/PAS0272/Tara/DNase_SOM/scripts"
 	TRAINING_SHIFTED="$BASE_PATH/training_shifted_perm"
     if [[ ! -e $TRAINING_SHIFTED ]]; then
         mkdir $TRAINING_SHIFTED
@@ -45,7 +55,6 @@
     if [[ ! -e $SOM_OUT_FINAL ]]; then
         mkdir $SOM_OUT_FINAL
     fi
-    WIG_ORIG="$BASE_PATH/wig_chroms"
     WIG="$BASE_PATH/wig_chroms_perm"
     if [[ ! -e  $WIG ]]; then
         mkdir $WIG
@@ -66,21 +75,14 @@
     if [[ ! -e $CHROMHMM_INTERSECTS ]]; then
         mkdir $CHROMHMM_INTERSECTS
     fi
-    DATABASE_COMPREHENSIVE="$BASE_PATH/database_all_perm"
-    if [[ ! -e ${DATABASE_COMPREHENSIVE}_${CELL_LINE} ]]; then
-        mkdir ${DATABASE_COMPREHENSIVE}_${CELL_LINE}
+    SHAPES_COMPREHENSIVE="$BASE_PATH/SHAPES_all_perm"
+    if [[ ! -e ${SHAPES_COMPREHENSIVE}_${CELL_LINE} ]]; then
+        mkdir ${SHAPES_COMPREHENSIVE}_${CELL_LINE}
     fi
-    DISTRIB_FIGS="$BASE_PATH/annotation_distribution_figs_perm"
-    if [[ ! -e $DISTRIB_FIGS ]]; then
-        mkdir $DISTRIB_FIGS
-    fi
-    DATABASE="$BASE_PATH/database_perm"
-    DATABASE_REAL="$BASE_PATH/database"
-    DATABASE_LOG="$BASE_PATH/database_log_perm"
+    SHAPES="$BASE_PATH/shapes_perm"
+    SHAPES_REAL="$BASE_PATH/shapes"
+    SHAPES_LOG="$BASE_PATH/shapes_log_perm"
     PVALS="$BASE_PATH/pvalues_perm"
-    if [[ ! -e $PVALS ]]; then
-        mkdir $PVALS
-    fi
     CROSSCORR_REAL="$BASE_PATH/crosscorr"
     if [[ ! -e $CROSSCORR_REAL ]]; then
         mkdir $CROSSCORR_REAL
@@ -89,15 +91,15 @@
     if [[ ! -e $CROSSCORR ]]; then
         mkdir $CROSSCORR
     fi
-    CLUSTER_FIGS="$BASE_PATH/cluster_fig_perm"
-    if [[ ! -e $CLUSTER_FIGS ]]; then
-        mkdir $CLUSTER_FIGS
+    SHAPE_FIGS="$BASE_PATH/shape_fig_perm"
+    if [[ ! -e $SHAPE_FIGS ]]; then
+        mkdir $SHAPE_FIGS
     fi
     TO_ANNOTATE="$BASE_PATH/annotation_files"
     
-    #gcc -pthread -lm -o runGetData getFileData.c
-    #cd /fs/project/PAS0272/Tara/DNase_SOM/scripts
-    #module load python/2.7
+    module load python/2.7
+    gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
+    echo -e "------------------------------------------------------Compilation complete.-------------------------------------------------\n"
 	
 #Method for running the pipeline for a chromosome.
 	run_pipeline() {
@@ -107,22 +109,20 @@
         python permute_wig.py ${WIG_ORIG}/${CELL_LINE}.chr${c}.wig ${WIG}/${CELL_LINE}.chr${c}.wig
         
 		#Generate input files for training and annotation.
-		./runGetData $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 Y $c $TRAINING_FILES/chrom$c
-        # ./runGetData $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 N $c $TRAINING_ANNOTATION_FILES/chrom$c
-		# echo -e "-------------------------------------Data formatting complete for chrom $c.------------------------------------------\n"
+        ./run_get_data $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 Y $c $TRAINING_FILES/chrom${c} $REGION_SIZE
+        ./run_get_data $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 Y $c $TRAINING_FILES/chrom${c} $REGION_SIZE
+		echo -e "-------------------------------------Data formatting complete for chrom $c.------------------------------------------\n"
 		
 		#Shuffle the input files.
-		cd $TRAINING_FILES
-		shuf chrom${c}window${WINDOW_INDEX} > shuf_chrom${c}
+		shuf $TRAINING_FILES/chrom${c}window3 > $TRAINING_FILES/shuf_chrom${c}
 		echo -e "--------------------------------------------Shuffling complete for chrom $c.------------------------------------------\n"
 			
 		#Shift the input to its best representation.
-        cd /fs/project/PAS0272/Tara/DNase_SOM/scripts
-		python shift_input.py $TRAINING_FILES/shuf_chrom$c $TRAINING_SHIFTED/chrom$c $BIN_SIZE $WINDOW_SIZE $WIG/$CELL_LINE.chr$c.wig
+		python shift_input.py $TRAINING_FILES/shuf_chrom${c} $TRAINING_SHIFTED/chrom${c} $BIN_SIZE $REGION_SIZE $WIG/$CELL_LINE.chr$c.wig false 0
 		echo -e "----------------------------------------------Shifting complete for chrom $c.-----------------------------------------\n"
 		
 		#Run the SOM.
-		python som_auto.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr${c}.wig $WINDOW_SIZE $BIN_SIZE
+        python som_vn.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom${c} $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
 		echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
 		
 		#Remove all SOM centroids to which no regions map.
@@ -130,44 +130,52 @@
 		echo -e "------------------------------------------------Removal complete for chrom $c.---------------------------------------\n"
 		
 		#Merge shifted regions.
-		python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid
+		python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid 0
 		echo -e "------------------------------------------------Merging complete for chrom $c.----------------------------------------\n"
 		
 		#Remove duplicate centroids using kmeans.
-		python kmeans_centroids.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
+		python kmeans_shapes.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
 		echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
-        
-        #Print out the clusters.
-        python print_clusters.py $SOM_OUT_FINAL/chrom${c}som_centroid $CLUSTER_FIGS/chrom${c} ${c}
 		
-		#Annotate regions with cluster data.
-		python make_cluster_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window${WINDOW_INDEX} $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c
+		#Annotate regions with shape data.
+		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno${c}test 0
         echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
 	
 		bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
-        python consolidate_each_window.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
+        python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
         cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
-        awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
+        awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/shapes_anno${c}
         cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
         echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
         
-        #Build comprehensive database.
+        #Build comprehensive shapes.
         bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM > $CHROMHMM_INTERSECTS/anno${c}.bed			
         bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
-        python consolidate_chromHMM_peakOnly.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT/chrom${c}som_centroid $DATABASE_COMPREHENSIVE ${WIG}/${CELL_LINE}.chr${c}.wig $DISTRIB_FIGS ${c} $WINDOW_SIZE $PVALS $TRAINING_ANNOTATION_FILES/chrom${c}window$WINDOW_INDEX $CELL_LINE
-        python merge_significant.py $DATABASE_COMPREHENSIVE $DATABASE $DATABASE_LOG
-        
-        #Evaluate the distribution of cross-correlations for this and "real" clusters.
-        #python make_annotated_bed_crosscorr.py $TO_ANNOTATE/chrom${c}window$WINDOW_INDEX $DATABASE_REAL $CROSSCORR_REAL/anno${c} $WIG_ORIG/${CELL_LINE}.chr${c}.wig
-        python make_annotated_bed_crosscorr.py $TO_ANNOTATE/chrom${c}window$WINDOW_INDEX $DATABASE $CROSSCORR/anno${c} $WIG_ORIG/${CELL_LINE}.chr${c}.wig
+        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid ${SHAPES_COMPREHENSIVE} ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c}window3 0
+        echo -e "\n------------------------------------Shapes saved for chrom $c.-----------------------------\n"
 	}
 	#Run the pipeline for each chromosome separately.
-    # for f in $CHROMS;
-        # do 
-            # run_pipeline $f &
-        # done
+     for f in $CHROMS;
+        do 
+            run_pipeline $f &
+        done
+        
+    #Merge shapes entries across chromosomes.
+    python ../common_scripts/merge_significant.py $SHAPES_COMPREHENSIVE $SHAPES $SHAPES_LOG
+    echo -e "\n------------------------------------Merged shapes across chromosomes.-----------------------------\n"
+    
+    #Evaluate the distribution of cross-correlations for this and "real" shapes.
+    for c in $CHROMS;
+        do
+            python ../annotation_scripts/make_annotated_bed_crosscorr.py $TO_ANNOTATE/chrom${c} $SHAPES $CROSSCORR/anno${c} $WIG_ORIG/${CELL_LINE}.chr${c}.wig 0
+            python ../annotation_scripts/make_annotated_bed_crosscorr.py $TO_ANNOTATE/chrom${c} $SHAPES_REAL $CROSSCORR_REAL/anno${c} $WIG_ORIG/${CELL_LINE}.chr${c}.wig 0
+            echo -e "\n------------------------------------Finished annotation with crosscorr for chrom $c.-----------------------------\n"
+        done
+    
     #Plot the cross-correlation distribution.
-    python plot_crosscorr_distrib.py $CROSSCORR_REAL/anno $CROSSCORR/anno $BASE_PATH/${CELL_LINE}_crosscorr_distrib ${CELL_LINE}
+    module load python/3.5
+    python ../meta_analysis_scripts/plot_crosscorr_distrib.py $CROSSCORR_REAL/anno $CROSSCORR/anno $BASE_PATH/${CELL_LINE}_crosscorr_distrib ${CELL_LINE}
+    echo -e "\n------------------------------------Plotted crosscorr distributions.-----------------------------\n"
     
 	wait
 	echo Done!
