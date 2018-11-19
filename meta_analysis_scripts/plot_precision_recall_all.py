@@ -2,7 +2,6 @@ import numpy as np
 import scipy as sp
 import sys
 import math
-import common_ops as ops
 from scipy import stats
 from scipy import interp
 import matplotlib
@@ -11,7 +10,6 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
-import common_ops as ops
 import glob, os
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score

@@ -5,7 +5,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 plt.rcParams.update({'font.size': 14})
-import common_ops as ops
 
 """
 For each of the annotations, find its information gain for each sig.
@@ -188,20 +187,9 @@ def plot_bars(names, label_names, predictions, predictions_or, predictions_and, 
     p5_g = plt.bar(pos4, weaks_g, color = color_weak, bottom = [i+j+k+l for i,j,k,l in zip(unknowns_g, other_g, promoters_g, enhancers_g)], width = wid, label = "Weak")
     for p in pos4:
         ax.text(p, 1.0, "G", ha='center', va='bottom')
-        
-    #Plot permuted predictions.
-    # pos4 = [p + w * 3 for p in pos]
-    # p1_p = plt.bar(pos4, unknowns_p, color = color_unknown, width = wid)
-    # p2_p = plt.bar(pos4, other_p, color = color_other, bottom = unknowns_p, width = wid)
-    # p3_p = plt.bar(pos4, promoters_p, color = color_promoter, bottom = [i+j for i,j in zip(unknowns_p, other_p)],  width = wid)
-    # p4_p = plt.bar(pos4, enhancers_p, color = color_enhancer, bottom = [i+j+k for i,j,k in zip(unknowns_p, other_p, promoters_p)], width = wid)
-    # p5_p = plt.bar(pos4, weaks_p, color = color_weak, bottom = [i+j+k+l for i,j,k,l in zip(unknowns_p, other_p, promoters_p, enhancers_p)], width = wid)
-    # for p in pos4:
-        # ax.text(p, 1.0, "P", ha='center', va='bottom')
 
     plt.xlabel("Training and Testing Pair")
-    plt.ylabel("Percentage")
-    #plt.legend(loc="center right")  
+    plt.ylabel("Percentage") 
 
     # Add title, axis, and legend. Save plot.
     ax.set_xticks([p + w for p in pos], minor=False)

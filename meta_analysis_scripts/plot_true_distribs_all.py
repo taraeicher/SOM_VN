@@ -4,7 +4,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 14})
-import common_ops as ops
 
 """
 For each of the annotations, find its information gain for each sig.
