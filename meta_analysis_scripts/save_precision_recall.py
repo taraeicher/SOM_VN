@@ -1,8 +1,9 @@
 import sys
-import common_ops as ops
 import plot_precision_recall as ppr
 import numpy as np
 import glob, os
+sys.path.append(os.path.abspath("../common_scripts"))
+import wig_and_signal_utils as wsu
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 

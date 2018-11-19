@@ -2,22 +2,17 @@
 #PBS -l walltime=10:00:00
 #!/bin/bash   
 #Directories used in analysis
-CELL_LINE="H1"
-BASE="/fs/project/PAS0272/Tara/DNase_SOM/${CELL_LINE}"
-SCRIPTS="/fs/project/PAS0272/Tara/DNase_SOM/scripts"
-cd $SCRIPTS
+BASE=$BASE_FNAME/$CELL_LINE
 
 #Choose set of chromosomes randomly.
-# chr=()
-# for file in $(ls $BASE/som_output_final_${ITER}/); do
-    # tmp=$(cut -d "s" -f 1 <<< "$file")
-    # f=$(cut -d "m" -f 2 <<< "$tmp")
-    # chr+=($f)
-# done
-# CHROMS=$(echo ${chr[*]})
-CHROMS=$(echo "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22" | tr " " "\n" | shuf -n 11)
+chr=()
+for file in $(ls $BASE/som_output_final_${ITER}/); do
+    tmp=$(cut -d "s" -f 1 <<< "$file")
+    f=$(cut -d "m" -f 2 <<< "$tmp")
+    chr+=($f)
+done
+CHROMS=$(echo ${chr[*]})
 NOTCHROMS=$(comm -3 <( echo $CHROMS | tr " " "\n" | sort ) <( echo "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22" | tr " " "\n" | sort ))
-WINDOW_INDEX=3
 DATABASE_COMPREHENSIVE="$BASE/database_all_${ITER}"
     if [[ ! -e ${DATABASE_COMPREHENSIVE}_${CELL_LINE} ]]; then
         mkdir ${DATABASE_COMPREHENSIVE}_${CELL_LINE}
@@ -78,18 +73,18 @@ PRECISION_RECALL="$BASE/precision_recall_${ITER}"
 cat /dev/null > $DATABASE_COMPREHENSIVE
 for f in $CHROMS;
     do 
-        ./learn_shapes.sh $f $ITER $BASE $CELL_LINE $SOM_OUT $SOM_OUT_FILTERED $SOM_OUT_SHIFTED $SOM_OUT_FINAL $WIG $ANNOTATED $ANNOTATED_SORTED $ANNOTATED_FINAL $CHROMHMM_INTERSECTS
+        ../shape_learning_scripts/learn_shapes.sh $f $ITER $BASE $CELL_LINE $SOM_OUT $SOM_OUT_FILTERED $SOM_OUT_SHIFTED $SOM_OUT_FINAL $WIG $ANNOTATED $ANNOTATED_SORTED $ANNOTATED_FINAL $CHROMHMM_INTERSECTS
         cat ${DATABASE_COMPREHENSIVE}_${f} >> $DATABASE_COMPREHENSIVE
     done
     
 #Combine the data.
-python merge_significant.py $DATABASE_COMPREHENSIVE $DATABASE $DATABASE_LOG
+python ../common_script/merge_significant.py $DATABASE_COMPREHENSIVE $DATABASE $DATABASE_LOG
 
-Annotate all remaning chromosomes.
+#Annotate all remaining chromosomes.
 for f in $NOTCHROMS;
     do 
-        ./annotate.sh $f $ITER $BASE $CELL_LINE
+        ../annotation_scripts/annotate.sh $f $ITER $BASE $CELL_LINE
     done
     
 #Save the precision and recall for each chromosome.
-python save_precision_recall.py $ANNO_MERGED/ $ANNOTATED_TGT/ $WIG/${CELL_LINE}.chr $PRECISION_RECALL/ $WINDOW_INDEX $CELL_LINE
+python save_precision_recall.py $ANNO_MERGED/ $ANNOTATED_TGT/ $WIG/${CELL_LINE}.chr $PRECISION_RECALL/ $CELL_LINE
