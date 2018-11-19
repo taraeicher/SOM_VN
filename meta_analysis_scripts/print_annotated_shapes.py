@@ -14,36 +14,36 @@ For those cluster-annotation pairs that are significant, print them to a list.
 """
 BIN_SIZE = 50
 Y_MAX = 50
-WINDOW_SIZE = 80
+REGION_SIZE = 80
 def main():
     
-    #Get list of clusters.
-    clusters = []
-    cluster_file = open(sys.argv[1], 'r')
+    #Get list of shapes.
+    shapes = []
+    shape_file = open(sys.argv[1], 'r')
     cell = sys.argv[9]
-    next_clust = cluster_file.readline()
+    next_clust = shape_file.readline()
     while next_clust:
-        clusters.append(next_clust)
-        next_clust = cluster_file.readline()
+        shapes.append(next_clust)
+        next_clust = shape_file.readline()
     
     #Get distribution of cluster assignment and TSS sites per cluster.
-    #Then, plot the clusters.
+    #Then, plot the shapes.
     annotation_files_brain = sorted(glob.glob(sys.argv[3] + "*" + "clust.bed"))
     annotation_files_a549 = sorted(glob.glob(sys.argv[4] + "*" + "clust.bed"))
     annotation_files_h1 = sorted(glob.glob(sys.argv[5] + "*" + "clust.bed"))
     tss_files_brain = sorted(glob.glob(sys.argv[6] + "*" + ".bed"))
     tss_files_a549 = sorted(glob.glob(sys.argv[7] + "*" + ".bed"))
     tss_files_h1 = sorted(glob.glob(sys.argv[8] + "*" + ".bed"))
-    anno_counts_brain = get_annotation_distribution(clusters, annotation_files_brain)
-    anno_counts_a549 = get_annotation_distribution(clusters, annotation_files_a549)
-    anno_counts_h1 = get_annotation_distribution(clusters, annotation_files_h1)
-    tss_avg_brain = get_expected_tss(clusters, tss_files_brain, anno_counts_brain)
-    tss_avg_a549 = get_expected_tss(clusters, tss_files_a549, anno_counts_a549)
-    tss_avg_h1 = get_expected_tss(clusters, tss_files_h1, anno_counts_h1)
-    save_line_charts(clusters, sys.argv[2], anno_counts_brain, anno_counts_a549, anno_counts_h1, tss_avg_brain, tss_avg_a549, tss_avg_h1, cell)
+    anno_counts_brain = get_annotation_distribution(shapes, annotation_files_brain)
+    anno_counts_a549 = get_annotation_distribution(shapes, annotation_files_a549)
+    anno_counts_h1 = get_annotation_distribution(shapes, annotation_files_h1)
+    tss_avg_brain = get_expected_tss(shapes, tss_files_brain, anno_counts_brain)
+    tss_avg_a549 = get_expected_tss(shapes, tss_files_a549, anno_counts_a549)
+    tss_avg_h1 = get_expected_tss(shapes, tss_files_h1, anno_counts_h1)
+    save_line_charts(shapes, sys.argv[2], anno_counts_brain, anno_counts_a549, anno_counts_h1, tss_avg_brain, tss_avg_a549, tss_avg_h1, cell)
 
 #Create a dictionary with count of cluster annotations for each cluster.
-def get_annotation_distribution(clusters, annotated_bed_list):
+def get_annotation_distribution(shapes, annotated_bed_list):
     cluster_counts = dict()
 
     #For each line in the file, track its annotation.
@@ -60,8 +60,8 @@ def get_annotation_distribution(clusters, annotated_bed_list):
     #cluster_perc = {k: v / total for k, v in cluster_counts.iteritems()}
     return cluster_counts
     
-#Create a dictionary with percent of clusters containing TSS.
-def get_expected_tss(clusters, tss_bed_list, anno_counts):
+#Create a dictionary with percent of shapes containing TSS.
+def get_expected_tss(shapes, tss_bed_list, anno_counts):
     cluster_counts = dict()
     
     #For each line in the file, track its annotation.
@@ -82,7 +82,7 @@ def get_expected_tss(clusters, tss_bed_list, anno_counts):
     return cluster_perc
 
 #Save the line chart of each important cluster.  
-def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, tss_a549, tss_h1, cell):
+def save_line_charts(shapes, path, anno_brain, anno_a549, anno_h1, tss_brain, tss_a549, tss_h1, cell):
    
     #Set up data file.
     datfile = open(path + str(cell) + "_info.txt", "w")
@@ -94,11 +94,11 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
     colors["Weak"] = 'silver'
     
     #Set up initial plots.
-    r = range(0, WINDOW_SIZE)
+    r = range(0, REGION_SIZE)
     for i in range(1, 8):
         plt.figure(i, figsize=(12,6)) 
         axes = plt.gca()
-        axes.set_xlim([0,WINDOW_SIZE])
+        axes.set_xlim([0,REGION_SIZE])
         axes.set_ylim([0,Y_MAX])
         plt.xlabel("Position in Shape (" + str(BIN_SIZE) + " bp)")
         plt.ylabel("RPKM Intensity")
@@ -107,7 +107,7 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
     for i in range(8, 11):
         plt.figure(i, figsize=(12,6)) 
         axes = plt.gca()
-        axes.set_xlim([0,WINDOW_SIZE])
+        axes.set_xlim([0,REGION_SIZE])
         axes.set_ylim([0,Y_MAX])
         plt.xlabel("Position in Shape (" + str(BIN_SIZE) + " bp)")
         plt.ylabel("RPKM Intensity")
@@ -115,17 +115,17 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
     
     plt.figure(11, figsize=(12,6)) 
     axes = plt.gca()
-    axes.set_xlim([0,WINDOW_SIZE])
+    axes.set_xlim([0,REGION_SIZE])
     axes.set_ylim([0,Y_MAX])
     plt.xlabel("Position in Shape (" + str(BIN_SIZE) + " bp)")
     plt.ylabel("RPKM Intensity")
     plt.title("Weak - " + str(cell))
         
-    #Plot all clusters.
+    #Plot all shapes.
     i = 0
     j = 0
-    for c in range(0, len(clusters)):
-        pieces = clusters[c].split("\t")
+    for c in range(0, len(shapes)):
+        pieces = shapes[c].split("\t")
         name = pieces[0]
         annotation = pieces[1]
         signal = np.array([float(i) for i in pieces[2].split(",")])
@@ -142,7 +142,7 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
             text_pos_y = min(np.max(signal), Y_MAX - 2)
             plt.plot(r, signal, color = colors[annotation], linewidth = 4)
             
-            #Change the plot coordinates for specific clusters.
+            #Change the plot coordinates for specific shapes.
             if name == "A549_17_7":
                 text_pos_y = 43.0
             elif name == "A549_17_3":
@@ -249,7 +249,7 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
             text_pos_y = min(np.max(signal), Y_MAX - 2)
             plt.plot(r, signal, color = colors[annotation], linewidth = 4)
             
-            #Change the plot coordinates for specific clusters.
+            #Change the plot coordinates for specific shapes.
             if name == "A549_20_34":
                 text_pos_y = 12.0
             elif name == "Brain_20_18":
@@ -321,7 +321,7 @@ def save_line_charts(clusters, path, anno_brain, anno_a549, anno_h1, tss_brain, 
             text_pos_y = min(np.max(signal), Y_MAX - 2)
             plt.plot(r, signal, color = colors[annotation], linewidth = 4)
             
-            #Change the plot coordinates for specific clusters.
+            #Change the plot coordinates for specific shapes.
             if name == "A549_19_18":
                 text_pos_x = 60.0
                 text_pos_y = 5.0

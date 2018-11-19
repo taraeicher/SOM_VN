@@ -30,6 +30,6 @@ if [[ ! -e $SHAPEFILE_FIGS ]]; then
 fi
 
 # Plot the cluster validity heatmap.
-#python compute_validity.py $ANNOTATED_ALL_REG/ $SOM/ $ANNOTATED_ALL_REG/ $VAL
+python compute_validity.py $ANNOTATED_ALL_REG/ $SOM/ $ANNOTATED_ALL_REG/ $VAL
 
 python annotation_similarity_heatmap.py ${SHAPES_COMPREHENSIVE} ${LOG} ${SHAPEFILE_FIGS}_ratio ${SHAPEFILE_FIGS}_heatmap ${SHAPES} $enhancer $SRC

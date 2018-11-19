@@ -22,7 +22,6 @@
             i) BIN_SIZE=$OPTARG;;
             w) WIG_SPLIT_PATH=$(realpath $OPTARG);;
             r) REGION_SIZE=$OPTARG;;
-            t) TSS_DIR=$OPTARG;;
         esac
     done
 	
@@ -30,6 +29,7 @@
 	PYTHON_VERSION=2.7	
     WIG="$BASE_FILENAME/$CELL_LINE/$CELL_LINE.wig"
     TO_ANNOTATE="$BASE_FILENAME/$CELL_LINE/annotation_files"
+    TSS_DIR="$BASE_FILENAME/$CELL_LINE/tss_promoter"
 
 #Print message to user.
     echo "Annotating with the following settings:"
@@ -88,7 +88,7 @@ for f in $file_list;
     done
     
 #Data preprocessing
-	#gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
+	gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
 	echo -e "-----------------------------------------------------Compiling complete.------------------------------------------------\n"
 
     run_pipeline() {

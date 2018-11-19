@@ -45,7 +45,7 @@ for src in 'A549' 'Brain' 'H1';
     do  
         #Create directories.
         DATABASE="$BASE/$src/database" 
-        CLUSTER_PLOTS="$BASE/$src/cluster_plots"
+        SHAPE_PLOTS="$BASE/$src/shape_plots"
         TSS_COVERAGE_BRAIN="$BASE/Brain/tss_coverage_${src}"
         TSS_COVERAGE_A549="$BASE/A549/tss_coverage_${src}"
         TSS_COVERAGE_H1="$BASE/H1/tss_coverage_${src}"
@@ -54,8 +54,8 @@ for src in 'A549' 'Brain' 'H1';
         ANNOTATED_H1="$BASE/H1/annotated_consolidated_${src}"
         
         #Create all needed directories.
-        if [[ ! -e $CLUSTER_PLOTS ]]; then
-            mkdir $CLUSTER_PLOTS
+        if [[ ! -e $SHAPE_PLOTS ]]; then
+            mkdir $SHAPE_PLOTS
         fi
         if [[ ! -e $TSS_COVERAGE_BRAIN ]]; then
             mkdir $TSS_COVERAGE_BRAIN
@@ -73,5 +73,5 @@ for src in 'A549' 'Brain' 'H1';
                 bedtools coverage -counts -a $ANNOTATED_H1/anno${chr}clust.bed -b $TSS > $TSS_COVERAGE_H1/anno${chr}.bed
             done
             
-        python print_annotated_clusters.py $DATABASE $CLUSTER_PLOTS/ $ANNOTATED_BRAIN/anno $ANNOTATED_A549/anno $ANNOTATED_H1/anno $TSS_COVERAGE_BRAIN/anno $TSS_COVERAGE_A549/anno $TSS_COVERAGE_H1/anno $src
+        python print_annotated_shapes.py $DATABASE $SHAPE_PLOTS/ $ANNOTATED_BRAIN/anno $ANNOTATED_A549/anno $ANNOTATED_H1/anno $TSS_COVERAGE_BRAIN/anno $TSS_COVERAGE_A549/anno $TSS_COVERAGE_H1/anno $src
     done 
