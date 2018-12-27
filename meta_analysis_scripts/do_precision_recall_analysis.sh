@@ -27,7 +27,7 @@ for i in 0 1 2 3 4 5 6 7 8;
         #Directories used in analysis
         BASE="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}"
         WIG_CHROMS="$BASE/wig_chroms_annotation"
-        TSS_PROMOTER_SHAPES="$BASE/TSS_PROMOTER_SHAPESers"
+        TSS_PROMOTER_SHAPES="$BASE/tss_promoter_shapes"
         if [[ ! -e $TSS_PROMOTER_SHAPES ]]; then
             mkdir $TSS_PROMOTER_SHAPES
         fi
@@ -35,14 +35,14 @@ for i in 0 1 2 3 4 5 6 7 8;
         if [[ ! -e $TSS_PROMOTER ]]; then
             mkdir $TSS_PROMOTER
         fi
-        ANNOTATED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_consolidated"
-        ANNO_MERGED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged"
+        ANNOTATED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_consolidated_subchrom"
+        ANNO_MERGED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged_subchrom"
         ANNOTATED="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_consolidated_${src_cell}"
         ANNO_MERGED="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged_${src_cell}"
         if [[ ! -e $ANNO_MERGED ]]; then
             mkdir $ANNO_MERGED
         fi
-        ANNOTATED_WITH_TSS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_combined"
+        ANNOTATED_WITH_TSS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_combined_subchrom"
         ANNOTATED_WITH_TSS="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_combined_${src_cell}"
         if [[ ! -e $ANNOTATED_WITH_TSS ]]; then
             mkdir $ANNOTATED_WITH_TSS
@@ -53,7 +53,7 @@ for i in 0 1 2 3 4 5 6 7 8;
             mkdir $ANNOTATED_TSS_AND
         fi         
         ANNOTATED_PERM="$BASE/annotated_consolidated_perm_${src_cell}"
-        ANNO_MERGED_PERM_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged_perm"
+        ANNO_MERGED_PERM_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged_perm_subchrom"
         ANNO_MERGED_PERM="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotated_merged_perm_${src_cell}"
         if [[ ! -e $ANNO_MERGED_PERM ]]; then
             mkdir $ANNO_MERGED_PERM
@@ -62,23 +62,23 @@ for i in 0 1 2 3 4 5 6 7 8;
         if [[ ! -e $ANNO_MERGED_RPKM ]]; then
             mkdir $ANNO_MERGED_RPKM
         fi
-        PRECISION_RECALL_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/precision_recall"
+        PRECISION_RECALL_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/precision_recall_subchrom"
         PRECISION_RECALL="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/precision_recall_${src_cell}"
         if [[ ! -e $PRECISION_RECALL ]]; then
             mkdir $PRECISION_RECALL
         fi
-        UNKNOWNS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/unknown"
+        UNKNOWNS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/unknown_subchrom"
         UNKNOWNS="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/unknown_${src_cell}"
         if [[ ! -e $UNKNOWNS ]]; then
             mkdir $UNKNOWNS
         fi
         WIG="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/wig_chroms/${dest_cell}.chr"
-        MISCLASSIFIED_PLOTS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/misclassified"
+        MISCLASSIFIED_PLOTS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/misclassified_subchrom"
         MISCLASSIFIED_PLOTS="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/misclassified_${src_cell}"
         if [[ ! -e $MISCLASSIFIED_PLOTS ]]; then
             mkdir $MISCLASSIFIED_PLOTS
         fi
-        TSS_MERGED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/tss_merged"
+        TSS_MERGED_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/tss_merged_subchrom"
         TSS_MERGED="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/tss_merged_${src_cell}"
         if [[ ! -e $TSS_MERGED ]]; then
             mkdir $TSS_MERGED
@@ -95,13 +95,13 @@ for i in 0 1 2 3 4 5 6 7 8;
         if [[ ! -e $ANNO_MERGED_RPKM ]]; then
             mkdir $ANNO_MERGED_RPKM
         fi
-        ANNOTATION_DISTRIBS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotation_distributions"
+        ANNOTATION_DISTRIBS_SUB="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotation_distributions_subchrom"
         ANNOTATION_DISTRIBS="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}/annotation_distributions"
         if [[ ! -e $ANNOTATION_DISTRIBS ]]; then
             mkdir $ANNOTATION_DISTRIBS
         fi
         
-        # Split the ChromHMM annotation file by chromosome. This only needs to be done once for each cell type.
+        #Split the ChromHMM annotation file by chromosome. This only needs to be done once for each cell type.
         CHROMHMM="/fs/project/PAS0272/Tara/DNase_SOM/chromHmm/${dest_cell}_chromhmm_15_liftOver.bed"
         CHROMHMM_SPLIT="/fs/project/PAS0272/Tara/DNase_SOM/chromHmm/${dest_cell}_split"
         if [[ ! -e $CHROMHMM_SPLIT ]]; then
@@ -148,10 +148,10 @@ for i in 0 1 2 3 4 5 6 7 8;
                 bedtools intersect -wao -a $ANNOTATED_PERM/anno${chr}.bed -b $CHROMHMM > "$ANNO_MERGED_PERM/anno${chr}.bed"
             done
         
-        # Plot precision and recall.    
+        #Plot precision and recall.    
         python plot_precision_recall.py $ANNO_MERGED/ $TSS_MERGED/ $ANNO_MERGED_RPKM/ $ANNO_MERGED_PERM_SUB/ $ANNOTATED/ $TSS_PROMOTER_SHAPES/ $ANNOTATED_WITH_TSS/ $ANNOTATED_TSS_AND/ $ANNOTATED_RPKM/ $ANNOTATED_PERM/ $BASE/  $PRECISION_RECALL/ $UNKNOWNS/ $WIG ${dest_cell} ${src_cell} 0
         
-        if [ $i = 4 ]; then
+        if [ $i -eq 4 ]; then
             python plot_precision_recall.py $ANNO_MERGED_SUB/ $TSS_MERGED_SUB/ $ANNO_MERGED_RPKM/ $ANNO_MERGED_PERM/ $ANNOTATED_SUB/ $TSS_PROMOTER_SHAPES/ $ANNOTATED_WITH_TSS_SUB/ $ANNOTATED_TSS_AND_SUB/ $ANNOTATED_RPKM/ $ANNOTATED_PERM/ $BASE/sub  $PRECISION_RECALL_SUB/ $UNKNOWNS_SUB/ $WIG ${dest_cell} ${src_cell} 1
         fi
         

@@ -68,7 +68,7 @@ def main():
         wig = sys.argv[14] + str(chrom) + ".wig"
         
         #Get all precision and recall values.
-        [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, total, threshold, predictions, ground_truth, predictions_and, ground_truth_and] = get_all_precision_and_recall(our_bed, our_sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, cell)
+        [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, total, threshold, predictions, ground_truth, predictions_and, ground_truth_and, fpr, fpr_or, fpr_and, fpr_rpkm] = get_all_precision_and_recall(our_bed, our_sig, tss_bed, tss_sig, or_bed, or_sig, and_bed, and_sig, rpkm_bed, rpkm_sig, wig, chrom, cell)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
         predictions_all_and.append(predictions_and)
@@ -86,13 +86,11 @@ def main():
             
             precision_tss[0,c] = precision["tss"]
             recall_tss[0,c] = recall["tss"]
-            
-            precision_tss[1,c] = precision["distal"]
-            recall_tss[1,c] = recall["distal"]
+
         c += 1
         
         #Output reports for all types of annotations, including unknown.
-        print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr_path)
+        print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr_path, fpr, fpr_or, fpr_and, fpr_rpkm)
         
         #Print plots of unknown percentages for each chromosome.
         print_unknown_percentages(our_bed, our_sig, wig, unknown_path, total, chrom, cell, threshold)
@@ -156,80 +154,107 @@ def get_all_precision_and_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, and
     [pred, gt] = get_labels_and_ground_truth(bed, sig, wig, annotations, threshold)
     precision = dict()
     recall = dict()
+    fpr = dict()
     for i in range(length):
         precision[i] = precision_score(gt[:, i], pred[:, i])
         recall[i] = recall_score(gt[:, i], pred[:, i])
+        fp = len(np.where((pred[:, i] == 1) & (gt[:, i] == 0))[0])
+        tn = len(np.where((pred[:, i] == 0) & (gt[:, i] == 0))[0])
+        fpr[i] = fp / (fp + tn)
+        
     #Get precision and recall for TSS-based promoters.
     [pred_promoter, gt_promoter] = get_tss_labels_and_ground_truth(tss_bed, tss_sig, wig, ["Promoter", "Not_Promoter"], threshold) 
     precision["tss"] = precision_score(gt_promoter[:, 0], pred_promoter[:, 0])
     recall["tss"] = recall_score(gt_promoter[:, 0], pred_promoter[:, 0])
-    precision["distal"] = precision_score(gt_promoter[:, 1], pred_promoter[:, 1])
-    recall["distal"] = recall_score(gt_promoter[:, 1], pred_promoter[:, 1])
+    fp = len(np.where((pred_promoter[:, 0] == 1) & (gt_promoter[:, 0] == 0))[0])
+    tn = len(np.where((pred_promoter[:, 0] == 0) & (gt_promoter[:, 0] == 0))[0])
+    fpr["tss"] = fp / (fp + tn)
     
     #Get precision and recall for combined annotations (OR).
     [pred_or, gt_or] = get_labels_and_ground_truth(or_bed, or_sig, wig, annotations, threshold)
     precision_or = dict()
     recall_or = dict()
+    fpr_or = dict()
     for i in range(length):
         precision_or[i] = precision_score(gt_or[:, i], pred_or[:, i])
         recall_or[i] = recall_score(gt_or[:, i], pred_or[:, i])
+        fp = len(np.where((pred_or[:, i] == 1) & (gt_or[:, i] == 0))[0])
+        tn = len(np.where((pred_or[:, i] == 0) & (gt_or[:, i] == 0))[0])
+        fpr_or[i] = fp / (fp + tn)
         
     #Get precision and recall for combined annotations (AND).
     [pred_and, gt_and] = get_labels_and_ground_truth(and_bed, and_sig, wig, annotations, threshold)
     precision_and = dict()
     recall_and = dict()
+    fpr_and = dict()
     for i in range(length):
         precision_and[i] = precision_score(gt_and[:, i], pred_and[:, i])
         recall_and[i] = recall_score(gt_and[:, i], pred_and[:, i])
+        fp = len(np.where((pred_and[:, i] == 1) & (gt_and[:, i] == 0))[0])
+        tn = len(np.where((pred_and[:, i] == 0) & (gt_and[:, i] == 0))[0])
+        fpr_and[i] = fp / (fp + tn)
         
     #Get precision and recall for RPKM annotations.
     [pred_rpkm, gt_rpkm] = get_labels_and_ground_truth(rpkm_bed, rpkm_sig, wig, annotations, threshold)
     precision_rpkm = dict()
     recall_rpkm = dict()
+    fpr_rpkm = dict()
     for i in range(length):
         precision_rpkm[i] = precision_score(gt_rpkm[:, i], pred_rpkm[:, i])
         recall_rpkm[i] = recall_score(gt_rpkm[:, i], pred_rpkm[:, i])
+        fp = len(np.where((pred_rpkm[:, i] == 1) & (gt_rpkm[:, i] == 0))[0])
+        tn = len(np.where((pred_rpkm[:, i] == 0) & (gt_rpkm[:, i] == 0))[0])
+        fpr_rpkm[i] = fp / (fp + tn)
         
-    return [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, pred.shape[0], threshold, pred, gt, pred_and, gt_and]
+    return [precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, pred.shape[0], threshold, pred, gt, pred_and, gt_and, fpr, fpr_or, fpr_and, fpr_rpkm]
     
 """
 Print precision and recall for all chromosomes.
 """ 
-def print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr):
+def print_report(precision, recall, precision_or, recall_or, precision_and, recall_and, precision_rpkm, recall_rpkm, chrom, cell, pr, fpr, fpr_or, fpr_and, fpr_rpkm):
     #Print the cell line, chromosome, and window information
     report = open(pr + "/report_" + chrom, "w")
+    fpr_report = open(pr + "/fpr_report_" + chrom, "w")
     report.write(cell + "\n")
+    fpr_report.write(cell + "\n")
     report.write(chrom + "\n")
+    fpr_report.write(chrom + "\n")
     
     #All shape-based predictions
     for i in range(0, 3):
         report.write(str(precision[i]) + "\t" + str(recall[i]) + "\n")
+        fpr_report.write(str(fpr[i]) + "\n")
     report.write("\n")
+    fpr_report.write("\n")
     
     #TSS predictions for promoters
     report.write(str(precision["tss"]) + "\t" + str(recall["tss"]) + "\n")
+    fpr_report.write(str(fpr["tss"]) + "\n")
     report.write("\n")
-    
-    #TSS predictions for distal
-    report.write(str(precision["distal"]) + "\t" + str(recall["distal"]) + "\n")
-    report.write("\n")
+    fpr_report.write("\n")
     
     #TSS OR Shape predictions
     for i in range(0, 3):
         report.write(str(precision_or[i]) + "\t" + str(recall_or[i]) + "\n")
+        fpr_report.write(str(fpr_or[i]) + "\n")
     report.write("\n")
+    fpr_report.write("\n")
     
     #TSS AND Shape predictions
     for i in range(0, 3):
         report.write(str(precision_and[i]) + "\t" + str(recall_and[i]) + "\n")
+        fpr_report.write(str(fpr_and[i]) + "\n")
     report.write("\n")
+    fpr_report.write("\n")
         
     #RPKM predictions
     for i in range(0, 3):
         report.write(str(precision_rpkm[i]) + "\t" + str(recall_rpkm[i]) + "\n")
+        fpr_report.write(str(fpr_rpkm[i]) + "\n")
     
     #Close the report.
     report.close()
+    fpr_report.close()
 
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
 def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_precision, or_recall, and_precision, and_recall, rpkm_precision, rpkm_recall, out, cell, src, indices_to_highlight, chroms, separate_legend, make_big):
@@ -237,14 +262,16 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
     #Set colors and symbols for plotting.
     enhancer_color = "gray"
     promoter_color = "black"
-    weak_color = "silver"
+    weak_color = "white"
+    weak_outline_color = "silver"
+    edge_weak = "black"
     distal_color = "darkviolet"
     our_symbol = "*"
     tss_symbol = "D"
     or_symbol = "X"
     and_symbol = "P"
     perm_symbol = "s"
-    rpkm_symbol = "|"
+    rpkm_symbol = "."
     our_size = 10
     tss_size = 5
     plus_size = 7
@@ -267,6 +294,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         perm_size = perm_size
         rpkm_size = rpkm_size
         factor = 20
+        edge_weak = weak_outline_color
         
         #Plot our data.
         plt.scatter(our_precision[0,0], our_recall[0,0], c = promoter_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
@@ -274,7 +302,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         plt.scatter(our_precision[2,0], our_recall[2,0], c = weak_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
         plt.scatter(our_precision[0,1], our_recall[0,1], c = promoter_color, marker = our_symbol, s = our_size * factor)
         plt.scatter(our_precision[1,1], our_recall[1,1], c = enhancer_color, marker = our_symbol, s = our_size * factor)
-        plt.scatter(our_precision[2,1], our_recall[2,1], c = weak_color, marker = our_symbol, s = our_size * factor)
+        plt.scatter(our_precision[2,1], our_recall[2,1], c = weak_color, marker = our_symbol, edgecolor = weak_outline_color, s = our_size * factor)
         
         #Plot TSS data.
         plt.scatter(tss_precision[0,0], tss_recall[0,0], c = promoter_color, marker = tss_symbol, edgecolor = "black", s = tss_size * factor)
@@ -286,7 +314,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         plt.scatter(or_precision[2,0], or_recall[2,0], c = weak_color, marker = or_symbol, edgecolor = "black", s = plus_size * factor)
         plt.scatter(or_precision[0,1], or_recall[0,1], c = promoter_color, marker = or_symbol, s = plus_size * factor)
         plt.scatter(or_precision[1,1], or_recall[1,1], c = enhancer_color, marker = or_symbol, s = plus_size * factor)
-        plt.scatter(or_precision[2,1], or_recall[2,1], c = weak_color, marker = or_symbol, s = plus_size * factor)
+        plt.scatter(or_precision[2,1], or_recall[2,1], c = weak_color, marker = or_symbol, edgecolor = weak_outline_color, s = plus_size * factor)
         
         #Plot combined (AND) data.
         plt.scatter(and_precision[0,0], and_recall[0,0], c = promoter_color, marker = and_symbol, edgecolor = "black", s = plus_size * factor)
@@ -294,7 +322,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         plt.scatter(and_precision[2,0], and_recall[2,0], c = weak_color, marker = and_symbol, edgecolor = "black", s = plus_size * factor)
         plt.scatter(and_precision[0,1], and_recall[0,1], c = promoter_color, marker = and_symbol, s = plus_size * factor)
         plt.scatter(and_precision[1,1], and_recall[1,1], c = enhancer_color, marker = and_symbol, s = plus_size * factor)
-        plt.scatter(and_precision[2,1], and_recall[2,1], c = weak_color, marker = and_symbol, s = plus_size * factor)
+        plt.scatter(and_precision[2,1], and_recall[2,1], c = weak_color, marker = and_symbol, edgecolor = weak_outline_color, s = plus_size * factor)
         
         #Plot rpkm data.
         plt.scatter(rpkm_precision[0,0], rpkm_recall[0,0], c = promoter_color, marker = rpkm_symbol, edgecolor = "black", s = rpkm_size * factor)
@@ -302,7 +330,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         plt.scatter(rpkm_precision[2,0], rpkm_recall[2,0], c = weak_color, marker = rpkm_symbol, edgecolor = "black", s = rpkm_size * factor)
         plt.scatter(rpkm_precision[0,1], rpkm_recall[0,1], c = promoter_color, marker = rpkm_symbol, s = rpkm_size * factor)
         plt.scatter(rpkm_precision[1,1], rpkm_recall[1,1], c = enhancer_color, marker = rpkm_symbol, s = rpkm_size * factor)
-        plt.scatter(rpkm_precision[2,1], rpkm_recall[2,1], c = weak_color, marker = rpkm_symbol, s = rpkm_size * factor)
+        plt.scatter(rpkm_precision[2,1], rpkm_recall[2,1], c = weak_color, marker = rpkm_symbol, edgecolor = weak_outline_color, s = rpkm_size * factor)
         
     else:
         #Plot our data.
@@ -322,26 +350,26 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
         #Plot combined (OR) data.
         plt.scatter(or_precision[0,:], or_recall[0,:], c = promoter_color, marker = or_symbol, s = plus_size * factor)
         plt.scatter(or_precision[1,:], or_recall[1,:], c = enhancer_color, marker = or_symbol, s = plus_size * factor)
-        plt.scatter(or_precision[2,:], or_recall[2,:], c = weak_color, marker = or_symbol, s = plus_size * factor)
+        plt.scatter(or_precision[2,:], or_recall[2,:], c = weak_color, marker = or_symbol, edgecolor = "black", s = plus_size * factor)
         
         #Plot combined (AND) data.
         plt.scatter(and_precision[0,:], and_recall[0,:], c = promoter_color, marker = and_symbol, s = plus_size * factor)
         plt.scatter(and_precision[1,:], and_recall[1,:], c = enhancer_color, marker = and_symbol, s = plus_size * factor)
-        plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = and_symbol, s = plus_size * factor)
+        plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = and_symbol, edgecolor = "black", s = plus_size * factor)
         
         #Plot rpkm data.
         plt.scatter(rpkm_precision[0,:], rpkm_recall[0,:], c = promoter_color, marker = rpkm_symbol, s = rpkm_size * factor)
         plt.scatter(rpkm_precision[1,:], rpkm_recall[1,:], c = enhancer_color, marker = rpkm_symbol, s = rpkm_size * factor)
-        plt.scatter(rpkm_precision[2,:], rpkm_recall[2,:], c = weak_color, marker = rpkm_symbol, s = rpkm_size * factor)
+        plt.scatter(rpkm_precision[2,:], rpkm_recall[2,:], c = weak_color, marker = rpkm_symbol, edgecolor = "black", s = rpkm_size * factor)
     
     if separate_legend:
-        plt.savefig(out + "precision_or_recall_nolegend" + src + ".png")
+        plt.savefig(out + "precision_recall_nolegend" + src + ".png")
         plt.close()
     
     #Add the legend.
     legend_elements = [Patch(facecolor=enhancer_color, label='Enhancer'),
                         Patch(facecolor=promoter_color, label='Promoter'),
-                        Patch(facecolor=weak_color, label='Weak'),
+                        Patch(facecolor=weak_color, edgecolor = edge_weak, label='Weak'),
                         Line2D([0], [0], marker=our_symbol, markerfacecolor='black', label='Shape-Based', color = 'white',
                            markersize=our_size),
                         Line2D([0], [0], marker=tss_symbol, markerfacecolor='black', label='TSS-Based', color = 'white',
@@ -356,7 +384,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
     plt.legend(handles=legend_elements, loc="lower right")
     
     #Save the plot.
-    plt.savefig(out + "precision_or_recall.png")
+    plt.savefig(out + "legend.png")
     plt.close()
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
