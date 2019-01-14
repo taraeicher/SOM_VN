@@ -439,20 +439,20 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
             #Add to the existing percentages.
             #If the region has peaks, consider only regions above peak threshold.
             #If no peaks exist, consider entire region.
-            total_peak_size = count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
+            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
             if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
                 if total_peak_size > 0:
-                    sum_vec[0] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[0] += anno_length
             elif a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
                 if total_peak_size > 0:
-                    sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[1] += anno_length
             elif a == "9_Het" or a == "15_Quies":
                 if total_peak_size > 0:
-                    sum_vec[2] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[2] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[2] += anno_length
             #This case is when there is no annotation. Do not count it.
@@ -554,15 +554,15 @@ def get_tss_labels_and_ground_truth(bed_file, sig_file, wig, annotations, thresh
         #Add to the existing percentages.
         #If the region has peaks, consider only regions above peak threshold.
         #If no peaks exist, consider entire region.
-        total_peak_size = count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
+        total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
         if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
             if total_peak_size > 0:
-                sum_vec[0] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
             else:
                 sum_vec[0] += anno_length
         elif anno_length != 0:
             if total_peak_size > 0:
-                sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
             else:
                 sum_vec[1] += anno_length
         #This case is when there is no annotation. Do not count it.
@@ -648,25 +648,25 @@ def print_unknown_percentages(bed_file, sig_file, wig, out_path, total_regions, 
             #Add to the existing percentages.
             #If the region has peaks, consider only regions above peak threshold.
             #If no peaks exist, consider entire region.
-            total_peak_size = count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
+            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
             if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
                 if total_peak_size > 0:
-                    sum_vec[0] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[0] += anno_length
             elif a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
                 if total_peak_size > 0:
-                    sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[1] += anno_length
             elif a == "9_Het" or a == "15_Quies":
                 if total_peak_size > 0:
-                    sum_vec[2] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[2] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[2] += anno_length
             elif anno_length != 0:
                 if total_peak_size > 0:
-                    sum_vec[3] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[3] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[3] += anno_length
             #This case is when there is no annotation. Do not count it.
@@ -770,16 +770,6 @@ def save_misprediction_heatmap(predictions, ground_truth, path, cell, src, enhan
     fig = heatmap.get_figure()
     fig.savefig(path + "misprediction_heatmap" + src + ".png")
     plt.close()
- 
-def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
-    count = 0
-    start_idx = start
-    for sig in signal:
-        is_between_anno = (start_anno <= start_idx) and (start_idx <= end_anno)
-        if sig > threshold and (is_between_anno or annotation == ""):
-            count += BIN_SIZE
-        start_idx += BIN_SIZE
-    return count
     
 if __name__ == "__main__":
     main()

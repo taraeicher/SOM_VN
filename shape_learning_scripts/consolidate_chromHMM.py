@@ -180,7 +180,11 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             a = next_line[chrom_hmm_anno]
             idx = shapes.index(current_clust)
 
-            clust_sig = [float(i) for i in shape_str[idx].split(",")]
+            try:
+                clust_sig = [float(i) for i in shape_str[idx].split(",")]
+            except:
+                print(len(shape_str))
+                print(idx)
             #Get the signal data.
             if (prev_start >= int(next_signal[1]) or current_start > int(next_signal[1])) and current_start > prev_start:
                 next_signal = sigs.readline().split(",")
@@ -189,8 +193,8 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             if int(next_signal[1]) == current_start:
                 #Add to the existing percentages.
                 region = [float(i) for i in next_signal[3:len(next_signal)]]
-                count_clust = count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0)
-                count_a = count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]))
+                count_clust = wsu.count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0)
+                count_a = wsu.count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]))
   
                 if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
                     sum_matrix[0, idx] += int(next_line[chrom_hmm_len]) if (count_clust == 0) else count_a
@@ -214,6 +218,7 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
     #Get threshold to use in printing.
     wig = open(wig_name, 'r')
     out = open(out_name, 'a')
+    perc_out = open(out_name + "_percents", 'a')
     percentage_out = open(out_name + "_" + cell + "/" + chrom + "percentages", 'w')
     intensity = wsu.get_intensity_percentile(0.995, wig, min_val)
     print("\n")
@@ -227,18 +232,24 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
         split_clust = shapes[j].split(",")
         scaled_clust = [float(i) for i in split_clust] * np.tile(scale, len(split_clust))
         scaled_clust_str = [str(i) for i in scaled_clust]
+        perc_str = [str(i) for i in percentages[:,j]]
         joined = ','.join(scaled_clust_str)
+        perc_joined = ','.join(perc_str)
         was_significant = False
         for i in range(0, percentages.shape[0]):
             other_percents = percentages[np.arange(percentages.shape[0])!=i,j]
-            if percentages[i,j] > 0.5 and np.max(other_percents) <= percentages[i,j] / 2:
+            if labels[i] != "Polycomb" and percentages[i,j] > 0.5 and np.max(other_percents) <= percentages[i,j] / 2:
                 out.write(labels[i] + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + joined)
+                perc_out.write(labels[i] + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + perc_joined)
                 if joined.find('\n') != len(joined) - 1:
+                    perc_out.write("\n")
                     out.write("\n")
                 was_significant = True
         if not was_significant:
             out.write("Unknown" + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + joined)
+            perc_out.write("Unknown" + "\t" + cell + "_" + chrom + "_" + shape_names[j] + "\t" + perc_joined)
             if joined.find('\n') != len(joined) - 1:
+                perc_out.write("\n")
                 out.write("\n")
         #Print all percentages to a file to use later.
         percentage_out.write(','.join(perc_string[:,j]) + "\n")
@@ -247,16 +258,6 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
     wig.close()
     out.close()
     percentage_out.close()
-
-def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
-    count = 0
-    start_idx = start
-    for sig in signal:
-        is_between_anno = start_anno <= start_idx and start_idx <= end_anno
-        if sig > threshold and (is_between_anno or annotation == ""):
-            count += BIN_SIZE
-        start_idx += BIN_SIZE
-    return count
     
 if __name__ == "__main__":
     main()

@@ -86,12 +86,12 @@ def plot_densities(promoters, enhancers, weaks, rand_promoters, rand_enhancers, 
     if cell == "A549":
         plotprom1 = sns.distplot(promoters, color = "black", label = "Promoters - Real WIG")
         plotenh1 = sns.distplot(enhancers, color = "gray", label = "Enhancers - Real WIG")
-        plotweak1 = sns.distplot(weaks, color = "silver", label = "Weak - Real WIG")
+        plotweak1 = sns.distplot(weaks, color = "gray", hist = False, kde_kws={'linestyle':'--'}, label = "Weak - Real WIG")
         plotweak2 = sns.distplot(rand_weaks, color = "black", hist = False, label = "Weak - Permuted WIG", kde_kws={'linestyle':'--'})
     else:
         plotprom1 = sns.distplot(promoters, color = "black")
         plotenh1 = sns.distplot(enhancers, color = "gray")
-        plotweak1 = sns.distplot(weaks, color = "silver")
+        plotweak1 = sns.distplot(weaks, color = "gray", hist = False, kde_kws={'linestyle':'--'})
         plotweak2 = sns.distplot(rand_weaks, color = "black", hist = False, kde_kws={'linestyle':'--'})
     plt.title(cell)
     plt.xlabel("Cross-Correlation")

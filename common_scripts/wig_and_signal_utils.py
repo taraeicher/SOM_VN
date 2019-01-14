@@ -159,3 +159,14 @@ def get_crosscorr(clust1, clust2, delay, threshold, max_cutoff, use_max_cutoff, 
         
     #Return the cross-correlation result.
     return numerator / denominator
+    
+#Count signals above a value.
+def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
+    count = 0
+    start_idx = start
+    for sig in signal:
+        is_between_anno = (start_anno <= start_idx) and (start_idx <= end_anno)
+        if sig > threshold and (is_between_anno or annotation == ""):
+            count += BIN_SIZE
+        start_idx += BIN_SIZE
+    return count

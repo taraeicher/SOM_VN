@@ -149,11 +149,6 @@ def read_pr_from_file(report):
     #Permuted predictions
     precision_perm = np.zeros(3)
     recall_perm = np.zeros(3)
-    #junk = report.readline()
-    # for i in range(0, 3):
-        # line = report.readline().split("\t")
-        # precision_perm[i] = line[0]
-        # recall_perm[i] = line[1]
         
     #RPKM predictions
     precision_rpkm = np.zeros(3)
@@ -174,13 +169,13 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, dista
     enhancer_color = "gray"
     promoter_color = "black"
     distal_color = "darkviolet"
-    weak_color = "silver"
+    weak_color = "white"
     our_symbol = "*"
     tss_symbol = "D"
     or_symbol = "X"
     and_symbol = "P"
     perm_symbol = "s"
-    rpkm_symbol = "|"
+    rpkm_symbol = "."
     our_size = 10
     tss_size = 5
     plus_size = 7
@@ -205,7 +200,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, dista
     and_enhancer_precision = [x for i,x in enumerate(and_precision[1,:]) if (labels[i] != "H-H" and labels[i] != "H-B" and labels[i] != "H-A")]
     and_enhancer_recall= [x for i,x in enumerate(and_recall[1,:]) if (labels[i] != "H-H" and labels[i] != "H-B" and labels[i] != "H-A")]
     plt.scatter(and_enhancer_precision, and_enhancer_recall, c = enhancer_color, marker = and_symbol)
-    plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = and_symbol)
+    plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = and_symbol, edgecolor = "black")
     
     #Add labels for our experiments.
     for i in range(0, len(labels)):
@@ -221,50 +216,16 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, dista
         
     #Plot TSS data.
     plt.scatter(tss_precision, tss_recall, c = promoter_color, marker = tss_symbol)
-    #plt.scatter(distal_precision, distal_recall, c = distal_color, marker = tss_symbol)
     
     #Add labels for our experiments.
     plt.text(tss_precision[0] + 0.01, tss_recall[0] + 0.01, "A549", size = 8)
     plt.text(tss_precision[1] + 0.01, tss_recall[1] + 0.01, "Brain", size = 8)
     plt.text(tss_precision[2] + 0.02, tss_recall[2], "H1", size = 8)
     
-    #Plot combined data.
-    # plt.scatter(or_precision[0,:], or_recall[0,:], c = promoter_color, marker = or_symbol)
-    # plt.scatter(or_precision[1,:], or_recall[1,:], c = enhancer_color, marker = or_symbol)
-    # plt.scatter(or_precision[2,:], or_recall[2,:], c = weak_color, marker = or_symbol)
-    
-    # #Add labels for our experiments.
-    # for i in range(0, len(labels)):
-        # plt.text(or_precision[0,i] + 0.01, or_recall[0,i] + 0.01, labels[i], size = 8)
-        # plt.text(or_precision[1,i] + 0.01, or_recall[1,i] + 0.01, labels[i], size = 8)
-        # plt.text(or_precision[2,i] + 0.01, or_recall[2,i] + 0.01, labels[i], size = 8)
-    
-    #Plot combined data.
-    # plt.scatter(and_precision[0,:], and_recall[0,:], c = promoter_color, marker = or_symbol)
-    # plt.scatter(and_precision[1,:], and_recall[1,:], c = enhancer_color, marker = or_symbol)
-    # plt.scatter(and_precision[2,:], and_recall[2,:], c = weak_color, marker = or_symbol)
-    
-    # #Add labels for our experiments.
-    # for i in range(0, len(labels)):
-        # plt.text(and_precision[0,i] + 0.01, and_recall[0,i] + 0.01, labels[i], size = 8)
-        # plt.text(and_precision[1,i] + 0.01, and_recall[1,i] + 0.01, labels[i], size = 8)
-        # plt.text(and_precision[2,i] + 0.01, and_recall[2,i] + 0.01, labels[i], size = 8)
-        
-    #Plot permuted data.
-    # plt.scatter(perm_precision[0,:], perm_recall[0,:], c = "white", marker = perm_symbol, edgecolor = promoter_color)
-    # plt.scatter(perm_precision[1,:], perm_recall[1,:], c = "white", marker = perm_symbol, edgecolor = enhancer_color)
-    # plt.scatter(perm_precision[2,:], perm_recall[2,:], c = "white", marker = perm_symbol, edgecolor = weak_color)
-    
-    # #Add labels for our experiments.
-    # for i in range(0, len(labels)):
-        # plt.text(perm_precision[0,i] + 0.01, perm_recall[0,i] + 0.01, labels[i], size = 8)
-        # plt.text(perm_precision[1,i] + 0.01, perm_recall[1,i] + 0.01, labels[i], size = 8)
-        # plt.text(perm_precision[2,i] + 0.01, perm_recall[2,i] + 0.01, labels[i], size = 8)
-    
     #Plot RPKM data.
     plt.scatter(rpkm_precision[0,:], rpkm_recall[0,:], c = promoter_color, marker = rpkm_symbol)
     plt.scatter(rpkm_precision[1,:], rpkm_recall[1,:], c = enhancer_color, marker = rpkm_symbol)
-    plt.scatter(rpkm_precision[2,:], rpkm_recall[2,:], c = weak_color, marker = rpkm_symbol)
+    plt.scatter(rpkm_precision[2,:], rpkm_recall[2,:], c = weak_color, marker = rpkm_symbol, edgecolor = "black")
     
     #Add labels for our experiments.
     plt.text(rpkm_precision[0,0] + 0.01, rpkm_recall[0,0], "A549", size = 8)
@@ -284,17 +245,13 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, dista
     #Add the legend.
     legend_elements = [Patch(facecolor=enhancer_color, label='Enhancer'),
                         Patch(facecolor=promoter_color, label='Promoter'),
-                        Patch(facecolor=weak_color, label='Weak'),
-                        #Patch(facecolor=distal_color, label='TSS Distal'),
+                        Patch(facecolor=weak_color, label='Weak', edgecolor = 'black'),
                         Line2D([0], [0], marker=our_symbol, markerfacecolor='black', color = 'white', label='Shape-Based',
                            markersize=our_size),
                         Line2D([0], [0], marker=tss_symbol, markerfacecolor='black', color = 'white', label='TSS-Based',
                            markersize=tss_size),
-                        #Line2D([0], [0], marker=or_symbol, markerfacecolor='black', color = 'white', label='Shape + TSS',
-                           #markersize=plus_size),
                         Line2D([0], [0], marker=and_symbol, markerfacecolor='black', color = 'white', label='Shape + TSS',
                            markersize=plus_size),
-                        #Line2D([0], [0], marker=perm_symbol, markerfacecolor="None", markeredgecolor = 'black', color = 'white', label='Permuted', markersize=perm_size),
                         Line2D([0], [0], marker=rpkm_symbol, markerfacecolor='black', markeredgecolor = 'black', color = 'white', label='RPKM-Based', markersize=rpkm_size),
                        ]
     #fig, ax = plt.subplots()
@@ -303,16 +260,6 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, dista
     #Save the plot.
     plt.savefig(out + "legend.png")
     plt.close()            
- 
-def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
-    count = 0
-    start_idx = start
-    for sig in signal:
-        is_between_anno = (start_anno <= start_idx) and (start_idx <= end_anno)
-        if sig > threshold and (is_between_anno or annotation == ""):
-            count += BIN_SIZE
-        start_idx += BIN_SIZE
-    return count
     
 if __name__ == "__main__":
     main()
