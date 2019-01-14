@@ -186,15 +186,15 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
             #Add to the existing percentages.
             #If the region has peaks, consider only regions above peak threshold.
             #If no peaks exist, consider entire region.
-            total_peak_size = count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
+            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
             if a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
                 if total_peak_size > 0:
-                    sum_vec[0] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[0] += anno_length
             elif a != "0":
                 if total_peak_size > 0:
-                    sum_vec[1] += count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
                 else:
                     sum_vec[1] += anno_length
             #This case is when there is no annotation. Do not count it.
@@ -249,16 +249,6 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
         pass
     #Return value.
     return [final_stack_pred, final_stack_gt]
- 
-def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
-    count = 0
-    start_idx = start
-    for sig in signal:
-        is_between_anno = (start_anno <= start_idx) and (start_idx <= end_anno)
-        if sig > threshold and (is_between_anno or annotation == ""):
-            count += BIN_SIZE
-        start_idx += BIN_SIZE
-    return count
     
 if __name__ == "__main__":
     main()

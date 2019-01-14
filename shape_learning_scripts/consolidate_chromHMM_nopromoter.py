@@ -183,8 +183,8 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             if int(next_signal[1]) == current_start:
                 #Add to the existing percentages.
                 region = [float(i) for i in next_signal[3:len(next_signal)]]
-                count_clust = count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0)
-                count_a = count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]))
+                count_clust = wsu.count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0)
+                count_a = wsu.count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]))
   
                 if a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
                     sum_matrix[0, idx] += int(next_line[chrom_hmm_len]) if (count_clust == 0) else count_a
@@ -238,16 +238,6 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
     wig.close()
     out.close()
     percentage_out.close()
-
-def count_above(threshold, annotation, signal, start, end, start_anno, end_anno):
-    count = 0
-    start_idx = start
-    for sig in signal:
-        is_between_anno = start_anno <= start_idx and start_idx <= end_anno
-        if sig > threshold and (is_between_anno or annotation == ""):
-            count += BIN_SIZE
-        start_idx += BIN_SIZE
-    return count
     
 if __name__ == "__main__":
     main()
