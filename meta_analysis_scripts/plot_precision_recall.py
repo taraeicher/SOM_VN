@@ -17,6 +17,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_recall_curve
 import seaborn as sns
+matplotlib.rcParams.update({'font.size': 16})
 
 """
 For each of the annotations, find its information gain for each sig.
@@ -389,7 +390,7 @@ def save_scatterplot(our_precision, our_recall, tss_precision, tss_recall, or_pr
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
 def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold):
-
+    
     #Set up percentage matrix.
     vec_pred = list()
     vec_gt = list()
@@ -439,7 +440,7 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
             #Add to the existing percentages.
             #If the region has peaks, consider only regions above peak threshold.
             #If no peaks exist, consider entire region.
-            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
+            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end, BIN_SIZE)
             if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
                 if total_peak_size > 0:
                     sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end, BIN_SIZE)
