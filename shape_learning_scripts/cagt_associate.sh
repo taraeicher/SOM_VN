@@ -23,15 +23,12 @@
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
     WIG_SPLIT_PATH=""
     BIN_SIZE=50
-    SHAPES_COMPREHENSIVE=""
-    while getopts n:d:c:i:r:s: option; do
+    while getopts n:d:c:p: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
             d) BASE_FILENAME=$(realpath $OPTARG);;
             c) CHROMHMM=$(realpath $OPTARG);;
-            i) BIN_SIZE=$OPTARG;;
-            r) REGION_SIZE=$OPTARG;;
-            s) SHAPES_COMPREHENSIVE=$(realpath $OPTARG);;
+            p) CAGT_PATH=$(realpath $OPTARG);;
         esac
     done
     BASE_PATH=$BASE_FILENAME/$CELL_LINE
@@ -42,19 +39,19 @@
     echo "Name is $CELL_LINE"
     echo "Base directory is $BASE_FILENAME"
     echo "ChromHMM file is $CHROMHMM"
-    echo "Bin size in WIG file is $BIN_SIZE"
-    echo "Region size for annotation is $REGION_SIZE"
-    echo "Shapes will be saved in $SHAPES_COMPREHENSIVE"
+    echo "Path is $CAGT_PATH"
     echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
 	
 #Create all needed directories.
-    CAGT_OUT="$BASE_PATH/cagt/matlab/src"
-    if [[ ! -e $CAGT_OUT ]]; then
-        mkdir $CAGT_OUT
-    fi
-    TRAINING_ANNOTATION_FILES="$BASE_PATH/training_anno_allchrom"
+    SHAPES_COMPREHENSIVE="$BASE_PATH/shapes_cagt"
+    CAGT_OUT="$CAGT_PATH/cagt/matlab/src"
+    TRAINING_ANNOTATION_FILES="$BASE_PATH/training_anno"
     if [[ ! -e $TRAINING_ANNOTATION_FILES ]]; then
         mkdir $TRAINING_ANNOTATION_FILES
+    fi
+    TO_ANNOTATE="$BASE_PATH/annotation_files"
+    if [[ ! -e $TO_ANNOTATE ]]; then
+        mkdir $TO_ANNOTATE
     fi
     WIG="$BASE_PATH/wig_chroms"
     if [[ ! -e  $WIG ]]; then
@@ -63,6 +60,18 @@
     SHAPE_ANNOTATED="$BASE_PATH/anno_beds_cagt"
     if [[ ! -e $SHAPE_ANNOTATED ]]; then
         mkdir $SHAPE_ANNOTATED
+    fi
+    ANNOTATED="$BASE_PATH/annotated_cagt"
+    if [[ ! -e $ANNOTATED ]]; then
+        mkdir $ANNOTATED
+    fi
+    ANNOTATED_SORTED="$BASE_PATH/annotated_sorted_cagt"
+    if [[ ! -e $ANNOTATED_SORTED ]]; then
+        mkdir $ANNOTATED_SORTED
+    fi
+    ANNOTATED_CONSOLIDATED="$BASE_PATH/annotated_consolidated_cagt"
+    if [[ ! -e $ANNOTATED_CONSOLIDATED ]]; then
+        mkdir $ANNOTATED_CONSOLIDATED
     fi
     SHAPE_ANNOTATED_SORTED="$BASE_PATH/anno_beds_sorted_cagt"
     if [[ ! -e $SHAPE_ANNOTATED_SORTED ]]; then
@@ -79,6 +88,10 @@
     if [[ ! -e ${SHAPES_COMPREHENSIVE}_${CELL_LINE} ]]; then
         mkdir ${SHAPES_COMPREHENSIVE}_${CELL_LINE}
     fi
+    ANNO_MERGED="$BASE_PATH/annotated_merged_cagt"
+    if [[ ! -e $ANNO_MERGED ]]; then
+        mkdir $ANNO_MERGED
+    fi
     SHAPES="$BASE_PATH/shapes_cagt_merged"
     SHAPES_LOG="$BASE_PATH/shapes_log_cagt"
 	
@@ -86,31 +99,69 @@
 	run_pipeline() {
 		local c=$1
 		
-		# #Annotate regions with shape.
-		# python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $CAGT_OUT/ctcf_centroids_${c}.csv $SHAPE_ANNOTATED/anno$c 0
-        # echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
+		#Annotate regions with shape.
+		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $CAGT_OUT/ctcf_centroids_${c}.csv $SHAPE_ANNOTATED/anno$c 0
         
-        # bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
-        # python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
-        # cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
-        # awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
-        # cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
-        # echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
+        bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
+        python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
+        cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
+        awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
+        cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
+        echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
         
-        # #Save shapes to file.
-        # bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM/${CELL_LINE}_chromhmm_15_liftOver.bed > $CHROMHMM_INTERSECTS/anno${c}.bed			
-        # bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
+        #Save shapes to file.
+        bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM > $CHROMHMM_INTERSECTS/anno${c}.bed			
+        bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
         python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $CAGT_OUT/ctcf_centroids_${c}.csv $SHAPES_COMPREHENSIVE ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c}window3 0
+        
 	}
     
     #Run the pipeline from split WIG files to final set of annotations.
-    for f in $CHROMS_NUM;
-        do 
-            run_pipeline $f & 
-        done
+    # for f in $CHROMS_NUM;
+        # do 
+            # run_pipeline $f & 
+        # done
         
     #Merge shapes entries across chromocagtes.
     #python ../common_scripts/merge_significant.py $SHAPES_COMPREHENSIVE $SHAPES $SHAPES_LOG
+    
+    #Annotating the regions.
+    run_anno_pipeline(){
+        local c=$1
+        # python ../annotation_scripts/make_annotated_bed.py $TO_ANNOTATE/chrom${c}window3 $SHAPES $ANNOTATED/anno${c} $WIG/${CELL_LINE}.chr${c}.wig 0.0
+        # echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
+        
+        # # Sorting the annotated regions.
+        # bedtools sort -i  $ANNOTATED/anno${c} > $ANNOTATED_SORTED/anno${c}
+        # bedtools sort -i  $ANNOTATED/anno${c}clust > $ANNOTATED_SORTED/anno${c}.clust
+
+        # # Consolidating the sorted annotated regions.
+		# python ../common_scripts/consolidate_bed.py $ANNOTATED_SORTED/anno${c} $ANNOTATED_CONSOLIDATED/anno${c}
+		# echo -e "------------------------------------------------Consolidation complete for chrom $c.----------------------------------------------\n"
+		
+        # # Creating BED, cluster, and score files.
+        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/anno${c}.bed
+        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c}.clust > $ANNOTATED_CONSOLIDATED/anno${c}clust.bed
+        # awk '{ print $6}' $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/clusters_anno${c}
+        # cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
+		# echo -e "------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------\n"
+        
+        bedtools intersect -wao -a $ANNOTATED_CONSOLIDATED/anno${c}.bed -b $CHROMHMM > $ANNO_MERGED/anno${c}.bed
+    }
+    
+    #Run the pipeline from split WIG files to final set of annotations.
+    #i=0
+    #for f in $CHROMS_NUM;
+        #do 
+            #run_anno_pipeline $f & 
+            #pids[${i}]=$!
+        #done
+    #for pid in ${pids[*]}; do
+        #wait $pid
+    #done
+        
+    #Plot precision and recall.    
+    python ../meta_analysis_scripts/plot_precision_recall_nobaselines.py $ANNO_MERGED/ $ANNOTATED_CONSOLIDATED/ $BASE_PATH/cagt  $PRECISION_RECALL/ ${WIG}/${CELL_LINE}.chr $CELL_LINE $CELL_LINE
         
     #Exit
 	wait
