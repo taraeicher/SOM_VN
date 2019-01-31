@@ -32,6 +32,7 @@ def main():
     cell = sys.argv[6]
     src = sys.argv[7]
     avg_across = int(sys.argv[8])
+    threshold = int(sys.argv[9])
     all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
     precision_all = np.zeros((2, len(all_chroms)))
     recall_all = np.zeros((2, len(all_chroms)))
@@ -47,7 +48,7 @@ def main():
         wig = sys.argv[5] + str(chrom) + ".wig"
         
         #Get all precision and recall values.
-        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, cell)
+        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, cell, threshold)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
         
@@ -57,18 +58,18 @@ def main():
             
         c += 1
         
-        #Output reports for all types of annotations, including unknown.
-        #print_report(precision, recall, chrom, cell, pr_path, fpr)
-        
+    #Print out the count of ground truth enhancers.
+    gt = np.vstack(ground_truth_all)
+    print(np.count_nonzero(gt[:,0]))
+    
     #Save a scatterplot with all precision and recall values.
-    save_scatterplot(precision_all, recall_all, plot_out, cell, src, [], all_chroms, True, False)
+    save_scatterplot(precision_all, recall_all, plot_out, threshold)
     
 #Plot the ROC curve based on ground truth and prediction for each cutoff. Plot separate lines for each
 #annotation type. Consolidate all chromosomes.
-def get_all_precision_and_recall(bed, sig, wig, chrom, cell):
+def get_all_precision_and_recall(bed, sig, wig, chrom, cell, threshold):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
-    threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), 0)
     annotations = ["Enhancer", "Other"]
     length = len(annotations)
     ground_truth_list = []
@@ -81,58 +82,10 @@ def get_all_precision_and_recall(bed, sig, wig, chrom, cell):
     fpr = dict()
     for i in range(length):
         precision[i] = precision_score(gt[:, i], pred[:, i])
-        recall[i] = recall_score(gt[:, i], pred[:, i])
-        # fp = len(np.where((pred[:, i] == 1) & (gt[:, i] == 0))[0])
-        # tn = len(np.where((pred[:, i] == 0) & (gt[:, i] == 0))[0])
-        # fpr[i] = fp / (fp + tn)
-        
+        recall[i] = recall_score(gt[:, i], pred[:, i])        
         
     return [precision, recall, pred.shape[0], threshold, pred, gt, fpr]
     
-"""
-Print precision and recall for all chromosomes.
-""" 
-def print_report(precision, recall, chrom, cell, pr, fpr):
-    #Print the cell line, chromosome, and window information
-    report = open(pr + "/report_" + chrom, "w")
-    fpr_report = open(pr + "/fpr_report_" + chrom, "w")
-    report.write(cell + "\n")
-    fpr_report.write(cell + "\n")
-    report.write(chrom + "\n")
-    fpr_report.write(chrom + "\n")
-    
-    #All shape-based predictions
-    for i in range(0, 1):
-        report.write(str(precision[i]) + "\t" + str(recall[i]) + "\n")
-        fpr_report.write(str(fpr[i]) + "\n")
-    report.write("\n")
-    fpr_report.write("\n")
-    
-    #Close the report.
-    report.close()
-    fpr_report.close()
-
-#Get the percentage of the chromosome belonging to each ChromHMM annotation.
-def save_scatterplot(our_precision, our_recall, out, cell, src, indices_to_highlight, chroms, separate_legend, make_big):
-
-    #Set colors and symbols for plotting.
-    enhancer_color = "gray"
-    our_symbol = "*"
-    our_size = 10
-    factor = 10
-    
-    #Set the axes, title, and maximum.
-    plt.ylim(-0.05,1.05)
-    plt.xlim(-0.05,1.05)
-    plt.title(src + " to " + cell)
-    plt.xlabel("Precision")
-    plt.ylabel("Recall")
-        
-    #Plot our data.
-    plt.scatter(our_precision[0,:], our_recall[0,:], c = enhancer_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
-    plt.savefig(out + "precision_recall" + src + ".png")
-    plt.close()
-
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
 def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold):
@@ -172,7 +125,8 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
             anno_start = int(next_line[6])
             anno_end = int(next_line[7])
             our_anno = next_line[3]
-            anno_length = int(next_line[9])
+            #anno_length = int(next_line[9])
+            anno_length = int(next_line[14])
             
             #Get next signals if needed.
             #If we are still on the same region, don't get it.
@@ -185,15 +139,13 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
            
             #Add to the existing percentages.
             #If the region has peaks, consider only regions above peak threshold.
-            #If no peaks exist, consider entire region.
-            threshold = 1
-            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end)
-            if a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
+            total_peak_size = wsu.count_above(threshold, "", sig, current_start, current_end, current_start, current_end, BIN_SIZE)
+            if a == "AE" or a == "OE":
                 if total_peak_size > 0:
-                    sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
-            elif a != "0":
+                    sum_vec[0] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end, BIN_SIZE)
+            elif a != "0" and a != "GE" and a != "AP" and a != "OP" and a != "TS":
                 if total_peak_size > 0:
-                    sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end)
+                    sum_vec[1] += wsu.count_above(threshold, a, sig, current_start, current_end, anno_start, anno_end, BIN_SIZE)
             #This case is when there is no annotation. Do not count it.
             else:
                 not_annotated_count += 1
@@ -241,11 +193,31 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
         #Stack all values.
         final_stack_pred = np.stack(vec_pred)
         final_stack_gt = np.stack(vec_gt)
+
     except Exception:
         traceback.print_exc()
         pass
     #Return value.
     return [final_stack_pred, final_stack_gt]
+    
+#Get the percentage of the chromosome belonging to each ChromHMM annotation.
+def save_scatterplot(our_precision, our_recall, out, threshold):
+
+    #Set colors and symbols for plotting.
+    enhancer_color = "black"
+    our_symbol = "o"
+    our_size = 10
+    
+    #Set the axes, title, and maximum.
+    plt.ylim(-0.05,1.05)
+    plt.xlim(-0.05,1.05)
+    plt.xlabel("Precision")
+    plt.ylabel("Recall")
+        
+    #Plot our data.
+    plt.scatter(our_precision[0,:], our_recall[0,:], c = enhancer_color, marker = our_symbol, s = our_size)
+    plt.savefig(out + "precision_recall_" + str(threshold) + ".png")
+    plt.close()
     
 if __name__ == "__main__":
     main()

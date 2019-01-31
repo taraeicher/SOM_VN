@@ -37,19 +37,19 @@
 	if [[ ! -e $TO_ANNOTATE ]]; then
 		mkdir $TO_ANNOTATE
 	fi
-    WIGS="$BASE_FILENAME/$CELL_LINE/wig_chroms_annotation"
+    WIGS="$BASE_FILENAME/$CELL_LINE/wig_chroms"
 	if [[ ! -e $WIGS ]]; then
-		mkdir WIGS
+		mkdir $WIGS
 	fi
-    ANNOTATED="$BASE_FILENAME/$CELL_LINE/annotated_nopromoter"
+    ANNOTATED="$BASE_FILENAME/$CELL_LINE/annotated_nopromoter_05"
     if [[ ! -e $ANNOTATED ]]; then
 		mkdir $ANNOTATED
 	fi
-    ANNOTATED_SORTED="$BASE_FILENAME/$CELL_LINE/annotated_sorted_nopromoter"
+    ANNOTATED_SORTED="$BASE_FILENAME/$CELL_LINE/annotated_sorted_nopromoter_05"
     if [[ ! -e $ANNOTATED_SORTED ]]; then
 		mkdir $ANNOTATED_SORTED
 	fi
-    ANNOTATED_CONSOLIDATED="$BASE_FILENAME/$CELL_LINE/annotated_consolidated_nopromoter"
+    ANNOTATED_CONSOLIDATED="$BASE_FILENAME/$CELL_LINE/annotated_consolidated_nopromoter_05"
 	if [[ ! -e $ANNOTATED_CONSOLIDATED ]]; then
 		mkdir $ANNOTATED_CONSOLIDATED
 	fi
