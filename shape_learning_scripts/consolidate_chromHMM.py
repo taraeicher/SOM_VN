@@ -193,8 +193,8 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             if int(next_signal[1]) == current_start:
                 #Add to the existing percentages.
                 region = [float(i) for i in next_signal[3:len(next_signal)]]
-                count_clust = wsu.count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0)
-                count_a = wsu.count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]))
+                count_clust = wsu.count_above(thresh, "", clust_sig, 0, len(clust_sig) * BIN_SIZE, 0, 0, BIN_SIZE)
+                count_a = wsu.count_above(thresh, a, region, current_start, current_end, int(next_line[chrom_hmm_start]), int(next_line[chrom_hmm_end]), BIN_SIZE)
   
                 if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
                     sum_matrix[0, idx] += int(next_line[chrom_hmm_len]) if (count_clust == 0) else count_a
