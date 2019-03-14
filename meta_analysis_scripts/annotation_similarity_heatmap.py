@@ -28,7 +28,7 @@ def main():
     count_merged = get_total_counts(merged_path, annotations, 1)
     match_counts = get_all_counts(match_log_path, annotations, count_each)
         
-    #Print message to user.
+    #Plot the heatmap.
     plot_heatmap(match_counts, annotations, heatmap_out_path, cell)
     
 #Get the total count of clusters with each annotation.

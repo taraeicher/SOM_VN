@@ -48,9 +48,7 @@ def main():
     wig_file = open(wig, "r")
     threshold = wsu.get_intensity_percentile(0.75, wig_file, min_val)
     wig_file.close()
-    total_percent_shapes = get_shape_percentages(shape_col, shape_start, shape_end, unique_clusts, bed)
-    total_percent_anno = get_anno_percentages(bio_col, shape_start, shape_end, bio_len, bed)
-    [total_percent_all, total_sums_all] = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, unique_clusts, bed, threshold, anno_file, shapes)
+    total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, unique_clusts, bed, threshold, anno_file, shapes)
 
     #Print all shapes with significant annotations, along with their annotations.
     save_significant(total_percent_all, unique_clusts, shapes, wig, output, chromosome, cell, min_val, cutoff)
@@ -102,97 +100,6 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
     wig.close()
     out.close()
     percentage_out.close()
-    
-#Get the percentage of the chromosome belonging to each shape.
-def get_shape_percentages(anno, start, end, shapes, bed):
-
-    #Set up dividends and divisor.
-    sum_vec = np.zeros(len(shapes))
-    cumulative = 0
-    
-    #Loop through bed file to compute percentage for each region.
-    current_start = "-1"
-    current_end = "-1"
-    current_clust = "none"
-    prev_start = "-1"
-    prev_end = "-1"
-    prev_clust = "none"
-    
-    for i in range(0, bed.shape[0]):
-        
-        #Get the previous data, if applicable.
-        if i > 0:
-            prev_start = bed[i - 1, start]
-            prev_end = bed[i - 1, end]
-            prev_clust = bed[i - 1, anno]
-            
-        #Get the next element data.
-        next_line = bed[i,:]
-        current_start = next_line[start]
-        current_end = next_line[end]
-        current_clust = next_line[anno]
-        idx = shapes.index(current_clust)
-            
-        #Add to the total sum if the current start and end are not equal to the previous ones.
-        if prev_start != current_start:
-            sum_vec[idx] += int(current_end) - int(current_start)
-            cumulative += int(current_end) - int(current_start)
-    
-    #Get the set of percentages.
-    cumulative_vec = cumulative * np.ones(len(shapes))
-    return sum_vec / cumulative_vec
-
-#Get the percentage of the chromosome belonging to each ChromHMM annotation.
-def get_anno_percentages(chrom_hmm_anno, start, end, chrom_hmm_len, bed):
-
-    #Set up percentage matrix.
-    sum_vec = np.zeros(5)
-    cumulative = 0
-    
-    #Loop through bed file to compute percentage for each region.
-    current_start = "-1"
-    current_end = "-1"
-    current_clust = "none"
-    prev_start = "-1"
-    prev_end = "-1"
-    
-    for i in range(0, bed.shape[0]):
-        
-        #Get the previous data, if applicable.
-        if i > 0:
-            prev_start = bed[i - 1, start]
-            prev_end = bed[i - 1, end]
-            
-        #Get the next element data.
-        next_line = bed[i,:]
-        current_start = next_line[start]
-        current_end = next_line[end]
-        a = next_line[chrom_hmm_anno]
-        
-        #Add to the existing percentages.
-        if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
-            sum_vec[0] += int(next_line[chrom_hmm_len])
-        elif a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
-            sum_vec[1] += int(next_line[chrom_hmm_len])
-        elif a == "13_ReprPC" or a == "ReprPCWk":
-            sum_vec[2] += int(next_line[chrom_hmm_len])
-        elif a == "9_Het" or a == "15_Quies":
-            sum_vec[3] += int(next_line[chrom_hmm_len])
-        elif next_line[chrom_hmm_len] != "0":
-            sum_vec[4] += int(next_line[chrom_hmm_len])
-        else:
-            sum_vec[4] += int(current_end) - int(current_start)
-            
-        #Add to the total sum if the current start and end are not equal to the previous ones.
-        if(prev_start != current_start and prev_start != "-1"):
-            cumulative += int(prev_end) - int(prev_start)
-    
-    #Add the last cumulative sum.
-    cumulative += int(prev_end) - int(prev_start)
-    
-    #Get the set of percentages.
-    cumulative_vec = cumulative * np.ones(5)
-    return sum_vec / cumulative_vec
     
 #Compute percentage for each shape-annotation pair.
 def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, chrom_hmm_end, chrom_hmm_len, shapes, bed, thresh, signals_path, shape_str):
@@ -260,7 +167,7 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
     
     #Get the set of percentages.
     cumulative_matrix = np.tile(cumulative_vec, (4, 1))
-    return [sum_matrix / cumulative_matrix, np.sum(sum_matrix, 0)]
+    return sum_matrix / cumulative_matrix
     
 if __name__ == "__main__":
     main()

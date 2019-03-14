@@ -17,8 +17,7 @@ from sklearn.metrics import precision_recall_curve
 matplotlib.rcParams.update({'font.size': 16})
 
 """
-For each of the annotations, find its information gain for each sig.
-For those sig-annotation pairs that are significant, print them to a list.
+Plot the averaged precision and recall for all experiments across chromosomes.
 """
 BIN_SIZE = 50
 def main():
