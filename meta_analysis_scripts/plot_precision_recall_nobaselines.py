@@ -12,6 +12,7 @@ sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
+matplotlib.rcParams.update({'font.size': 24})
 
 """
 For each of the annotations, find its information gain for each sig.
@@ -22,9 +23,7 @@ def main():
 
     #Read in the chromHMM and annotated files.
     plot_out = sys.argv[3]
-    pr_path = sys.argv[4]
-    cell = sys.argv[7]
-    src = sys.argv[6]
+    title = sys.argv[4]
     all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
     precision_all = np.zeros((3, len(all_chroms)))
     recall_all = np.zeros((3, len(all_chroms)))
@@ -40,7 +39,7 @@ def main():
         wig = sys.argv[5] + str(chrom) + ".wig"
         
         #Get all precision and recall values.
-        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, cell)
+        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
         
@@ -51,11 +50,11 @@ def main():
         c += 1
         
         #Save a scatterplot.
-        save_scatterplot(precision_all, recall_all, plot_out, cell, src, all_chroms)
+        save_scatterplot(precision_all, recall_all, plot_out, title, all_chroms)
     
 #Plot the ROC curve based on ground truth and prediction for each cutoff. Plot separate lines for each
 #annotation type. Consolidate all chromosomes.
-def get_all_precision_and_recall(bed, sig, wig, chrom, cell):
+def get_all_precision_and_recall(bed, sig, wig, chrom):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
     threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), 0)
@@ -75,12 +74,11 @@ def get_all_precision_and_recall(bed, sig, wig, chrom, cell):
         fp = len(np.where((pred[:, i] == 1) & (gt[:, i] == 0))[0])
         tn = len(np.where((pred[:, i] == 0) & (gt[:, i] == 0))[0])
         fpr[i] = fp / (fp + tn)
-        
     return [precision, recall, pred.shape[0], threshold, pred, gt, fpr]
     
 
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
-def save_scatterplot(our_precision, our_recall, out, cell, src, indices_to_highlight):
+def save_scatterplot(our_precision, our_recall, out, title, indices_to_highlight):
 
     #Set colors and symbols for plotting.
     enhancer_color = "gray"
@@ -90,12 +88,14 @@ def save_scatterplot(our_precision, our_recall, out, cell, src, indices_to_highl
     edge_weak = "black"
     our_symbol = "*"
     our_size = 10
-    factor = 10
+    factor = 40
+    plt.gcf().subplots_adjust(bottom=0.20)
+    plt.gcf().subplots_adjust(left=0.20)
     
     #Set the axes, title, and maximum.
     plt.ylim(-0.05,1.05)
     plt.xlim(-0.05,1.05)
-    plt.title(src + " to " + cell)
+    plt.title(title)
     plt.xlabel("Precision")
     plt.ylabel("Recall")
     
@@ -105,7 +105,7 @@ def save_scatterplot(our_precision, our_recall, out, cell, src, indices_to_highl
     plt.scatter(our_precision[2,:], our_recall[2,:], c = weak_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
 
     #Save
-    plt.savefig(out + "precision_recall_nolegend" + src + ".png")
+    plt.savefig(out + "precision_recall_nolegend" + title + ".png")
     plt.close()
     
     #Add the legend.
@@ -121,7 +121,7 @@ def save_scatterplot(our_precision, our_recall, out, cell, src, indices_to_highl
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
 def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold):
-
+    
     #Set up percentage matrix.
     vec_pred = list()
     vec_gt = list()
@@ -131,7 +131,7 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
     #Get scores and labels for each bed file.
     bed = np.genfromtxt(bed_file , delimiter='\t', dtype = str)
     sigf = open(sig_file, "r")
-
+    
     #Loop through bed file to compute percentage for each region.
     current_start = -1
     current_end = -1
@@ -148,7 +148,7 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
         not_annotated_count = 0
         count_in_region = 0
         for i in range(0, bed.shape[0]):            
-                
+            
             #Get the next element data.
             next_line = bed[i,:]
             current_start = int(next_line[1])

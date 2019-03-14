@@ -8,7 +8,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
-from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import glob, os
 sys.path.append(os.path.abspath("../common_scripts"))
@@ -18,6 +17,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import precision_recall_curve
 import seaborn as sns
 import traceback
+matplotlib.rcParams.update({'font.size': 24})
 
 """
 For each of the annotations, find its information gain for each sig.
@@ -28,11 +28,7 @@ def main():
 
     #Read in the chromHMM and annotated files.
     plot_out = sys.argv[3]
-    pr_path = sys.argv[4]
-    cell = sys.argv[6]
-    src = sys.argv[7]
-    avg_across = int(sys.argv[8])
-    threshold = int(sys.argv[9])
+    threshold = int(sys.argv[5])
     all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
     precision_all = np.zeros((2, len(all_chroms)))
     recall_all = np.zeros((2, len(all_chroms)))
@@ -45,10 +41,10 @@ def main():
         #Get files for each category.
         our_bed = sys.argv[1] + "anno" + str(chrom) + ".bed"
         our_sig = sys.argv[2] + "clusters_anno" + str(chrom)
-        wig = sys.argv[5] + str(chrom) + ".wig"
+        wig = sys.argv[4] + str(chrom) + ".wig"
         
         #Get all precision and recall values.
-        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, cell, threshold)
+        [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, threshold)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
         
@@ -60,14 +56,14 @@ def main():
         
     #Print out the count of ground truth enhancers.
     gt = np.vstack(ground_truth_all)
-    print(np.count_nonzero(gt[:,0]))
+    true_enhancers = np.count_nonzero(gt[:,0])
     
     #Save a scatterplot with all precision and recall values.
-    save_scatterplot(precision_all, recall_all, plot_out, threshold)
+    save_scatterplot(precision_all, recall_all, plot_out, threshold, true_enhancers)
     
 #Plot the ROC curve based on ground truth and prediction for each cutoff. Plot separate lines for each
 #annotation type. Consolidate all chromosomes.
-def get_all_precision_and_recall(bed, sig, wig, chrom, cell, threshold):
+def get_all_precision_and_recall(bed, sig, wig, chrom, threshold):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
     annotations = ["Enhancer", "Other"]
@@ -201,12 +197,15 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
     return [final_stack_pred, final_stack_gt]
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
-def save_scatterplot(our_precision, our_recall, out, threshold):
+def save_scatterplot(our_precision, our_recall, out, threshold, enhancers):
 
     #Set colors and symbols for plotting.
-    enhancer_color = "black"
+    enhancer_color = "gray"
     our_symbol = "o"
-    our_size = 10
+    peas_symbol = "s"
+    our_size = 200
+    plt.gcf().subplots_adjust(bottom=0.20)
+    plt.gcf().subplots_adjust(left=0.20)
     
     #Set the axes, title, and maximum.
     plt.ylim(-0.05,1.05)
@@ -216,7 +215,30 @@ def save_scatterplot(our_precision, our_recall, out, threshold):
         
     #Plot our data.
     plt.scatter(our_precision[0,:], our_recall[0,:], c = enhancer_color, marker = our_symbol, s = our_size)
+    
+    #Overlay the PEAS results.
+    plt.scatter(0.7, 0.7, c = "white", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
+    plt.scatter(0.8, 0.8, c = "black", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
+    
+    #Annotate number of enhancers.
+    plt.text(0, 0.40, "True Enhancers: " + str(enhancers))
+    
+    #Add title.
+    plt.title(str(threshold) + " RPKM")
+    
+    #Save.
     plt.savefig(out + "precision_recall_" + str(threshold) + ".png")
+    
+    #Save legend.
+    legend_elements = [Line2D([0], [0], marker=our_symbol, markerfacecolor='gray', label='SOM-VN (Single Chromosome)', color = 'white',
+                           markersize=our_size / 10),
+                        Line2D([0], [0], marker=peas_symbol, markerfacecolor='white', markeredgecolor = "black", label='PEAS (Peak Features Only)', color = 'white',
+                           markersize=our_size / 10),
+                        Line2D([0], [0], marker=peas_symbol, markerfacecolor='black', label='PEAS (All Features)', color = 'white',
+                           markersize=our_size / 10)
+                       ]
+    plt.legend(handles=legend_elements, loc="lower left",fontsize=16)
+    plt.savefig(out + "legend.png")
     plt.close()
     
 if __name__ == "__main__":

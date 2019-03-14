@@ -14,13 +14,16 @@ This program takes the precision and recall values from all chromosomes and all 
 def main():
 
     #Get inputs.
-    cell = sys.argv[1]
-    iters = int(sys.argv[2])
-    filename = sys.argv[3]
+    cell = ["A549", "Brain", "H1"]
+    iters = int(sys.argv[1])
+    filename = sys.argv[2]
     
     #Read all precision and recall and save to a hexbin plot.
-    [precision_weak, recall_weak, precision_promoter, recall_promoter, precision_enhancer, recall_enhancer] = read_all_precision_and_recall(cell, iters)
-    make_hexbin_plots(precision_weak, recall_weak, precision_promoter, recall_promoter, precision_enhancer, recall_enhancer, filename, cell)
+    num_plots = 3
+    for i in range(num_plots):
+        [precision_weak, recall_weak, precision_promoter, recall_promoter, precision_enhancer, recall_enhancer] = read_all_precision_and_recall(cell[i], iters)
+        plt.subplot(i)
+        make_hexbin_plots(precision_weak, recall_weak, precision_promoter, recall_promoter, precision_enhancer, recall_enhancer, filename, cell[i])
     
 """
 Read precision and recall values from each regulatory category from each chromosome from each run.
@@ -85,17 +88,7 @@ def make_hexbin_plots(pw, rw, pp, rp, pe, re, fname, cell):
     plt.title(cell)
     
     #Save the plots.
-    plt.savefig(fname + ".png")
-    #plt.close(fig)
-    
-    #Add the legend.
-    #legend_elements = [Patch(facecolor="blue", label='Enhancer'),
-                        #Patch(facecolor="green", label='Promoter'),
-                        #Patch(facecolor="red", label='Weak')]
-    #plt.legend(handles=legend_elements, loc="lower right")
-    #fig = plt.figure()
-    #plt.savefig(fname + "legend" + ".png")
-   # plt.close(fig)
+    plt.savefig(fname + "_" + cell + ".png")
     
 if __name__ == "__main__":
     main()

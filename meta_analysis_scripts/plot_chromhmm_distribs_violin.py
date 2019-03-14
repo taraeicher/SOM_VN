@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 18})
 import seaborn as sns
 import math
 
@@ -75,20 +75,20 @@ def plot_densities(a549_promoter, a549_enhancer, a549_weak, h1_promoter, h1_enha
     categories = np.concatenate((np.tile("A549 (P)", len(a549_promoter)), np.tile("A549 (E)", len(a549_enhancer)), np.tile("A549 (W)", len(a549_weak)), np.tile("Brain (P)", len(brain_promoter)), np.tile("Brain (E)", len(brain_enhancer)), np.tile("Brain (W)", len(brain_weak)), np.tile("H1 (P)", len(h1_promoter)), np.tile("H1 (E)", len(h1_enhancer)), np.tile("H1 (W)", len(h1_weak))))
     types = np.concatenate((np.tile("Promoter", len(a549_promoter)), np.tile("Enhancer", len(a549_enhancer)), np.tile("Weak", len(a549_weak)), np.tile("Promoter", len(brain_promoter)), np.tile("Enhancer", len(brain_enhancer)), np.tile("Weak", len(brain_weak)), np.tile("Promoter", len(h1_promoter)), np.tile("Enhancer", len(h1_enhancer)), np.tile("Weak", len(h1_weak))))
     df = pd.DataFrame({"Cell Type": categories, "Log of Width in bp (Base 10)": sizes_all, "Regulatory Category": types})
-    colors = ["black", "gray", "silver", "black", "gray", "silver", "black", "gray", "silver"]
+    colors = ["black", "gray", "white", "black", "gray", "white", "black", "gray", "white"]
     
     #Make and save violin plot containing all data.
     #df_50 = df[df["Width in bp"] <= 250000]  
-    sns.violinplot(x="Cell Type", y="Log of Width in bp (Base 10)", data = df, palette = colors, linewidth = 0.1)
+    sns.violinplot(x="Cell Type", y="Log of Width in bp (Base 10)", data = df, palette = colors, inner = None)
     plt.xticks((1,4,7), ('A549', 'Brain', 'H1'))
     #plt.xticks(rotation = 45)
     plt.savefig(output + ".png")
     plt.close()
     
     #Add the legend.
-    legend_elements = [Patch(facecolor="gray", label='Enhancer'),
-                        Patch(facecolor="black", label='Promoter'),
-                        Patch(facecolor="silver", label='Weak'),
+    legend_elements = [Patch(facecolor="gray", edgecolor="black", label='Enhancer'),
+                        Patch(facecolor="black", edgecolor="black", label='Promoter'),
+                        Patch(facecolor="white", edgecolor="black", label='Weak'),
                        ]
     #fig, ax = plt.subplots()
     plt.legend(handles=legend_elements, loc="lower right")
