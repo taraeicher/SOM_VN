@@ -117,11 +117,13 @@ for f in $file_list;
 		echo -e "------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------\n"
     }
 #Run the pipeline for each chromosome separately.
+    pids=""
     for f in $CHROMS;
         do 
             run_pipeline $f & 
+            pids="$pids $!"
         done
 
-	wait
+	wait $pids
 	echo Done!
 	exit 0

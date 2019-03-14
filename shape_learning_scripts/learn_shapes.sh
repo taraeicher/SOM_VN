@@ -133,7 +133,7 @@
 	fi
 	echo -e "----------------------------------------------------WIG file split into chromosomes.------------------------------------\n"
 	
-# Data preprocessing
+#Data preprocessing
     gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
 	echo -e "-----------------------------------------------------Compiled processing code.-----------------------------------------\n"
 	
@@ -168,10 +168,10 @@
 		
 		#Remove duplicate shapes using kmeans.
 		python kmeans_shapes.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
-		echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
+		# echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
 		
 		#Annotate regions with shape.
-		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c} $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
+		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
         echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
         
         bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
@@ -184,16 +184,19 @@
         #Save shapes to file.
         bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM/${CELL_LINE}_chromhmm_15_liftOver.bed > $CHROMHMM_INTERSECTS/anno${c}.bed			
         bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
-        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPES_COMPREHENSIVE ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c} 0
+        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid ${SHAPES_COMPREHENSIVE} ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c}window3 0
 	}
     
     #Run the pipeline from split WIG files to final set of annotations.
+    pids=""
     for f in $CHROMS_NUM;
         do 
             run_pipeline $f & 
+            pids="$pids $!"
         done
         
     #Merge shapes entries across chromosomes.
+    wait $pids
     python ../common_scripts/merge_significant.py $SHAPES_COMPREHENSIVE $SHAPES $SHAPES_LOG
         
     #Exit

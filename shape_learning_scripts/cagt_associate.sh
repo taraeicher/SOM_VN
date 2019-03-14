@@ -117,48 +117,49 @@
 	}
     
     #Run the pipeline from split WIG files to final set of annotations.
-    # for f in $CHROMS_NUM;
-        # do 
-            # run_pipeline $f & 
-        # done
+    pids=""
+    for f in $CHROMS_NUM;
+        do 
+            run_pipeline $f & 
+            pids="$pids $!"
+        done
         
     #Merge shapes entries across chromocagtes.
-    #python ../common_scripts/merge_significant.py $SHAPES_COMPREHENSIVE $SHAPES $SHAPES_LOG
+    wait $pids
+    python ../common_scripts/merge_significant.py $SHAPES_COMPREHENSIVE $SHAPES $SHAPES_LOG
     
     #Annotating the regions.
     run_anno_pipeline(){
         local c=$1
-        # python ../annotation_scripts/make_annotated_bed.py $TO_ANNOTATE/chrom${c}window3 $SHAPES $ANNOTATED/anno${c} $WIG/${CELL_LINE}.chr${c}.wig 0.0
-        # echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
+        python ../annotation_scripts/make_annotated_bed.py $TO_ANNOTATE/chrom${c}window3 $SHAPES $ANNOTATED/anno${c} $WIG/${CELL_LINE}.chr${c}.wig 0.0
+        echo -e "------------------------------------------------Annotation complete for chrom $c.------------------------------------------------\n"
         
-        # # Sorting the annotated regions.
-        # bedtools sort -i  $ANNOTATED/anno${c} > $ANNOTATED_SORTED/anno${c}
-        # bedtools sort -i  $ANNOTATED/anno${c}clust > $ANNOTATED_SORTED/anno${c}.clust
+        # Sorting the annotated regions.
+        bedtools sort -i  $ANNOTATED/anno${c} > $ANNOTATED_SORTED/anno${c}
+        bedtools sort -i  $ANNOTATED/anno${c}clust > $ANNOTATED_SORTED/anno${c}.clust
 
-        # # Consolidating the sorted annotated regions.
-		# python ../common_scripts/consolidate_bed.py $ANNOTATED_SORTED/anno${c} $ANNOTATED_CONSOLIDATED/anno${c}
-		# echo -e "------------------------------------------------Consolidation complete for chrom $c.----------------------------------------------\n"
+        # Consolidating the sorted annotated regions.
+		python ../common_scripts/consolidate_bed.py $ANNOTATED_SORTED/anno${c} $ANNOTATED_CONSOLIDATED/anno${c}
+		echo -e "------------------------------------------------Consolidation complete for chrom $c.----------------------------------------------\n"
 		
-        # # Creating BED, cluster, and score files.
-        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/anno${c}.bed
-        # cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c}.clust > $ANNOTATED_CONSOLIDATED/anno${c}clust.bed
-        # awk '{ print $6}' $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/clusters_anno${c}
-        # cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
-		# echo -e "------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------\n"
+        # Creating BED, cluster, and score files.
+        cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/anno${c}.bed
+        cut -d$'\t' -f 1,2,3,4,5 $ANNOTATED_CONSOLIDATED/anno${c}.clust > $ANNOTATED_CONSOLIDATED/anno${c}clust.bed
+        awk '{ print $6}' $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/clusters_anno${c}
+        cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
+		echo -e "------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------\n"
         
         bedtools intersect -wao -a $ANNOTATED_CONSOLIDATED/anno${c}.bed -b $CHROMHMM > $ANNO_MERGED/anno${c}.bed
     }
     
     #Run the pipeline from split WIG files to final set of annotations.
-    #i=0
-    #for f in $CHROMS_NUM;
-        #do 
-            #run_anno_pipeline $f & 
-            #pids[${i}]=$!
-        #done
-    #for pid in ${pids[*]}; do
-        #wait $pid
-    #done
+    pids=""
+    for f in $CHROMS_NUM;
+        do 
+            run_anno_pipeline $f & 
+            pids="$pids $!"
+        done
+    wait $pids
         
     #Plot precision and recall.    
     python ../meta_analysis_scripts/plot_precision_recall_nobaselines.py $ANNO_MERGED/ $ANNOTATED_CONSOLIDATED/ $BASE_PATH/cagt  $PRECISION_RECALL/ ${WIG}/${CELL_LINE}.chr $CELL_LINE $CELL_LINE

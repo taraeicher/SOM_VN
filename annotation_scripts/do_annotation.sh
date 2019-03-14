@@ -11,7 +11,7 @@
     BAM=""
     WIG_SPLIT_PATH=""
     BIN_SIZE=50
-    REGION_SIZE=8000
+    REGION_SIZE=4000
     while getopts n:d:s:b:i:w:r: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
@@ -107,11 +107,13 @@
 		echo -e "------------------------------------Consolidating per window size complete for chrom $c.-----------------------------------------\n"
     }
 #Run the pipeline for each chromosome separately.
+    pids=""
     for f in $CHROMS;
         do 
             run_pipeline $f & 
+            pids="$pids $!"
         done
 
-	wait
+	wait $pids
 	echo Done!
 	exit 0

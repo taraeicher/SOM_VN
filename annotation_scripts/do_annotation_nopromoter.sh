@@ -76,11 +76,13 @@
         cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
     }
 #Run the pipeline for each chromosome separately.
+    pids=""
     for f in $CHROMS;
         do 
             run_pipeline $f & 
+            pids="$pids $!"
         done
 
-	wait
+	wait $pids
 	echo Done!
 	exit 0

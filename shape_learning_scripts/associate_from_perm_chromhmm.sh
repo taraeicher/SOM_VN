@@ -95,11 +95,13 @@ annotate() {
         cut -d$'\t' -f 7,8,9,10 $ANNOTATED_CONSOLIDATED/anno${c} > $ANNOTATED_CONSOLIDATED/scores_anno${c}.bed
         echo "Made bed for chrom $c"
     }
+pids=""
 for f in $CHROMS;
     do 
         annotate $f & 
+        pids="$pids $!"
     done 
     
-wait
+wait $pids
 echo Done!
 exit 0
