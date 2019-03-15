@@ -1,9 +1,9 @@
 <h1>Getting Started</h1>
-<p>This repository contains the shapess and in-house scripts used in our paper <b>"SOM-VN: Detection and Annotation of Regulatory Elements from Chromatin Accessibility Signal Shape"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapess or append to our existing shapess, and replicate our results. It is designed for use in a Unix environment and can all be run using a command-line interface. This README has been divided into each of these three subtasks for your convenience. 
+<p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface. 
  <h2>Dependencies</h2>
 <ul><li>Python 2. Our script generates a WIG file using the tool <b>gosr binbam</b>, for which we have included a modified version. This tool is only compatible with Python 2.</li>
 <li>wig_split.py. This can be obtained via the following repository: https://github.com/taoliu/taolib</li>
-<li>The GCC compiler. A couple of our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.</li>
+<li>The GCC compiler. Some our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.</li>
  <li>bedtools. This can be installed here: https://github.com/arq5x/bedtools2/releases</li>
   <li>The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.</li>
 <li>The Python modules numpy and scipy.</li>
@@ -21,7 +21,7 @@
 <li>The directory containing the python packages for gosr.</li>
 <li>The directory containing wig_split.py.</li></ul>
 <h1>Annotating New Samples</h1>
-<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
+<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND SOM-VN model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
 <h3>Options</h3>
 <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
 <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
@@ -31,7 +31,7 @@
 <p><b>-w:</b> The path to wig_split. <em>Required</em></p>
 <p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
 <p></p>
-<p><b>Note:</b> If running the TSS AND model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
+<p><b>Note:</b> If running the TSS AND SOM-VN model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
 <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
 <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
 <p><b>-t:</b> The path to a file containing the transcription start sites.  <em>Required</em></p>
@@ -68,7 +68,7 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <li>A WIG file for each chromosome in the directory <b>wig_chroms</b>.</li>
 <li>The signal data for each region to use in training in the directory <b>training</b>.</li>
  <li>The signal data for each region to annotate with shapes during training in the directory <b>training_anno</b>.</li>
- <li>The signal data for each sub-region found according to the Region Segmentation procedure in the paper in the directory <b>training_shifted</b>.</li>
+ <li>The signal data for each sub-region found in our segmentation procedure in the directory <b>training_shifted</b>.</li>
  <li>The shapes learned by the SOM-VN in the directory <b>som_output</b>.</li>
  <li>The shapes with at least one mapping in the last iteration in the directory <b>som_output_filtered</b>.</li>
  <li>The shapes with all shifted regions merged in the directory <b>som_output_shifted</b>.</li>
@@ -79,7 +79,7 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>anno_intersects</b>.</li>
 <li>The shapes containing all learned shapes on all chromosomes in the file <b>shapes_all</b>.</li>
 <li>The shapes containing a consolidated list of shapes merged using cross-correlation in the file you specified.</li>
-<li>Figures corresponding to the breakdown of ChromHMM annotations in each of our shapes in the directory <b>annotation_distribution_figs</b>.</li></ul>
+</ul>
 <h3>Description of Helper Scripts</h3>
 <ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li>
  <li><b>shift_input.py:</b> Collects sub-regions to use in training the SOM-VN given the training regions with margins.</li>
@@ -90,10 +90,14 @@ This code requires the Tensorflow framework, which can be installed here: https:
  <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the SOM-VN.</li>
  <li><b>consolidate_chromHMM.py:</b> Creates a shapes of regulatory-associated shapes given the intersections between our shapes and ChromHMM annotations.</li></ul>
 <h1>Replicating Our Results</h1>
-<p>To download the data used in our analysis, run the script <b>download_all_files.sh</b>. You will need to run it from the location where you wish to save the BAM files.</p>
-<p>To generate a shapes and annotate with permuted ChromHMM annotations, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</p>
-<p>To learn chromosome-specific models on permuted WIG data, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</p> 
+<p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
+<p>To replicate the permuted ChromHMM experiment, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</p>
+<p>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</p> 
 <p>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</p> 
+<p>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</p> 
+<p>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</p> 
+<p>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</p> 
+
 <p>To analyze and plot the precision and recall, use <b>do_precision_recall_analysis.sh</b>. By default, this runs on all cell lines tested in our study. To change this functionality, you should modify the bash script.</p>
 <p>To generate violin plots, averaged precision and recall plots and averaged distribution plots over all chromosomes and cell types, and shapes with annotation and TSS counts, use <b>make_plots_all_cells.sh</b>. The options are <b>-d</b>, the base directory where all files should be saved, and <b>-t</b>, the file containing the transcription start sites.</p>
 <p>To compute the validity index over multiple region sizes and plot the cross-chromosome annotation similarity heatmap, use <b>make_cell_specific_plots.sh</b>. Options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-s</b>, the unmerged shape file, <b>-m</b>, the merged shape file, <b>-l</b>, the log for the shape merging process, and <b>-r</b>, the directory containing annotations for all region sizes.</p>
