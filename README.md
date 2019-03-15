@@ -91,14 +91,15 @@ This code requires the Tensorflow framework, which can be installed here: https:
  <li><b>consolidate_chromHMM.py:</b> Creates a shapes of regulatory-associated shapes given the intersections between our shapes and ChromHMM annotations.</li></ul>
 <h1>Replicating Our Results</h1>
 <p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
-<p>To replicate the permuted ChromHMM experiment, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</p>
-<p>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</p> 
-<p>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</p> 
-<p>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</p> 
-<p>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</p> 
-<p>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</p> 
 <h3>Additional Dependencies</h3>
 <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
+<h3>Replicating Baseline Results</h3>
+<ul><li>To replicate the permuted ChromHMM experiment, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</li>
+<li>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</li> 
+<li>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</li> 
+<li>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</li> 
+<li>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</li> 
+<li>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</li></ul> 
 <h3>Replicating Figures</h3>
 <ul><li><b>Fig. 3: </b> Run <b>plot_precision_recall.py</b> followed by <b>plot_precision_recall_all.py</b> (for part A) and <b>plot_true_distribs_all.py</b> (for part B).</li>
 <li><b>Fig. 4: </b> Run <b>run_all_chromosome_iterations.sh</b> on each cell type to generate the density plot followed by <b>save_precision_recall.py</b> and <b>plot_precision_recall_densities.py</b>.</li>
@@ -110,4 +111,4 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <li><b>Supplementary Fig. 6: </b> Run <b>print_annotated_shapes.py</b>.</li>
 <li><b>Supplementary Fig. 7, 8, and 9: </b> Run <b>plot_precision_recall.py</b>.</li>
 <li><b>Supplementary Fig. 10: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
-<li><b>Supplementary Fig. 11: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li>
+<li><b>Supplementary Fig. 11: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li></ul>
