@@ -97,21 +97,17 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <p>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</p> 
 <p>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</p> 
 <p>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</p> 
-
-<p>To analyze and plot the precision and recall, use <b>do_precision_recall_analysis.sh</b>. By default, this runs on all cell lines tested in our study. To change this functionality, you should modify the bash script.</p>
-<p>To generate violin plots, averaged precision and recall plots and averaged distribution plots over all chromosomes and cell types, and shapes with annotation and TSS counts, use <b>make_plots_all_cells.sh</b>. The options are <b>-d</b>, the base directory where all files should be saved, and <b>-t</b>, the file containing the transcription start sites.</p>
-<p>To compute the validity index over multiple region sizes and plot the cross-chromosome annotation similarity heatmap, use <b>make_cell_specific_plots.sh</b>. Options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-s</b>, the unmerged shape file, <b>-m</b>, the merged shape file, <b>-l</b>, the log for the shape merging process, and <b>-r</b>, the directory containing annotations for all region sizes.</p>
-<p>To learn over subsets of chromosomes and annotate remaining chromosomes, run <b>run_chromosome_iteration.sh</b> with two parameters: the name of the cell line and the base directory.</p>
 <h3>Additional Dependencies</h3>
 <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
-<h3>Description of Helper Scripts</h3>
-<ul><li><b>plot_wig_distribs.py:</b> Plots the distribution of RPKM given three genome-wide WIG files and saves them to the file <b>wig_distribs.png</b>.</li>
- <li><b>plot_annotation_distribs.py:</b> Plots the distribution in width of ChromHMM annotations and saves them to the file <b>all_annotation_distribs.png</b>.</li>
-  <li><b>compute_validity.py:</b> Given the set of shapes learned for all window sizes, computes the Davies-Bouldin indices for each chromosome and saves them to the heatmap <b>cluster_validity.png</b>.</li>
- <li><b>annotation_similarity_heatmap.py:</b> Given a shapes with all shapes from all chromosomes, plots a heatmap of shape matches by cross-correlation and a distribution of the resulting association types and saves them to the directory <b>annotation_figs</b>.</li>
-<li><b>combine_prediction_beds.py:</b> Combines the TSS-based and shape-based predictions and saves them to the directory <b>annotated_combined</b>.</li>
-<li><b>get_bed_regions.c:</b> Given a BED file in sorted order with no overlap, retrieves the associated signals and saves them to a CSV file.</li>
-<li><b>plot_precision_recall.py:</b> Computes the precision and recall for all chromosomes in a cell line over all annotation types and over shape-based, TSS-based, TSS AND and OR models, and permuted categories and saves them to a scatterplot in <b>precision_recall.png</b>.</li>
-<li><b>print_annotated_shapes.py:</b> Plots the annotation count and average TSS count for each cell type annotated by each shape and saves the plot in <b>shape_plots.png</b>.</li>
-<li><b>line_plot_unknown_distribs.py:</b> Plots the distribution of unknown regions and saves the result in the directory <b>misclassified</b>.</li>
-<li><b>get_bed_lines.c:</b> Outputs signal corresponding to regions in a BED file. This is used in evaluating combined TSS + Shape annotations.</li></ul>
+<h3>Replicating Figures</h3>
+<ul><li><b>Fig. 3: </b> Run <b>plot_precision_recall.py</b> followed by <b>plot_precision_recall_all.py</b> (for part A) and <b>plot_true_distribs_all.py</b> (for part B).</li>
+<li><b>Fig. 4: </b> Run <b>run_all_chromosome_iterations.sh</b> on each cell type to generate the density plot followed by <b>save_precision_recall.py</b> and <b>plot_precision_recall_densities.py</b>.</li>
+<li><b>Fig. 5: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li>
+<li><b>Fig. 6: </b> Run <b>plot_precision_recall_nopromoter_abovethreshonly.py</b>.</li>
+<li><b>Supplementary Fig. 1: </b> Run <b>plot_wig_distribs_violin.py</b>.</li>
+<li><b>Supplementary Fig. 4: </b> Run <b>plot_chromhmm_distribs_violin.py</b>.</li>
+<li><b>Supplementary Fig. 5: </b> Run <b>annotation_similarity_heatmap.py</b>.</li>
+<li><b>Supplementary Fig. 6: </b> Run <b>print_annotated_shapes.py</b>.</li>
+<li><b>Supplementary Fig. 7, 8, and 9: </b> Run <b>plot_precision_recall.py</b>.</li>
+<li><b>Supplementary Fig. 10: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
+<li><b>Supplementary Fig. 11: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li>
