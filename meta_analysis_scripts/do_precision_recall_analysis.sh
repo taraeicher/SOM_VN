@@ -9,8 +9,8 @@
  TSS_PROMOTER_SRC="/fs/project/PAS0272/Tara/DNase_SOM/Brain/tss_promoter"
  
  #Compile the c code.
- gcc -pthread -lm -o run_get_regions ../common_scripts/get_bed_regions.c
- gcc -pthread -lm -o run_get_lines ../common_scripts/get_bed_lines.c
+ #gcc -pthread -lm -o run_get_regions ../common_scripts/get_bed_regions.c
+ #gcc -pthread -lm -o run_get_lines ../common_scripts/get_bed_lines.c
         
 # Get the precision and recall for a subset of Brain tissue chromosomes for:
 # 1. Our predictions
@@ -20,14 +20,15 @@
 # 5. Predictions using RPKM intensity
 
 #Run analysis for each source and destination pair.
-for i in 0 1 2 3 4 5 6 7 8;
+#for i in 0 1 2 3 4 5 6 7 8;
+for i in 4;
     do
         src_cell=${SRC[$i]}
         dest_cell=${DEST[$i]}
         #Directories used in analysis
         BASE="/fs/project/PAS0272/Tara/DNase_SOM/${dest_cell}"
         WIG_CHROMS="$BASE/wig_chroms_annotation"
-        TSS_PROMOTER_SHAPES="$BASE/tss_promoter_shapes"
+        TSS_PROMOTER_SHAPES="$BASE/tss_promoter_clusters"
         if [[ ! -e $TSS_PROMOTER_SHAPES ]]; then
             mkdir $TSS_PROMOTER_SHAPES
         fi
@@ -117,47 +118,50 @@ for i in 0 1 2 3 4 5 6 7 8;
         # 3. Our predictions combined with TSS
         # 4. Permuted predictions
         # 5. Predictions using RPKM intensity
-        for chr in '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' 'X' 'Y';
-            do       
-                #Intersect TSS-based annotations with the ground truth.
-                ./run_get_regions $WIG_CHROMS/${dest_cell}.chr${chr}.wig $TSS_PROMOTER_SRC/chr${chr}.bed ${chr} $TSS_PROMOTER_SHAPES/shapes${chr} $TSS_PROMOTER/final${chr}.bed
-                bedtools intersect -wao -a $TSS_PROMOTER/final${chr}.bed -b $CHROMHMM > $TSS_MERGED/anno${chr}.bed
+        # for chr in '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' 'X' 'Y';
+            # do       
+                # #Intersect TSS-based annotations with the ground truth.
+                # ./run_get_regions $WIG_CHROMS/${dest_cell}.chr${chr}.wig $TSS_PROMOTER_SRC/chr${chr}.bed ${chr} $TSS_PROMOTER_SHAPES/shapes${chr} $TSS_PROMOTER/final${chr}.bed
+                # bedtools intersect -wao -a $TSS_PROMOTER/final${chr}.bed -b $CHROMHMM > $TSS_MERGED/anno${chr}.bed
                 
-                #Intersect our annotations with the ground truth.
-                bedtools intersect -wao -a $ANNOTATED/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}.bed
+                # #Intersect our annotations with the ground truth.
+                # bedtools intersect -wao -a $ANNOTATED/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}.bed
 
-                #Combine shape-based and TSS-based annotations (OR) and intersect with the ground truth.
-                python ../annotation_scripts/combine_prediction_beds.py $ANNOTATED/anno${chr}.bed $TSS_PROMOTER/final${chr}.bed $ANNOTATED_WITH_TSS/${chr}.bed
-                ./run_get_lines $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_WITH_TSS/${chr}.bed ${chr} $ANNOTATED_WITH_TSS/shapes${chr} $ANNOTATED_WITH_TSS/final${chr}.bed
-                bedtools intersect -wao -a $ANNOTATED_WITH_TSS/${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}_tss.bed
+                # #Combine shape-based and TSS-based annotations (OR) and intersect with the ground truth.
+                # python ../annotation_scripts/combine_prediction_beds.py $ANNOTATED/anno${chr}.bed $TSS_PROMOTER/final${chr}.bed $ANNOTATED_WITH_TSS/${chr}.bed
+                # ./run_get_lines $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_WITH_TSS/${chr}.bed ${chr} $ANNOTATED_WITH_TSS/shapes${chr} $ANNOTATED_WITH_TSS/final${chr}.bed
+                # bedtools intersect -wao -a $ANNOTATED_WITH_TSS/${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}_tss.bed
                 
-                #Intersect shape AND TSS-based annotations with ground truth.
-                bedtools intersect -wao -a $ANNOTATED_TSS_AND/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}_tss_and.bed
+                # #Intersect shape AND TSS-based annotations with ground truth.
+                # bedtools intersect -wao -a $ANNOTATED_TSS_AND/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED/anno${chr}_tss_and.bed
                 
-                #Make RPKM-based predictions and intersect the RPKM-predicted data with the ground truth.
-                #This only needs to be done once per cell line.
-                if [[ ! -e $ANNOTATED_RPKM/anno${chr}.bed ]]; then
-                    python ../annotation_scripts/predict_from_rpkm.py $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_RPKM_50BP/anno${chr}.bed $ANNOTATED_RPKM/anno${chr}.bed $chr
-                    Intersect the RPKM data with the ground truth and retrieve the signal.
-                    bedtools intersect -wao -a $ANNOTATED_RPKM/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED_RPKM/anno${chr}.bed
-                    ./run_get_lines $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_RPKM/anno${chr}.bed ${chr} $ANNOTATED_RPKM/shapes_anno${chr} $ANNOTATED_RPKM/anno${chr}final.bed
-                    awk {'printf ("%s\t%s\t%s\t%s\t1.0\t%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9)'} $ANNO_MERGED_RPKM/anno${chr}.bed > $ANNO_MERGED_RPKM/anno${chr}_final.bed
-                fi 
+                # #Make RPKM-based predictions and intersect the RPKM-predicted data with the ground truth.
+                # #This only needs to be done once per cell line.
+                # if [[ ! -e $ANNOTATED_RPKM/anno${chr}.bed ]]; then
+                    # python ../annotation_scripts/predict_from_rpkm.py $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_RPKM_50BP/anno${chr}.bed $ANNOTATED_RPKM/anno${chr}.bed $chr
+                    # Intersect the RPKM data with the ground truth and retrieve the signal.
+                    # bedtools intersect -wao -a $ANNOTATED_RPKM/anno${chr}.bed -b $CHROMHMM > $ANNO_MERGED_RPKM/anno${chr}.bed
+                    # ./run_get_lines $WIG_CHROMS/${dest_cell}.chr${chr}.wig $ANNOTATED_RPKM/anno${chr}.bed ${chr} $ANNOTATED_RPKM/shapes_anno${chr} $ANNOTATED_RPKM/anno${chr}final.bed
+                    # awk {'printf ("%s\t%s\t%s\t%s\t1.0\t%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9)'} $ANNO_MERGED_RPKM/anno${chr}.bed > $ANNO_MERGED_RPKM/anno${chr}_final.bed
+                # fi 
                 
-                #Intersect the permuted data with the ground truth.
-                bedtools intersect -wao -a $ANNOTATED_PERM/anno${chr}.bed -b $CHROMHMM > "$ANNO_MERGED_PERM/anno${chr}.bed"
-            done
+                # #Intersect the permuted data with the ground truth.
+                # bedtools intersect -wao -a $ANNOTATED_PERM/anno${chr}.bed -b $CHROMHMM > "$ANNO_MERGED_PERM/anno${chr}.bed"
+            # done
         
         #Plot precision and recall.    
-        python plot_precision_recall.py $ANNO_MERGED/ $TSS_MERGED/ $ANNO_MERGED_RPKM/ $ANNO_MERGED_PERM_SUB/ $ANNOTATED/ $TSS_PROMOTER_SHAPES/ $ANNOTATED_WITH_TSS/ $ANNOTATED_TSS_AND/ $ANNOTATED_RPKM/ $ANNOTATED_PERM/ $BASE/  $PRECISION_RECALL/ $UNKNOWNS/ $WIG ${dest_cell} ${src_cell} 0
+        #python plot_precision_recall.py $ANNO_MERGED/ $TSS_MERGED/ $ANNO_MERGED_RPKM/ $ANNO_MERGED_PERM_SUB/ $ANNOTATED/ $TSS_PROMOTER_SHAPES/ $ANNOTATED_WITH_TSS/ $ANNOTATED_TSS_AND/ $ANNOTATED_RPKM/ $ANNOTATED_PERM/ $BASE/  $PRECISION_RECALL/ $UNKNOWNS/ $WIG ${dest_cell} ${src_cell} 0
+        
+        #Plot precision and recall with no baselines.
+        #python plot_precision_recall_nobaselines.py $ANNO_MERGED/ $ANNOTATED/ $BASE  $PRECISION_RECALL/ ${WIG} ${dest_cell} ${src_cell}
         
         if [ $i -eq 4 ]; then
             python plot_precision_recall.py $ANNO_MERGED_SUB/ $TSS_MERGED_SUB/ $ANNO_MERGED_RPKM/ $ANNO_MERGED_PERM/ $ANNOTATED_SUB/ $TSS_PROMOTER_SHAPES/ $ANNOTATED_WITH_TSS_SUB/ $ANNOTATED_TSS_AND_SUB/ $ANNOTATED_RPKM/ $ANNOTATED_PERM/ $BASE/sub  $PRECISION_RECALL_SUB/ $UNKNOWNS_SUB/ $WIG ${dest_cell} ${src_cell} 1
         fi
         
         #Plot the distribution of annotations for all methods and the ground truth.
-        python plot_annotation_distribs.py $ANNOTATED $ANNOTATED_WITH_TSS $ANNOTATED_TSS_AND $CHROMHMM_SPLIT $ANNOTATED_PERM ${src_cell} ${dest_cell} $ANNOTATION_DISTRIBS/${src_cell}_to_${dest_cell}
+        #python plot_annotation_distribs.py $ANNOTATED $ANNOTATED_WITH_TSS $ANNOTATED_TSS_AND $CHROMHMM_SPLIT $ANNOTATED_PERM ${src_cell} ${dest_cell} $ANNOTATION_DISTRIBS/${src_cell}_to_${dest_cell}
                    
         #Plot the distribution of unknown regions
-        python line_plot_unknown_distribs.py $ANNO_MERGED/anno $WIG $ANNOTATED/shapes_anno $UNKNOWNS $MISCLASSIFIED_PLOTS ${src_cell} ${dest_cell}
+        #python line_plot_unknown_distribs.py $ANNO_MERGED/anno $WIG $ANNOTATED/shapes_anno $UNKNOWNS $MISCLASSIFIED_PLOTS ${src_cell} ${dest_cell}
     done 

@@ -14,7 +14,7 @@
 # 9. BamCoverage
 
 #Variables
-    USAGE="This script is used for creating training regions from an input WIG file for each chromosome. It splits the WIG file into regions of a specified size with a specified overlap margin and a specified factor for the linear decrease in weights from the center of the region. In this script, a grid of factors and overlap margins are tested, and the optimal pair of parameters is reported.\n
+    USAGE="This script is used for creating training regions from an input WIG file for each chromosome, which can be obtained from a BAM file using convert_bam_to_wig.sh. It splits the WIG file into regions of a specified size with a specified overlap margin and a specified factor for the linear decrease in weights from the center of the region. In this script, a grid of factors and overlap margins are tested, and the optimal pair of parameters is reported.\n
     The following parameters are optional, but recommended:\n
     <-n> The name of the cell line (e.g. Brain)\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
@@ -53,10 +53,7 @@
     fi
 
     #Generate input files for training and annotation. NOTE: Don't double the size for files to annotate. Keep the same margins, but overlap.
-    if [[ ! -e $TRAINING_FILES/percentile_cutoffs/ ]]; then
-        mkdir $TRAINING_FILES/percentile_cutoffs/
-    fi
-    
+        
     split_and_shift() {
         factor=$1
         margin=$2
@@ -69,9 +66,12 @@
         if [[ ! -e $TRAINING_FILES/${factor}_${margin}_crossings/ ]]; then
             mkdir $TRAINING_FILES/${factor}_${margin}_crossings/
         fi
+        if [[ ! -e $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/ ]]; then
+        mkdir $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/
+    fi
         for c in $CHROMS_NUM;
         do
-            python ../common_scripts/split_regions.py ${BASE_PATH}/wig/$c.wig $BIN_SIZE $c $TRAINING_FILES/${factor}_${margin}/chrom${c}.pkl $REGION_SIZE $margin $factor 0.95 $TRAINING_FILES/${factor}_${margin}_shifted/chrom${c}.pkl $TRAINING_FILES/${factor}_${margin}_crossings/chrom${c}.txt $TRAINING_FILES/percentile_cutoffs/chrom${c}.txt
+            python ../common_scripts/split_regions.py ${BASE_PATH}/wig/$c.wig $BIN_SIZE $c $TRAINING_FILES/${factor}_${margin}/chrom${c}.pkl $REGION_SIZE $margin $factor 0.95 $TRAINING_FILES/${factor}_${margin}_shifted/chrom${c}.pkl $TRAINING_FILES/${factor}_${margin}_crossings/chrom${c}.txt $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/chrom${c}.txt
             
             echo "Splitting complete for chromosome $c with factor $factor and margin $margin"
 

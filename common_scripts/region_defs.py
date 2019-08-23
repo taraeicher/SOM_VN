@@ -120,3 +120,14 @@ class Shifted_Region:
 
         #Return optimal vector.
         return sigs[best_delay: best_delay + len(w)], best_delay
+        
+"""
+This class holds a region that has been altered
+according to optimization criteria.
+"""   
+class Shape:
+    def __init__(self, grid_index, mapped_count, signals):
+        self.signals = signals
+        self.grid_index = grid_index
+        self.mapped_count = mapped_count
+        

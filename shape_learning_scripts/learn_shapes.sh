@@ -15,23 +15,29 @@
 # 10. Make sure your version of python is compiled to use UCS2
 
 #Variables
+    USAGE="This script is used for learning a set of representative shapes from the training regions output by create_regions.sh and annotating them with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift and clustered using k-means. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n
+    <-n> The name of the cell line (e.g. Brain)\n
+    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-c> The ChromHMM file used for intersecting.\n
+    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
+    <-r> The size of the input regions (default: 4000)\n
+    <-s> The final set of shapes consolidated across all chromosomes."
+    
+    echo -e $USAGE
     CELL_LINE=""
     REGION_SIZE=4000
     BASE_FILENAME=""
     BAM=""
     CHROMHMM=""
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
-    WIG_SPLIT_PATH=""
     BIN_SIZE=50
     SHAPES_COMPREHENSIVE=""
-    while getopts n:d:c:b:i:w:r:s: option; do
+    while getopts n:d:c:i:r:s: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
             d) BASE_FILENAME=$(realpath $OPTARG);;
             c) CHROMHMM=$(realpath $OPTARG);;
-            b) BAM=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
-            w) WIG_SPLIT_PATH=$(realpath $OPTARG);;
             r) REGION_SIZE=$OPTARG;;
             s) SHAPES_COMPREHENSIVE=$(realpath $OPTARG);;
         esac
@@ -44,30 +50,19 @@
     echo "Name is $CELL_LINE"
     echo "Base directory is $BASE_FILENAME"
     echo "ChromHMM file is $CHROMHMM"
-    echo "BAM file is $BAM"
     echo "Bin size in WIG file is $BIN_SIZE"
-    echo "wig_split path is $WIG_SPLIT_PATH"
     echo "Region size for annotation is $REGION_SIZE"
     echo "Shapes will be saved in $SHAPES_COMPREHENSIVE"
     echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
 	
-#Create all needed directories.
+    for 
+    
+    #Create all needed directories.
     SOM_OUT="$BASE_PATH/som_output"
     if [[ ! -e $SOM_OUT ]]; then
         mkdir $SOM_OUT
     fi
     TRAINING_FILES="$BASE_PATH/training"
-    if [[ ! -e $TRAINING_FILES ]]; then
-        mkdir $TRAINING_FILES
-    fi
-    TRAINING_ANNOTATION_FILES="$BASE_PATH/training_anno"
-    if [[ ! -e $TRAINING_ANNOTATION_FILES ]]; then
-        mkdir $TRAINING_ANNOTATION_FILES
-    fi
-    TRAINING_SHIFTED="$BASE_PATH/training_shifted"
-    if [[ ! -e $TRAINING_SHIFTED ]]; then
-        mkdir $TRAINING_SHIFTED
-    fi
     SOM_OUT_FILTERED="$BASE_PATH/som_output_filtered"
     if [[ ! -e $SOM_OUT_FILTERED ]]; then
         mkdir $SOM_OUT_FILTERED
@@ -81,9 +76,6 @@
         mkdir $SOM_OUT_FINAL
     fi
     WIG="$BASE_PATH/wig_chroms"
-    if [[ ! -e  $WIG ]]; then
-        mkdir $WIG
-    fi
     SHAPE_ANNOTATED="$BASE_PATH/anno_beds"
     if [[ ! -e $SHAPE_ANNOTATED ]]; then
         mkdir $SHAPE_ANNOTATED
@@ -105,57 +97,13 @@
     fi
     SHAPES="$BASE_PATH/shapes"
     SHAPES_LOG="$BASE_PATH/shapes_log"
-
-#Output RPKM intensities in a WIG file.
-    module load python/$PYTHON_VERSION
-	gosr binbam -f 0 -n 1000 -t $CELL_LINE $BAM $BIN_SIZE $CELL_LINE > $BASE_PATH/$CELL_LINE.wig
-	echo -e "------------------------------------------------------WIG file complete.-------------------------------------------------\n"
-	
-# Split WIG files by chromosome.
-	python $WIG_SPLIT_PATH/wig_split.py $BASE_PATH/$CELL_LINE.wig $WIG/$CELL_LINE
-	if [[ -e $WIG/*chrM* ]]; then
-		rm $$WIG/*chrM*
-	fi
-	if [[ -e $WIG/*random* ]]; then
-		rm $WIG/*random*
-	fi
-	if [[ -e $WIG/*chrEBV* ]]; then
-		rm $WIG/*chrEBV*
-	fi
-    if [[ -e $WIG/*chrUn* ]]; then
-		rm $WIG/*chrUn*
-	fi
-	if [[ -e $WIG/*_g* ]]; then
-		rm $WIG/*_g*
-	fi
-    if [[ -e $WIG/*K* ]]; then
-		rm $WIG/*K*
-	fi
-	echo -e "----------------------------------------------------WIG file split into chromosomes.------------------------------------\n"
-	
-#Data preprocessing
-    gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c
-	echo -e "-----------------------------------------------------Compiled processing code.-----------------------------------------\n"
 	
 # Method for running the pipeline for a chromosome.
 	run_pipeline() {
 		local c=$1
-
-		#Generate input files for training and annotation.
-        ./run_get_data $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 Y $c $TRAINING_FILES/chrom${c} $REGION_SIZE
-        ./run_get_data $WIG/$CELL_LINE.chr$c.wig $BIN_SIZE 0 N $c $TRAINING_ANNOTATION_FILES/chrom${c} $REGION_SIZE
-		echo -e "-------------------------------------Data formatting complete for chrom $c.------------------------------------------\n"
-		
-		#Shuffle the input files.
-		shuf $TRAINING_FILES/chrom${c} > $TRAINING_FILES/shuf_chrom${c}
-		echo -e "--------------------------------------------Shuffling complete for chrom $c.------------------------------------------\n"
-		
-		#Shift the input to its best representation.
-		python shift_input.py $TRAINING_FILES/shuf_chrom$c $TRAINING_SHIFTED/chrom$c $BIN_SIZE $REGION_SIZE $WIG/$CELL_LINE.chr$c.wig false 0
-		echo -e "----------------------------------------------Shifting complete for chrom $c.-----------------------------------------\n"
 		
 		#Run the SOM.
-		python som_vn.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
+		python vnssom.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
 		echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
 		
 		#Remove all shapes to which no regions map.

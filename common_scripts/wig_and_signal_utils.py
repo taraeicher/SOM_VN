@@ -87,52 +87,48 @@ def get_intensity_percentile(percentile, file):
     return retval
     
 #Get the cross-correlation metric between the two clusters.
-def get_crosscorr(clust1, clust2, delay, threshold, max_cutoff, use_max_cutoff, two_way, minimum):
-    
-    #Get the section of the cluster that does not include the delay.
-    clust1_array = np.asarray(clust1)
-    clust2_array = np.asarray(clust2)
+def get_crosscorr(shape1, shape2, delay, threshold, max_ratio_cutoff, two_way, percentile_cutoff):
 
     #If the clusters are the same length, use subarrays to simulate the shift.
     #Otherwise, move the smaller array across the larger one.
+    shape1_subset = shape1[0:len(shape1)]
+    shape2_subset = shape2[0:len(shape2)]
     if two_way:
         if delay < 0:
             #Simulate the shift by moving the second cluster to the right.
-            clust1_array = np.asarray(clust1[0:(len(clust1) + delay)])
-            clust2_array = np.asarray(clust2[abs(delay):len(clust2)])
+            shape1_subset = shape1[0:(len(shape1) + delay)]
+            shape2_subset = shape2[abs(delay):len(shape2)]
             
         else:
             #Simulate the shift by moving the first cluster to the right.
-            clust2_array = np.asarray(clust2[0:(len(clust2) - delay)])
-            clust1_array = np.asarray(clust1[delay:len(clust1)])
-    elif len(clust1_array) > len(clust2_array):
+            shape2_subset = shape2[0:(len(shape2) - delay)]
+            shape1_subset = shape1[delay:len(shape1)]
+    elif len(shape1_subset) > len(shape2_subset):
         if delay < 0:
             raise ValueError("Cannot use a negative delay")
             
         else:
-            clust1_array = np.asarray(clust1[delay:(len(clust2) + delay)])
+            shape1_subset = np.asarray(shape1[delay:(len(shape2) + delay)])
     else:
         if delay < 0:
             raise ValueError("Cannot use a negative delay")
             
         else:
-            clust2_array = np.asarray(clust2[delay:(len(clust1) + delay)])
+            shape2_subset = np.asarray(shape2[delay:(len(shape1) + delay)])
     
     #Only calculate the cross-correlation if the sub-regions of both clusters contain the max
     #and the maximums are within the threshold.
     #Else, throw an error.
-    both_contain_max = np.max(np.asarray(clust1)) == np.max(clust1_array) and np.max(np.asarray(clust2)) == np.max(clust2_array)
-    max_of_two = max(np.max(np.asarray(clust1)), np.max(np.asarray(clust2)))
-    min_of_two = min(np.max(np.asarray(clust1)), np.max(np.asarray(clust2)))
-    maxes_within_threshold =  min_of_two / max_of_two > threshold or max_of_two == minimum
+    both_contain_max = np.max(shape1) == np.max(shape1_subset) and np.max(shape2) == np.max(shape2_subset)
+    max_of_two = max(np.max(shape1), np.max(shape2))
+    min_of_two = min(np.max(shape1), np.max(shape2))
+    maxes_within_threshold =  min_of_two / max_of_two > max_ratio_cutoff or max_of_two == percentile_cutoff
 
-    if max_of_two < max_cutoff and use_max_cutoff:
-        return 1
     elif both_contain_max and maxes_within_threshold:
         #Calculate the cross-correlation pieces.    
-        numerator = np.sum(clust1_array * clust2_array) - np.sum(clust1_array) * np.sum(clust2_array) / len(clust2_array)
-        denominator_1 = np.sum(np.square(clust1_array)) - np.square(np.sum(clust1_array)) / len(clust1_array)
-        denominator_2 = np.sum(np.square(clust2_array)) - np.square(np.sum(clust2_array)) / len(clust2_array)
+        numerator = np.sum(shape1_subset * shape2_subset) - np.sum(shape1_subset) * np.sum(shape2_subset) / len(shape2_subset)
+        denominator_1 = np.sum(np.square(shape1_subset)) - np.square(np.sum(shape1_subset)) / len(shape1_subset)
+        denominator_2 = np.sum(np.square(shape2_subset)) - np.square(np.sum(shape2_subset)) / len(shape2_subset)
         denominator = 1
         if denominator_1 > 0 and denominator_2 > 0:
             denominator = np.sqrt(denominator_1 * denominator_2)

@@ -14,12 +14,12 @@
 # 9. BamCoverage
 
 #Variables
-    USAGE="This script is used for creating training regions from an input BAM file. It first converts the BAM file to a set of BAM files, one for each chromosome. Then, it converts these files to WIG files containing a single RPKM value at each 50 bp bin.
-    <-n> The name of the cell line (e.g. Brain)
-    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
-    <-b> The BAM file used as input.
-    <-i> The bin size used to generate the WIG file (default: 50 bp)
-    <-s> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.
+    USAGE="This script is used for creating training regions from an input BAM file. It first converts the BAM file to a set of BAM files, one for each chromosome. Then, it converts these files to WIG files containing a single RPKM value at each 50 bp bin.\n
+    <-n> The name of the cell line (e.g. Brain)\n
+    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-b> The BAM file used as input.\n
+    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
+    <-s> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.\n
     <-l> The blacklist regions to exclude."
     
     CELL_LINE=""
@@ -41,7 +41,7 @@
     BASE_PATH=$BASE_FILENAME/$CELL_LINE
     
 #Print message to user.
-    echo $USAGE
+    echo -e $USAGE
     echo "Creating regions using the following settings:"
     echo "Name is $CELL_LINE"
     echo "Base directory is $BASE_FILENAME"
