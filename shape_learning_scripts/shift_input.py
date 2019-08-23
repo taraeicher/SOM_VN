@@ -25,21 +25,20 @@ def main():
     bin_size = int(sys.argv[3])
     region_size = int(sys.argv[4])
     wig_file = open(sys.argv[5], 'r')
-    percentile = 0.995
-    fine = bool(sys.argv[6])
-    minimum_intensity = float(sys.argv[7])
+    percentile = float(sys.argv[6])
+    factor = float(sys.argv[7])
     
     threshold = wsu.get_intensity_percentile(percentile, wig_file, minimum_intensity, fine)
     print(str(threshold))
     
-    shiftRegions(file_path, output_path, bin_size, region_size, threshold, minimum_intensity)
+    shiftRegions(file_path, output_path, bin_size, region_size, threshold, factor)
     
     #Print message to user.
     print("Shifting complete for all windows.")
 
 #Find the best representation of each region by maximizing
 #the sum of RPKM signals multiplied by the weight vector.
-def shiftRegions(file_path, output_path, bin_size, region_size, threshold, minimum_intensity):
+def shiftRegions(file_path, output_path, bin_size, region_size, threshold, factor):
 
     #Print message to user.
     print("Shifting regions")
@@ -53,7 +52,6 @@ def shiftRegions(file_path, output_path, bin_size, region_size, threshold, minim
     #Initialize the weight vector to use in finding the best representation.
     dim = int(region_size / bin_size)
     weightVector = np.zeros(dim)
-    factor = 3 * dim / 8
     for i in range(0, dim):
         distance = min((abs(i - dim / 2)), abs(i - dim / 2 + 1))
         weightVector[i] = (factor - distance) / factor
@@ -64,12 +62,12 @@ def shiftRegions(file_path, output_path, bin_size, region_size, threshold, minim
         split_line = next_line.split(",")
         labels = split_line[0:3]
         intensityStr = split_line[3:len(split_line)]
-        intensities = [(float(i) - minimum_intensity) for i in intensityStr]
+        intensities = [float(i) for i in intensityStr]
         old_labels = labels[:]
         
         #Find the best representation and print it out with the labels.
         finalIntensities, d = findBestRep(intensities, weightVector)
-        finalIntensities = np.asarray(finalIntensities) + minimum_intensity
+        finalIntensities = np.asarray(finalIntensities)
         
         #Get number of crossings across threshold.
         crossings = wsu.find_crossing_count(finalIntensities, threshold, minimum_intensity)

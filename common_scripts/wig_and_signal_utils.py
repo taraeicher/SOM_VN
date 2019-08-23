@@ -3,54 +3,42 @@ import math
 import sys
 
 """
-Estimate the number of peaks in the region.
-Do this by checking the number of trough-peak-trough triples,
-where trough and peak are signals within a threshold of the
+Estimate the number of crests in the region.
+Do this by checking the number of trough-crest-trough triples,
+where trough and crest are signals within a threshold of the
 max and min.
 """ 
-def find_crossing_count(region, threshold, lowest):
-    #cutoffs = [0.5, 1.25]
-    #max_val = np.max(np.asarray(region))
-    #min_val = np.min(np.asarray(region))
-                
-    at_trough = True
-    peak_count = 0
-    i = 0
-    
-    #If there is not a significant difference between max and min, we don't worry about peaks.
-    #if max_val >= threshold * min_val and max_val - threshold >= min_val:
-    for sig in region:
-        #If the last thing we saw was a trough and we found a peak, update the last thing
-        #we saw to a peak.
-        if at_trough and sig >= threshold:#cutoffs[0] * threshold:
-            at_trough = False
-            
-        #If the last thing we saw was a peak and we found a trough, update the last thing
-        #we saw to a trough and update the peak count.
-        if (not at_trough) and sig < threshold:#cutoffs[1] * min_val:
-            at_trough = True
-            peak_count += 1
-        i += 1
-        #If we did not find a trough-peak-trough combo, set number of peaks to the fraction of the threshold.
-        if peak_count == 0:
-            peak_count = (np.max(region) - lowest) / (threshold - lowest)
-        return peak_count
+def find_crossing_count(region, threshold):
+               
+    is_below = True
+    crossing_count = 0
+
+    for sig in np.nditer(region):
+        #If the last thing we saw was a trough and we found a crest, update the last thing
+        #we saw to a crest.
+        if is_below and sig >= threshold:
+            is_below = False
+
+        #If the last thing we saw was a crest and we found a trough, update the last thing
+        #we saw to a trough and update the crest count.
+        if (not is_below) and sig < threshold:
+            is_below = True
+            crossing_count += 1
+
+    #If we did not find a trough-crest-trough combo, set number of crests to the fraction of the threshold.
+    if crossing_count == 0:
+        crossing_count = min(1, np.max(region) / threshold)
+        
+    return crossing_count
         
 """
 Returns the Xth percentile of intensity for all records in the file. 
- """
-def get_intensity_percentile(percentile, file, lowest, fine=False):
-    
-    #Count of the number of inputs with each FDI and max.
-    #Note: for window size of 10, fdi_threshold is about 6.
-    #FDI scaling factor allows us to store the FDI data at
-    #a finer granularity.
+NOTE: 1000000 is the highest possible RPKM intensity.
+"""
+def get_intensity_percentile(percentile, file):
+   
     fine_bin_count = 4
-    max_threshold = 10000
-    to_subtract = lowest
-    if fine:
-        max_threshold *= fine_bin_count
-        to_subtract *= fine_bin_count
+    max_threshold = 1000000 * fine_bin_count
     counts = np.zeros(max_threshold)        
     file_line_count = 0
     
@@ -59,16 +47,14 @@ def get_intensity_percentile(percentile, file, lowest, fine=False):
     
     while next_line:
         split_line = next_line.split()
-        if len(split_line) == 2:
-            val = float(split_line[1])
-            
+        if len(split_line) == 4:
+            val = float(split_line[3]) * fine_bin_count
+
             #Increment the count of lines in the file.
             file_line_count += 1
             
             #Get the maximum value and increment the appropriate location in the array.
-            if fine:
-                val *= fine_bin_count
-            bin = int(math.ceil(val - to_subtract))
+            bin = int(math.ceil(val))
             counts[bin] += 1
             
             #Let the user know we are still processing.
@@ -77,7 +63,7 @@ def get_intensity_percentile(percentile, file, lowest, fine=False):
                 
         #Read the next line.
         next_line = file.readline()
-        
+
     #Find percentile of maxes.
     target_count = int(file_line_count * percentile)
     running_sum = 0
@@ -97,9 +83,7 @@ def get_intensity_percentile(percentile, file, lowest, fine=False):
         
     #Rewind file and return values.
     file.seek(0)
-    retval = max_sig_percentile + to_subtract
-    if fine:
-        retval /= 4
+    retval = max_sig_percentile / fine_bin_count
     return retval
     
 #Get the cross-correlation metric between the two clusters.
