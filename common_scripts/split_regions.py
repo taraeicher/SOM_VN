@@ -46,7 +46,7 @@ def main():
     
     # Shift the regions.
     wig_file = open(sys.argv[1], "r")
-    [shifted_regions, crossings_counts, percentile_cutoff] = shift_all_regions(regions, region_size, percentile, factor, wig_file)
+    [shifted_regions, crossings_counts, percentile_cutoff] = shift_all_regions(regions, int(region_size / resolution), percentile, factor, wig_file)
     wig_file.close()
     
     # Save all files.
@@ -74,9 +74,9 @@ def shift_all_regions(regions, region_size, percentile, factor, wig_file):
     all_crossings = []
     print("Shifting regions:")
     for region in tqdm(regions):
-        shifted_region = region_defs.Shifted_Region(region, region_size, factor, threshold)
-        shifted_regions.append(shifted_region)
-        all_crossings.append(shifted_region.crossings)
+       shifted_region = region_defs.Shifted_Region(region, region_size, factor, threshold)
+       shifted_regions.append(shifted_region)
+       all_crossings.append(shifted_region.crossings)
     return [shifted_regions, all_crossings, threshold]
 
 """
@@ -92,15 +92,13 @@ def build_region_list(wig_file, resolution, region_size, chrom, margin):
     region_size = region_size + 2 * margin
     region_list = []
     current_region = None
-    
-    #We don't care about the wig header.
-    junk = wig_file.readline()
 
     #Extract the first signal.
     #Do not continue if the end of the file has been reached.
     input = wig_file.readline()
     signal = float(input.split("\t")[3])
     chrom_pos = float(input.split("\t")[1])
+    chrom_pos_end = float(input.split("\t")[2])
     add_status = region_defs.Region.REGION_COMPLETED_WITH_SIGNAL
     while input is not None and input != "":
 
@@ -111,6 +109,7 @@ def build_region_list(wig_file, resolution, region_size, chrom, margin):
             # Add the region to the list.
             if current_region != None:
                 region_list.append(current_region)
+                #print(current_region.signals)
                 
             # Get info needed for the region.
             interval_start = chrom_pos
@@ -118,7 +117,14 @@ def build_region_list(wig_file, resolution, region_size, chrom, margin):
             
             # Create the region and add the signal.
             current_region = region_defs.Region(interval_start, interval_end, chrom, region_size / resolution)
-            add_status = current_region.add_signal(chrom_pos, signal, resolution)
+            add_status = current_region.add_signal(chrom_pos, chrom_pos_end, signal, resolution)
+            
+            # Read the next line.
+            input = wig_file.readline()
+            if input is not None and input != "":
+                signal = float(input.split("\t")[3])
+                chrom_pos = float(input.split("\t")[1])
+                chrom_pos_end = float(input.split("\t")[2])
             
         # If the region was completed with zeros, add it to the list and
         # start a new region closest to the current signal.
@@ -127,21 +133,46 @@ def build_region_list(wig_file, resolution, region_size, chrom, margin):
             # Add the region to the list.
             if current_region != None:
                 region_list.append(current_region)
+                #print(current_region.signals)
                 
             # Find the closest starting point to the current signal.
             interval_start = find_closest_starting_point(interval_start, region_size, chrom_pos)
             interval_end = interval_start + region_size
             current_region = region_defs.Region(interval_start, interval_end, chrom, region_size / resolution)
-            add_status = current_region.add_signal(chrom_pos, signal, resolution)
+            add_status = current_region.add_signal(chrom_pos, chrom_pos_end, signal, resolution)
             
+            # Read the next line.
+            input = wig_file.readline()
+            if input is not None and input != "":
+                signal = float(input.split("\t")[3])
+                chrom_pos = float(input.split("\t")[1])
+                chrom_pos_end = float(input.split("\t")[2])
+                
+        # If the region was not completed, keep adding new signal.
         elif add_status == region_defs.Region.REGION_INCOMPLETE:
-            add_status = current_region.add_signal(chrom_pos, signal, resolution)
+            add_status = current_region.add_signal(chrom_pos, chrom_pos_end, signal, resolution)
             
-        # Read the next line.
-        input = wig_file.readline()
-        if input is not None and input != "":
-            signal = float(input.split("\t")[3])
-            chrom_pos = float(input.split("\t")[1])
+            # Read the next line.
+            input = wig_file.readline()
+            if input is not None and input != "":
+                signal = float(input.split("\t")[3])
+                chrom_pos = float(input.split("\t")[1])
+                chrom_pos_end = float(input.split("\t")[2])
+          
+        # If the region was completed but there is still more signal in the bin,
+        # create a new interval starting where we left off.
+        elif add_status == region_defs.Region.REGION_SIGNAL_OVERFLOW:
+        
+            # Add the region to the list.
+            if current_region != None:
+                region_list.append(current_region)
+                #print(current_region.signals)
+                
+            # Start a new region beginning with the current bin.
+            interval_start = interval_end
+            interval_end = interval_start + region_size
+            current_region = region_defs.Region(interval_start, interval_end, chrom, region_size / resolution)
+            add_status = current_region.add_signal(interval_start, chrom_pos_end, signal, resolution)
         
     return region_list
     

@@ -41,6 +41,7 @@ def get_intensity_percentile(percentile, file):
     max_threshold = 1000000 * fine_bin_count
     counts = np.zeros(max_threshold)        
     file_line_count = 0
+    bin_sz = 50
     
     #Use each entry in the file to calculate running metadata.
     next_line = file.readline()
@@ -50,12 +51,12 @@ def get_intensity_percentile(percentile, file):
         if len(split_line) == 4:
             val = float(split_line[3]) * fine_bin_count
 
-            #Increment the count of lines in the file.
+            #Increment the count of bins.
             file_line_count += 1
             
-            #Get the maximum value and increment the appropriate location in the array.
+            #Increment the appropriate location by the number of bins.
             bin = int(math.ceil(val))
-            counts[bin] += 1
+            counts[bin] += int((float(split_line[2]) - float(split_line[1])) / bin_sz)
             
             #Let the user know we are still processing.
             if file_line_count % 10000 == 0:
@@ -124,7 +125,7 @@ def get_crosscorr(shape1, shape2, delay, threshold, max_ratio_cutoff, two_way, p
     min_of_two = min(np.max(shape1), np.max(shape2))
     maxes_within_threshold =  min_of_two / max_of_two > max_ratio_cutoff or max_of_two == percentile_cutoff
 
-    elif both_contain_max and maxes_within_threshold:
+    if both_contain_max and maxes_within_threshold:
         #Calculate the cross-correlation pieces.    
         numerator = np.sum(shape1_subset * shape2_subset) - np.sum(shape1_subset) * np.sum(shape2_subset) / len(shape2_subset)
         denominator_1 = np.sum(np.square(shape1_subset)) - np.square(np.sum(shape1_subset)) / len(shape1_subset)

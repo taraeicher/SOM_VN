@@ -13,6 +13,7 @@ class Region:
     REGION_COMPLETED_WITH_ZEROS = 1
     REGION_COMPLETED_WITH_SIGNAL = 2
     REGION_INCOMPLETE = 3
+    REGION_SIGNAL_OVERFLOW = 4
     
     def __init__(self, start, end, chrom, size):
         self.start = start
@@ -33,29 +34,43 @@ class Region:
     """
     Add the signal that was just read at the given position.
     If there was a skip but the signal just read was within
-    the region boundaries, fill in zeros.
+    the region boundaries, impute with the last signal.
     If there was a skip outside of the range of the signal,
     fill in zeros for the rest of the region.
     """
-    def add_signal(self, raw_position, signal, resolution):
-            
+    def add_signal(self, raw_position, raw_position_end, signal, resolution):
+        
         add_status = Region.NONE
-        # If we have passed the end, fill in zeros.
+        # If we have passed the end, fill in the last signal that we saw.
         if raw_position >= self.end:
             for i in range(self.signal_pos, self.region_size):
                 self.signals[i] = 0.0
             add_status = Region.REGION_COMPLETED_WITH_ZEROS
                 
         # Otherwise, fill in the signal.
+        # If the end of the bin extends past the end of the region,
+        # return an appropriate status.
+        elif raw_position_end > self.end:
+            position = int(math.floor((raw_position_end - self.start) / resolution))
+            position_start = int(math.floor((raw_position - self.start) / resolution))
+            while self.signal_pos < position_start:
+                self.signals[self.signal_pos] = 0.0
+                self.signal_pos = self.signal_pos + 1 
+            while self.signal_pos < self.region_size:
+                self.signals[self.signal_pos] = signal
+                self.signal_pos = self.signal_pos + 1 
+            add_status = Region.REGION_SIGNAL_OVERFLOW
         else:
             # Compute the position of the signal within the list.
             # Fill it in as needed.
-            position = int(math.floor((raw_position - self.start) / resolution))
-            while position > self.signal_pos:
+            position = int(math.floor((raw_position_end - self.start) / resolution))
+            position_start = int(math.floor((raw_position - self.start) / resolution))
+            while self.signal_pos < position_start:
                 self.signals[self.signal_pos] = 0.0
+                self.signal_pos = self.signal_pos + 1 
+            while self.signal_pos < position:
+                self.signals[self.signal_pos] = signal
                 self.signal_pos = self.signal_pos + 1
-            self.signals[self.signal_pos] = signal
-            self.signal_pos = self.signal_pos + 1
             
             if self.signal_pos == self.region_size:
                 add_status = Region.REGION_COMPLETED_WITH_SIGNAL
@@ -91,9 +106,9 @@ class Shifted_Region:
             weightVector[i] = (factor_scaled_distance - distance) / factor_scaled_distance
         
         # Find the best representation.
-        final_region, d = self.find_best_representation(signals, weightVector)
+        final_region = self.find_best_representation(signals, weightVector)
         final_region = np.asarray(final_region)
-        
+
         # Get number of crossings across threshold.
         crossings = wsu.find_crossing_count(final_region, threshold)
         return [final_region, crossings]
@@ -119,15 +134,27 @@ class Shifted_Region:
                 max_sum = sum
 
         #Return optimal vector.
-        return sigs[best_delay: best_delay + len(w)], best_delay
+        return sigs[best_delay: best_delay + len(w)]
         
 """
-This class holds a region that has been altered
-according to optimization criteria.
+This class holds a learned shape.
 """   
 class Shape:
     def __init__(self, grid_index, mapped_count, signals):
         self.signals = signals
-        self.grid_index = grid_index
+        self.name = name
         self.mapped_count = mapped_count
+        
+"""
+This class holds a matched region.
+"""   
+class Matched_Region:
+    def __init__(self, region, shape, ambiguity):
+        self.start = region.start
+        self.end = region.end
+        self.signals = region.signals
+        self.crossings = region.crossings
+        self.chromosome = region.chromosome
+        self.shape = shape
+        self.ambiguity = ambiguity
         
