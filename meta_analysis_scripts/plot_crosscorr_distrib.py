@@ -1,3 +1,13 @@
+"""
+Use the BED files containing each region's correlation to its closest shape.
+Plot the correlation across all chromosomes, for the vanilla SOM, the permuted
+WIG SOM, and the VNSSOM. The following arguments are required:
+1. VNSSOM BED file directory containing annotations
+2. Permuted SOM BED file directory containing annotations
+3. Vanilla SOM BED file directory containing annotations
+4. File where output plot should be saved.
+"""
+
 #Import sys for obtaining command line args.
 import sys
 import numpy as np
@@ -8,11 +18,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-"""
-For each datum in each of the window size files, match it to its
-closest cluster in the cluster files. Print the region, its closest
-match, and the ambiguity of the match to a BED file.
-"""
 def main():
 
     #Window size list and list of chromosomes are variable.
@@ -21,39 +26,34 @@ def main():
     #20, 50, 100, 250, 
     input_dir = sys.argv[1]
     input_dir_rand = sys.argv[2]
-    output = sys.argv[3]
-    cell = sys.argv[4]
+    input_dir_som = sys.argv[3]
+    output = sys.argv[4]
     
     #Get all cross-correlations.
-    chroms = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"]
-    cc_prom = []
-    cc_enh = []
-    cc_weak = []
-    rand_cc_prom = []
-    rand_cc_enh = []
-    rand_cc_weak = []
+    chroms = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"]
+    cc_vnssom = []
+    cc_rand_vnssom = []
+    cc_som = []
     for c in chroms:
         
         #Get all cross-corr for the given annotation in that file.
-        in_file = open(input_dir + c, 'r')
-        in_file_rand = open(input_dir_rand + c, 'r')
-        cc_prom.extend(get_crosscorr_anno(in_file, "Promoter"))
-        cc_enh.extend(get_crosscorr_anno(in_file, "Enhancer"))
-        cc_weak.extend(get_crosscorr_anno(in_file, "Weak"))
-        rand_cc_prom.extend(get_crosscorr_anno(in_file_rand,"Promoter"))
-        rand_cc_enh.extend(get_crosscorr_anno(in_file_rand,"Enhancer"))
-        rand_cc_weak.extend(get_crosscorr_anno(in_file_rand,"Weak"))
+        in_file = open(input_dir + "/" + c, 'r')
+        in_file_rand = open(input_dir_rand + "/" + c, 'r')
+        in_file_som = open(input_dir_som + "/" + c, 'r')
+        cc_vnssom.extend(get_crosscorrs(in_file))
+        cc_rand_vnssom.extend(get_crosscorrs(in_file_rand))
+        cc_som.extend(get_crosscorrs(in_file_som))
         in_file.close()
         in_file_rand.close()
+        in_file_som.close()
 
     #Plot all cross-correlations.
-    plot_densities(cc_prom, cc_enh, cc_weak, rand_cc_prom, rand_cc_enh, rand_cc_weak, output, cell)
+    plot_densities(cc_vnssom, cc_rand_vnssom, cc_som, output)
 
 """
-Match each input with the given window size to the nearest cluster for that window size.
-Print out the region with its corresponding cluster to a BED file.
+Extract all cross-correlations from a file.
 """
-def get_crosscorr_anno(in_file, annotation):
+def get_crosscorrs(in_file):
     
     #Read in each line in the file and add to the cross-correlation list if it is the correct annotation.
     cross_corrs = []
@@ -63,41 +63,24 @@ def get_crosscorr_anno(in_file, annotation):
         #Get the chromosome and position info to print to the output file.
         #Get the input signal to match with the clusters.
         split_line = next_line.split("\t")
-        anno = split_line[3]
-        cross_corr = float(split_line[4])
-        
-        #Match the data to the nearest cluster and obtain the match and the ambiguity metric.
-        if anno == annotation:
-            cross_corrs.append(cross_corr)
-
-        #Read the next line in the file.            
+        cross_corrs.append(float(split_line[4]))           
         next_line = in_file.readline()
         
-    #Go bac to the beginning of the file and return the cross-corr list.
-    in_file.seek(0)
     return cross_corrs
 
 """
 Plot the density distribution of cross-correlations for both the actual clusters and the randomized clusters.
 """
-def plot_densities(promoters, enhancers, weaks, rand_promoters, rand_enhancers, rand_weaks, output, cell):
+def plot_densities(vnssom, rand, som, output, cell):
 
-    #Plot promoters, enhancers, weak, and permuted weak.
-    if cell == "A549":
-        plotprom1 = sns.distplot(promoters, color = "black", label = "Promoters - Real WIG")
-        plotenh1 = sns.distplot(enhancers, color = "gray", label = "Enhancers - Real WIG")
-        plotweak1 = sns.distplot(weaks, color = "gray", hist = False, kde_kws={'linestyle':'--'}, label = "Weak - Real WIG")
-        plotweak2 = sns.distplot(rand_weaks, color = "black", hist = False, label = "Weak - Permuted WIG", kde_kws={'linestyle':'--'})
-    else:
-        plotprom1 = sns.distplot(promoters, color = "black")
-        plotenh1 = sns.distplot(enhancers, color = "gray")
-        plotweak1 = sns.distplot(weaks, color = "gray", hist = False, kde_kws={'linestyle':'--'})
-        plotweak2 = sns.distplot(rand_weaks, color = "black", hist = False, kde_kws={'linestyle':'--'})
-    plt.title(cell)
+        vnssom_plot = sns.distplot(vnssom, color = "black", label = "Promoters - Real WIG")
+        rand_plot = sns.distplot(rand, color = "gray", label = "Enhancers - Real WIG")
+        som_plot = sns.distplot(som, color = "gray", hist = False, kde_kws={'linestyle':'--'}, label = "Weak - Real WIG")
+   
     plt.xlabel("Cross-Correlation")
     plt.ylabel("Density")
     fig = plotweak2.get_figure()
-    fig.savefig(output + ".png")
+    fig.savefig(output)
     plt.close(fig)
 
 if __name__ == "__main__":

@@ -140,21 +140,32 @@ class Shifted_Region:
 This class holds a learned shape.
 """   
 class Shape:
-    def __init__(self, grid_index, mapped_count, signals):
+    def __init__(self, name, mapped_count, signals):
         self.signals = signals
         self.name = name
         self.mapped_count = mapped_count
         
 """
+This class holds a learned shape with its percentage distribution.
+"""   
+class Shape_Association:
+    def __init__(shape, promoter, enhancer, repressor, weak):
+        self.shape = shape
+        self.promoter_percentage = promoter
+        self.enhancer_percentage = enhancer
+        self.repressor_percentage = repressor
+        self.weak_percentage = weak
+        
+"""
 This class holds a matched region.
 """   
 class Matched_Region:
-    def __init__(self, region, shape, ambiguity):
+    def __init__(self, region, shape, crosscorr):
         self.start = region.start
         self.end = region.end
         self.signals = region.signals
         self.crossings = region.crossings
         self.chromosome = region.chromosome
         self.shape = shape
-        self.ambiguity = ambiguity
+        self.crosscorr = crosscorr
         

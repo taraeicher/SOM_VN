@@ -18,8 +18,7 @@ def main():
     input = sys.argv[1]
     shape = sys.argv[2]
     output_dir = sys.argv[3]
-    wig_path = sys.argv[4]
-    cutoff = float(sys.argv[5])
+    cutoff = float(sys.argv[4])
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
@@ -50,16 +49,7 @@ def main():
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes_cutoff(in_file_name, shape_file_name, out_dir, wig_name, cutoff):
-    
-    #Get threshold to use in printing.
-    wig = open(wig_name, 'r')
-    intensity = wsu.get_intensity_percentile(0.995, wig, 0)
-    if intensity == 0:
-        intensity = 0.1
-    print("\n")
-    wig.close()
-    scale = 5.0 / intensity
+def match_shapes_cutoff(in_file_name, shape_file_name, out_dir, cutoff):
     
     #Open input and shape files.
     in_file = open(in_file_name, "r")
@@ -195,7 +185,7 @@ def get_max_crosscorr(region, shape):
     for i in range(0, 10):
         try:
             delay = i * step
-            crosscorr = wsu.get_crosscorr(region, shape, int(delay), 0.5, 0, False, False, 0)
+            crosscorr = wsu.get_crosscorr(region, shape, int(delay))
   
             #If the distance is the smallest so far, update.
             if crosscorr > maximum:

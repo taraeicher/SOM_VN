@@ -1,7 +1,15 @@
 """
-Requires gap statistic. Need to import from https://github.com/minddrummer/gap/blob/master/gap/gap.py
+This script takes in a set of shapes and clusters them using K-means, where
+K is determined using the Gap Statistic. This script depends on the gap-stat
+package, which you can download from https://github.com/milesgranger/gap_statistic
+using pip.
+
+The script takes two arguments:
+1. The file containing the shapes to be clustered.
+2. The file where the clustered shapes should be stored.
 """
 """
+https://github.com/minddrummer/gap/blob/master/gap/gap.py
 from urllib import request
 
 def download(url):
@@ -15,24 +23,26 @@ def download(url):
 
 # get repository
 download('https://github.com/minddrummer/gap/blob/master/gap/gap.py')
+gap = imp.load_source('gap', '/users/PAS0272/osu5316/miniconda3/lib/python3.5/site-packages/gap/gap.py')
+#gap_src.gap()
+
+from setuptools import setup
+
+setup(name='kmeans_shapes.py',
+      version='0.1',
+      author='Tara Eicher',
+      dependency_links=['https://github.com/minddrummer/gap/blob/master/gap/gap.py'])
+      
+#from gap import gap
 """
 from sklearn.cluster import KMeans
 import numpy as np
 import sys
 import os
 import imp
-
-gap = imp.load_source('gap', '/users/PAS0272/osu5316/miniconda3/lib/python3.5/site-packages/gap/gap.py')
-#gap_src.gap()
-"""
-from setuptools import setup
-
-setup(name='kmeans_centroids.py',
-      version='0.1',
-      author='Tara Eicher',
-      dependency_links=['https://github.com/minddrummer/gap/blob/master/gap/gap.py'])
-"""
-#from gap import gap
+import pickle as pkl
+import region_defs
+import gap-stat
 
 """
 Cluster the SOM using hierarchical clustering.
@@ -42,57 +52,45 @@ def main():
     file_path = sys.argv[1]
     output_path = sys.argv[2]
 
-    #Obtain the SOM centroids and cluster them.
+    #Obtain the SOM shapes and cluster them.
     
-    #Open the file containing the SOM centroids.
-    #Add all centroids to the list of data to cluster.
-    som_centroids = []
+    #Open the file containing the SOM shapes.
+    #Add all shapes to the list of data to cluster.
+    som_shapes = []
     if os.path.exists(file_path):
-        file = open(file_path, 'r')
-        next_line = file.readline()
-        while next_line:
-            som_centroids.append([float(i) for i in next_line.split(",")])
-            next_line = file.readline()
+        shapes = pkl.load(open(file_path, 'rb'))
+        for shape in shapes:
+            som_shapes.append(shape.signals)
         
         #Compute the gap statistic and use it to find the best k-value.
-        gaps, s_k, K = gap.gap_statistic(np.array(som_centroids), refs=None, B=10, K=range(1,len(som_centroids)), N_init = 10)
-        bestKValue = gap.find_optimal_k(gaps, s_k, K)
+        gaps, s_k, K = gap.gap_statistic(np.array(som_shapes), refs=None, B=10, K=range(1,len(som_shapes)), N_init = 10)
+        best_k_value = gap.find_optimal_k(gaps, s_k, K)
         
         #Print message to user.
-        print("Optimal K is " + str(bestKValue))
+        print("Optimal K is " + str(best_k_value))
         
         #Perform k-means clustering.
-        kmeans = KMeans(n_clusters=bestKValue, random_state=0).fit(np.array(som_centroids))
+        kmeans = KMeans(n_clusters=best_k_value, random_state=0).fit(np.array(som_shapes))
                         
-        #Print cluster centroids from hierarchical clustering.
+        #Print cluster shapes from hierarchical clustering.
         file = open(output_path, 'w')
-        print_centroids(kmeans.cluster_centers_, som_centroids, file)
+        print_shapes(kmeans.cluster_centers_, file)
             
     #Print message to user.
     print("Clustering complete.")
     
-#Print out the cluster centroids
-def print_centroids(cluster_centers, som_centroids, file):
+#Print out the cluster shapes
+def print_shapes(cluster_centers, file):
 
     #Find the number of clusters.
     num_clusters = len(cluster_centers)
     
     #Print each cluster center.
+    shapes = []
     for c in range(0, num_clusters):
         #Print the cluster center.
-        for val in range(len(cluster_centers[0])):
-            file.write(str(cluster_centers[c][val]))
-            if val < len(cluster_centers[0]) - 1:
-                file.write(",")
-        file.write("\n")
-        
-    #Print an additional cluster with low intensities.
-    low_intensity = 0.1
-    for val in range(len(cluster_centers[0])):
-        file.write(str(low_intensity))
-        if val < len(cluster_centers[0]) - 1:
-            file.write(",")
-    file.write("\n")
+        shapes.append(region_defs.Shape(c, len(c), cluster_centers[c][val]))
+    pkl.dump(shapes, file)   
 
 if __name__ == "__main__":
     main()

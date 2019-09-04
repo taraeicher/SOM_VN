@@ -21,7 +21,8 @@
     <-c> The ChromHMM file used for intersecting.\n
     <-i> The bin size used to generate the WIG file (default: 50 bp)\n
     <-r> The size of the input regions (default: 4000)\n
-    <-s> The final set of shapes consolidated across all chromosomes."
+    <-s> The final set of shapes consolidated across all chromosomes.\n
+    <-a> Directory containing training regions"
     
     echo -e $USAGE
     CELL_LINE=""
@@ -32,7 +33,8 @@
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
     BIN_SIZE=50
     SHAPES_COMPREHENSIVE=""
-    while getopts n:d:c:i:r:s: option; do
+    TRAINING=""
+    while getopts n:d:c:i:r:s:a:u: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
             d) BASE_FILENAME=$(realpath $OPTARG);;
@@ -40,15 +42,18 @@
             i) BIN_SIZE=$OPTARG;;
             r) REGION_SIZE=$OPTARG;;
             s) SHAPES_COMPREHENSIVE=$(realpath $OPTARG);;
+            a) TRAINING=$(realpath $OPTARG);;
+            u) CUTOFFS=$(realpath $OPTARG);;
         esac
     done
     BASE_PATH=$BASE_FILENAME/$CELL_LINE
-    PYTHON_VERSION=2.7	
     
 #Print message to user.
     echo "Annotating with the following settings:"
     echo "Name is $CELL_LINE"
     echo "Base directory is $BASE_FILENAME"
+    echo "Learning from $TRAINING"
+    echo "Cutoffs in $CUTOFFS"
     echo "ChromHMM file is $CHROMHMM"
     echo "Bin size in WIG file is $BIN_SIZE"
     echo "Region size for annotation is $REGION_SIZE"
@@ -62,7 +67,6 @@
     if [[ ! -e $SOM_OUT ]]; then
         mkdir $SOM_OUT
     fi
-    TRAINING_FILES="$BASE_PATH/training"
     SOM_OUT_FILTERED="$BASE_PATH/som_output_filtered"
     if [[ ! -e $SOM_OUT_FILTERED ]]; then
         mkdir $SOM_OUT_FILTERED
@@ -103,39 +107,30 @@
 		local c=$1
 		
 		#Run the SOM.
-		python vnssom.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
+		python vnssom.py $TRAINING/chrom$c.pkl $SOM_OUT/$c.pkl $CUTOFFS $TRAINING $REGION_SIZE $BIN_SIZE
 		echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
 		
-		#Remove all shapes to which no regions map.
-		python remove_by_cutoff.py $SOM_OUT/chrom${c}som_centroid 1 $SOM_OUT_FILTERED/chrom${c}som_centroid
-		echo -e "------------------------------------------------Removal complete for chrom $c.---------------------------------------\n"
-		
 		#Merge shifted regions.
-		python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid 0
+		python merge_shifted.py $SOM_OUT/$c.pkl $SOM_OUT_SHIFTED/$c.pkl
 		echo -e "------------------------------------------------Merging complete for chrom $c.----------------------------------------\n"
 		
-		#Remove duplicate shapes using kmeans.
-		python kmeans_shapes.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
-		# echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
-		
 		#Annotate regions with shape.
-		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
+		python make_shape_bed.py $TRAINING/chrom$c.pkl $SOM_OUT_SHIFTED/$c.pkl $SHAPE_ANNOTATED/$c.bed
         echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
-        
-        bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
-        python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
-        cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
-        awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
-        cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
-        echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
+
+        # python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
+        # cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
+        # awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
+        # cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
+        # echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
         
         #Save shapes to file.
-        bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM/${CELL_LINE}_chromhmm_15_liftOver.bed > $CHROMHMM_INTERSECTS/anno${c}.bed			
-        bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
-        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid ${SHAPES_COMPREHENSIVE} ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c}window3 0
+        bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/$c.bed -b $CHROMHMM > $CHROMHMM_INTERSECTS/$c.bed			
+        bedtools sort -i $CHROMHMM_INTERSECTS/$c.bed > $CHROMHMM_INTERSECTS/${c}_sorted.bed
+        python find_chromhmm_distrib.py $CHROMHMM_INTERSECTS/${c}_sorted.bed $SOM_OUT_SHIFTED/$c.pkl $CHROMHMM_DISTRIB/$c.pkl
 	}
     
-    #Run the pipeline from split WIG files to final set of annotations.
+    #Run the pipeline from split WIG files to final set of shapes.
     pids=""
     for f in $CHROMS_NUM;
         do 

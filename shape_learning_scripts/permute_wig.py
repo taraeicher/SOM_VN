@@ -1,35 +1,63 @@
+"""
+Permute the WIG signals. Note that we only permute on non-zero bins
+and single bins with zeros, not on long stretches of zeros. The following
+arguments are required:
+1. The WIG directory.
+2. The directory where the permuted WIG should be stored.
+3. The bin size
+"""
 import numpy as np
 import pandas as pd
 import sys
 import os
 from numpy import random
+from tqdm import tqdm
 
-"""
-Permute the WIG signals.
-"""
 def main():
-    #Read the WIG file, skipping the header lines, and extract the column with the signal intensity.
-    #Permute the values in this column and create a new data file.
-    #Write the new data to the new file.
-    in_wig = pd.read_csv(sys.argv[1], delimiter = "\t", skiprows = [0,1])
-    intensities = in_wig.iloc[:,1]
-    int_perm = pd.DataFrame(np.random.permutation(intensities))
-    new_data = pd.concat([in_wig.iloc[:,0], int_perm], axis=1)
-    new_data.to_csv(sys.argv[2], sep='\t', header = False, index = False)
+    # arguments
+    in_wig_dir = sys.argv[1]
+    out_wig_dir = sys.argv[2]
     
-    #Write the headers.
-    in_wig_2 = open(sys.argv[1], "r")
-    header_1 = in_wig_2.readline()
-    header_2 = in_wig_2.readline()
-    in_wig_2.close()
-    new_file = open(sys.argv[2], "r")
-    new_file_data = new_file.read()
-    new_file.close()
-    actual_new_file = open(sys.argv[2] + "_tmp", "w")
-    actual_new_file.write(header_1)
-    actual_new_file.write(header_2)
-    actual_new_file.write(new_file_data)
-    os.rename(sys.argv[2] + "_tmp", sys.argv[2])
+    # Create the output directory.
+    if not os.path.exists(out_wig_dir):
+        os.makedirs(out_wig_dir)
+    
+    for file in os.listdir(in_wig_dir):
+        print("Permuting " + file)
+        in_wig = pd.read_csv(in_wig_dir + "/" + file, delimiter = "\t", header = None)
+        perm_df = permute(in_wig)
+        perm_df.to_csv(out_wig_dir + "/" + file, sep='\t', header = False, index = False)
+        
+def permute(wig):
 
+    # Permute all rows in the WIG file.
+    permuted = pd.DataFrame(np.random.permutation(wig))
+
+    # Get the sizes of all bins (may not be equal).
+    diffs = permuted.iloc[:,2] - permuted.iloc[:,1]
+    start = np.zeros(permuted.shape[0], dtype = "int")
+    end = np.zeros(permuted.shape[0], dtype = "int")
+    
+    # Built the new start and end positions, retaining the
+    # bin size.
+    start_pos = 0
+    for bin in tqdm(range(permuted.shape[0])):
+        start[bin] = int(start_pos)
+        end[bin] = int(start_pos + diffs.iloc[bin])
+        start_pos = start_pos + diffs.iloc[bin]
+
+    # Integrate the new positions into the data frame.
+    start_df = pd.DataFrame(start)
+    end_df = pd.DataFrame(end)
+    permuted.iloc[:,1] = start_df.values
+    permuted.iloc[:,2] = end_df.values
+        
+    return permuted
+    
+    
+    
+    
+    
+    
 if __name__ == "__main__":
     main()

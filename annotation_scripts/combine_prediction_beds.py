@@ -1,13 +1,15 @@
-import numpy as np
-import sys
-
-BIN_SIZE = 50
 """
-Combine the TSS file and our file to get a new file.
+Combine the TSS file and another file to get a new file.
 Follow "If this is a position-based promoter prediction OR
 a shape-based promoter prediction, predict that it is a promoter.
 Otherwise, leave it as is.
 """
+
+import numpy as np
+import sys
+
+BIN_SIZE = 50
+
 def main():
     
     #Get list of shapes.
@@ -57,7 +59,7 @@ def make_new_file(tss, ours, out):
             if i < len(tss):
                 i += 1
         
-        #If we've reached the end of the TSS annotations, print and increment the shape-based.
+        #If we've reached the end of the TSS annotations, print and increment the other annotation.
         elif i >= len(tss) and j < len(ours):
             out.write("\t".join(our_line) + "\n")
             previous_region = our_line
@@ -83,7 +85,6 @@ def make_new_file(tss, ours, out):
             i += 1
                 
         #If the next TSS comes before the next shape-based annotation, increment TSS only.
-        #elif int(our_line[start]) > int(tss_line[end]) and tss_line[annotation] == "Promoter":
         elif tss_line[annotation] == "Promoter":
           
             #Skip everything that overlaps with the existing region.

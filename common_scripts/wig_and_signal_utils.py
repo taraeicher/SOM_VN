@@ -3,6 +3,25 @@ import math
 import sys
 
 """
+For a given composition of ground-truth RE
+in a matched shape or signal, use the criteria
+to determine the RE annotation of that shape
+or signal.
+""" 
+def get_annotation(distribution, promoter, enhancer, weak, repressor):
+    label = None
+    if distribution[0] >= promoter:
+        label = "Promoter"
+    elif distribution[1] >= enhancer:
+        label = "Enhancer"
+    elif distribution[2] >= repressor:
+        label = "Repressor"
+    else:
+        label = "Weak"
+        
+    return label
+
+"""
 Estimate the number of crests in the region.
 Do this by checking the number of trough-crest-trough triples,
 where trough and crest are signals within a threshold of the
@@ -88,58 +107,45 @@ def get_intensity_percentile(percentile, file):
     return retval
     
 #Get the cross-correlation metric between the two clusters.
-def get_crosscorr(shape1, shape2, delay, threshold, max_ratio_cutoff, two_way, percentile_cutoff):
+def get_crosscorr(shape1, shape2, delay):
 
     #If the clusters are the same length, use subarrays to simulate the shift.
     #Otherwise, move the smaller array across the larger one.
     shape1_subset = shape1[0:len(shape1)]
     shape2_subset = shape2[0:len(shape2)]
-    if two_way:
-        if delay < 0:
-            #Simulate the shift by moving the second cluster to the right.
-            shape1_subset = shape1[0:(len(shape1) + delay)]
-            shape2_subset = shape2[abs(delay):len(shape2)]
-            
-        else:
-            #Simulate the shift by moving the first cluster to the right.
-            shape2_subset = shape2[0:(len(shape2) - delay)]
-            shape1_subset = shape1[delay:len(shape1)]
-    elif len(shape1_subset) > len(shape2_subset):
-        if delay < 0:
-            raise ValueError("Cannot use a negative delay")
-            
-        else:
-            shape1_subset = np.asarray(shape1[delay:(len(shape2) + delay)])
+    R_1_2 = 0
+    R_1_1 = 1
+    R_2_2 = 1
+
+    if delay < 0:
+        # Simulate the shift by starting the second cluster at the delay
+        # and truncating the first cluster.
+        shape1_subset = shape1[0:(len(shape1) + delay)]
+        shape2_subset = shape2[abs(delay):len(shape2)]
+        
     else:
-        if delay < 0:
-            raise ValueError("Cannot use a negative delay")
-            
-        else:
-            shape2_subset = np.asarray(shape2[delay:(len(shape1) + delay)])
-    
+        # Simulate the shift by starting the first cluster at the delay
+        # and truncating the second cluster.
+        shape2_subset = shape2[0:(len(shape2) - delay)]
+        shape1_subset = shape1[delay:len(shape1)]
+
     #Only calculate the cross-correlation if the sub-regions of both clusters contain the max
     #and the maximums are within the threshold.
     #Else, throw an error.
     both_contain_max = np.max(shape1) == np.max(shape1_subset) and np.max(shape2) == np.max(shape2_subset)
-    max_of_two = max(np.max(shape1), np.max(shape2))
-    min_of_two = min(np.max(shape1), np.max(shape2))
-    maxes_within_threshold =  min_of_two / max_of_two > max_ratio_cutoff or max_of_two == percentile_cutoff
-
-    if both_contain_max and maxes_within_threshold:
+    if both_contain_max:
         #Calculate the cross-correlation pieces.    
-        numerator = np.sum(shape1_subset * shape2_subset) - np.sum(shape1_subset) * np.sum(shape2_subset) / len(shape2_subset)
-        denominator_1 = np.sum(np.square(shape1_subset)) - np.square(np.sum(shape1_subset)) / len(shape1_subset)
-        denominator_2 = np.sum(np.square(shape2_subset)) - np.square(np.sum(shape2_subset)) / len(shape2_subset)
-        denominator = 1
-        if denominator_1 > 0 and denominator_2 > 0:
-            denominator = np.sqrt(denominator_1 * denominator_2)
-        else:
-            numerator = 0
+        R_1_2 = np.sum(shape1_subset * shape2_subset) - (np.sum(shape1_subset) * np.sum(shape2_subset) / len(shape2_subset))
+        R_1_1 = np.clip(np.sum(np.square(shape1_subset)) - np.square(np.sum(shape1_subset)) / len(shape1_subset), a_min = 0, a_max = None)
+        R_2_2 = np.clip(np.sum(np.square(shape2_subset)) - np.square(np.sum(shape2_subset)) / len(shape2_subset), a_min = 0, a_max = None)
     else:
         raise ValueError("Maximum signal intensity not contained in region")
         
     #Return the cross-correlation result.
-    return numerator / denominator
+    return_val = 0
+    if R_1_1 > 0 or R_2_2 > 0:
+        return_val = R_1_2 / max(R_1_1, R_2_2)
+    return return_val
     
 #Count signals above a value.
 def count_above(threshold, annotation, signal, start, end, start_anno, end_anno, bin_sz):

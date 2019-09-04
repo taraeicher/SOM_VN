@@ -19,7 +19,9 @@
     <-n> The name of the cell line (e.g. Brain)\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-r> The region size used for splitting (default: 4 kbp)"
+    <-r> The region size used for splitting (default: 4 kbp)\n
+    <-w> The directory containing the WIG file\n
+    <-o> The directory to contain the split regions"
     
     CELL_LINE=""
     REGION_SIZE=4000
@@ -27,12 +29,16 @@
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
     BIN_SIZE=50
     BLACKLIST=""
-    while getopts n:d:i:r: option; do
+    WIG=""
+    SPLIT_DIR=""
+    while getopts n:d:i:r:w:o: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
             d) BASE_FILENAME=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
             r) REGION_SIZE=$OPTARG;;
+            w) WIG=$OPTARG;;
+            o) SPLIT_DIR=$OPTARG;;
         esac
     done
     BASE_PATH=$BASE_FILENAME/$CELL_LINE
@@ -47,9 +53,8 @@
     echo -e "-------------------------------------------------------------------------------------------------------------------------\n"
 	
 #Create all needed directories.
-    TRAINING_FILES="$BASE_PATH/training"
-    if [[ ! -e $TRAINING_FILES ]]; then
-        mkdir $TRAINING_FILES
+    if [[ ! -e $SPLIT_DIR ]]; then
+        mkdir $SPLIT_DIR
     fi
 
     #Generate input files for training and annotation. NOTE: Don't double the size for files to annotate. Keep the same margins, but overlap.
@@ -57,21 +62,21 @@
     split_and_shift() {
         factor=$1
         margin=$2
-        if [[ ! -e $TRAINING_FILES/${factor}_${margin}/ ]]; then
-                mkdir $TRAINING_FILES/${factor}_${margin}/
+        if [[ ! -e $SPLIT_DIR/${factor}_${margin}/ ]]; then
+                mkdir $SPLIT_DIR/${factor}_${margin}/
             fi
-        if [[ ! -e $TRAINING_FILES/${factor}_${margin}_shifted/ ]]; then
-            mkdir $TRAINING_FILES/${factor}_${margin}_shifted/
+        if [[ ! -e $SPLIT_DIR/${factor}_${margin}_shifted/ ]]; then
+            mkdir $SPLIT_DIR/${factor}_${margin}_shifted/
         fi
-        if [[ ! -e $TRAINING_FILES/${factor}_${margin}_crossings/ ]]; then
-            mkdir $TRAINING_FILES/${factor}_${margin}_crossings/
+        if [[ ! -e $SPLIT_DIR/${factor}_${margin}_crossings/ ]]; then
+            mkdir $SPLIT_DIR/${factor}_${margin}_crossings/
         fi
-        if [[ ! -e $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/ ]]; then
-        mkdir $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/
+        if [[ ! -e $SPLIT_DIR/${factor}_${margin}_percentile_cutoffs/ ]]; then
+        mkdir $SPLIT_DIR/${factor}_${margin}_percentile_cutoffs/
     fi
         for c in $CHROMS_NUM;
         do
-            python ../common_scripts/split_regions.py ${BASE_PATH}/wig/$c.wig $BIN_SIZE $c $TRAINING_FILES/${factor}_${margin}/chrom${c}.pkl $REGION_SIZE $margin $factor 0.95 $TRAINING_FILES/${factor}_${margin}_shifted/chrom${c}.pkl $TRAINING_FILES/${factor}_${margin}_crossings/chrom${c}.txt $TRAINING_FILES/${factor}_${margin}_percentile_cutoffs/chrom${c}.txt
+            python ../common_scripts/split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/${factor}_${margin}/chrom${c}.pkl $REGION_SIZE $margin $factor 0.95 $SPLIT_DIR/${factor}_${margin}_shifted/chrom${c}.pkl $SPLIT_DIR/${factor}_${margin}_crossings/chrom${c}.txt $SPLIT_DIR/${factor}_${margin}_percentile_cutoffs/chrom${c}.txt
             
             echo "Splitting complete for chromosome $c with factor $factor and margin $margin"
 

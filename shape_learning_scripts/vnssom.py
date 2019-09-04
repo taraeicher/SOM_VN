@@ -13,14 +13,15 @@ requires the following parameters:
 #Import all needed packages.
 import tensorflow as tf
 import numpy as np
-import region_defs
 from tqdm import tqdm
 import math
 import os
 import sys
 sys.path.append(os.path.abspath("../common_scripts"))
+import region_defs
 import wig_and_signal_utils as wsu
 import pickle as pkl
+import random
 
 """
 Main function accomplishes the following tasks:
@@ -36,8 +37,8 @@ def main():
 
     #Input, output, and regions.
     regions = pkl.load(open(sys.argv[1], 'rb'))
-    output_dir = sys.argv[2]
-    intensity_threshold = open(sys.argv[3], 'r')
+    output = sys.argv[2]
+    intensity_threshold = np.genfromtxt(open(sys.argv[3], 'rb'))
     region_size = int(sys.argv[4])
     bin_size = int(sys.argv[5])
     
@@ -45,31 +46,28 @@ def main():
     som_shapes = []
 
     #Create and train the SOMs and close the input files.
-    train_som(regions, som_shapes, output_dir, intensity_threshold, region_size, bin_size)
+    train_som(regions, som_shapes, output, intensity_threshold, region_size, bin_size)
     
     #Print message to user.
     print("Grid for " + sys.argv[1] + " is complete.")
-
-    #Close files.
-    input.close()
     
 """
 Method to create train SOM model for a given window size and print stats.
 """
-def train_som(regions, som_shapes, out_dir, intensity_threshold, window, bin):
+def train_som(regions, som_shapes, out, intensity_threshold, window, bin):
     
     #If there is at least one region, learn SOM.
-    if regions.shape[0] > 0:
+    if len(regions) > 0:
         #Create new SOM
-        region_size = window / bin
-        som = SOM(region_size, regions, intensity_threshold)
+        region_size = int(math.floor(window / bin))
+        som = SOM(regions, intensity_threshold, region_size)
         
         #Train new SOM
         som.train(som.batch_size, regions, region_size)
         
         #Save centroids
         som_shapes.append(som.get_shapes())
-        pkl.dump(som_shapes, open(out_dir + "som_centroid", "wb"))
+        pkl.dump(som_shapes, open(out, "wb"))
     
 """ 
 2-D Self-Organizing Map with Gaussian Neighbourhood function
@@ -94,10 +92,10 @@ class SOM(object):
     the radius of influence of the BMU while training. By default, its
     taken to be half of max(m, n).
     """
-    def __init__(self, dim, file, intensity_threshold):
+    def __init__(self, regions, intensity_threshold, dim):
         
         #Set parameters.
-        batch_size = line_count / 10
+        batch_size = int(math.floor(len(regions) / 10))
         self.batch_size = batch_size
         alpha = 0.2
         grid_size = 100
@@ -105,7 +103,7 @@ class SOM(object):
         n = int(math.sqrt(grid_size))
         self.m = m
         self.n = n
-        sigma = math.sqrt(grid_size / 2))
+        sigma = math.sqrt(grid_size / 2)
         self.iterations = 100
         self.weightages = []
         
@@ -126,41 +124,71 @@ class SOM(object):
             
             ##PLACEHOLDERS FOR TRAINING INPUTS
             self.batch_input = tf.placeholder(tf.float32, shape = [batch_size, dim])
-            self.input_num_crossings = tf.placeholder(tf.float32, shape = [batch_size, 1])
+            self.input_num_weight_crossings = tf.placeholder(tf.float32, shape = [batch_size, 1])
             self.label = tf.placeholder(tf.string, shape = [batch_size, 3])
             self.iteration_input = tf.placeholder("float")
             
             """
             Get the number of crossings over the threshold in each node in the grid.
             """
-            def get_num_crossings(weights):
+            def get_num_weight_crossings(weights):
                     
-                num_crossings = np.apply_along_axis(wsu.find_crossing_count, 1, weights, intensity_threshold)
-                return num_crossings.astype(float)
+                num_weight_crossings = np.apply_along_axis(wsu.find_crossing_count, 1, weights, intensity_threshold)
+                return num_weight_crossings.astype(float)
+            """
+            Get the cross-correlation distance between each region-weight pair.
+            """
+            def get_vectorized_crosscorr(weights_raw, inputs_raw):
+            
+                # Clip all values to have a very small (but non-zero) value.
+                very_small = 0.001
+                signal_axis = 1
+                weights = np.clip(weights_raw, a_min = very_small, a_max = None)
+                inputs = np.clip(inputs_raw, a_min = very_small, a_max = None)
+                sum_weights = np.sum(weights, axis = signal_axis)
+                sum_inputs = np.sum(inputs, axis = signal_axis)
+                length = weights.shape[signal_axis]
                 
-            #Calculate crossings for all weightage vects.
-            num_crossings_64 = tf.py_func(get_num_crossings, self.weightage_vects, tf.float64)
-            self.num_crossings = tf.cast(num_crossings_64, tf.float32)
+                # Compute normalized input-to-weights cross-correlation value.
+                R_weights_inputs = np.sum(weights * inputs, axis = signal_axis)
+                avg_weight_by_input = (sum_weights * sum_inputs) / length
+                R_weights_inputs_norm = R_weights_inputs - avg_weight_by_input
+                
+                # Compute normalized input-to-input autocorrelation value.
+                R_inputs_inputs = np.sum(inputs * inputs, axis = signal_axis)
+                avg_input_by_input = (sum_inputs * sum_inputs) / length
+                R_inputs_inputs_norm = np.clip(R_inputs_inputs - avg_input_by_input, a_min = 0, a_max = None)
+                
+                # Compute normalized weight-to-weight autocorrelation value.
+                R_weights_weights = np.sum(weights * weights, axis = signal_axis)
+                avg_weight_by_weight = (sum_weights * sum_weights) / length
+                R_weights_weights_norm = np.clip(R_weights_weights - avg_weight_by_weight, a_min = 0, a_max = None)
+                
+                # Compute final metric
+                crosscorr = R_weights_inputs_norm / np.maximum(R_inputs_inputs_norm, R_weights_weights_norm)
+                return crosscorr
+                
+            #Calculate crossings for all weightage vects, with a delay of 0.
+            num_weight_crossings_64 = tf.py_func(get_num_weight_crossings, [self.weightage_vects], tf.float64)
+            self.num_weight_crossings = tf.cast(num_weight_crossings_64, tf.float32)
             
             #To compute the Best Matching Unit given a vector
             #Basically calculates the Euclidean distance between every
             #neuron's weightage vector and the input, and returns the
             #index of the neuron which gives the least value
-            weightage_vects_stack = tf.stack([self.weightage_vects for i in range(batch_size)], axis = 2)
-            num_crossings_stack = tf.stack([self.num_crossings for i in range(batch_size)], axis = 1)
-            batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])
-            input_num_crossings_stack = tf.transpose(tf.contrib.layers.flatten(tf.stack([self.input_num_crossings for i in range(m*n)], axis = 1)))
-            diff = tf.subtract(weightage_vects_stack, batch_input_stack)
-            total_max = tf.maximum(tf.reduce_max(weightage_vects_stack, axis = 1), tf.reduce_max(batch_input_stack, axis = 1))
-            num_crossings_max = tf.maximum(input_num_crossings_stack, num_crossings_stack)
-            max_scales = tf.maximum(0.01, num_crossings_max)
-            bmu_indices = tf.argmin(tf.reduce_sum(tf.pow(diff, 2), 1))
+            self.weightage_vects_stack = tf.stack([self.weightage_vects for i in range(batch_size)], axis = 2)
+            num_weight_crossings_stack = tf.stack([self.num_weight_crossings for i in range(batch_size)], axis = 1)
+            self.batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])
+            self.crosscorrs = tf.py_func(get_vectorized_crosscorr, [self.weightage_vects_stack, self.batch_input_stack], tf.float32)
+            #self.diff = tf.subtract(self.weightage_vects_stack, self.batch_input_stack)
+            #bmu_indices = tf.argmin(tf.reduce_sum(tf.pow(self.diff, 2), 1))
+            self.bmu_indices = tf.argmax(self.crosscorrs)
             
             #This will extract the location of the BMU based on the BMU's index)
-            self.bmu_locations = tf.gather(self.location_vects, bmu_indices)
-            self.bmu_weights = tf.gather(self.weightage_vects, bmu_indices)
-            self.num_crossings_weights = tf.gather(self.num_crossings, bmu_indices)
-            self.lambdas = tf.maximum(0.01, self.num_crossings_weights)
+            self.bmu_locations = tf.gather(self.location_vects, self.bmu_indices)
+            self.bmu_weights = tf.gather(self.weightage_vects, self.bmu_indices)
+            self.num_weight_crossings_weights = tf.gather(self.num_weight_crossings, self.bmu_indices)
+            self.lambdas = tf.maximum(0.01, self.num_weight_crossings_weights)
             
             #To compute the alpha and sigma values based on iteration number
             learning_rate_op = tf.subtract(1.0, tf.divide(self.iteration_input, self.iterations))
@@ -215,10 +243,11 @@ class SOM(object):
     """
     def train(self, batch_size, regions, dim):
         #Fill in local variable to hold placeholder values.
+        self.old_weightages = []
         label_batch = []
         batch_data = []
         first_regions = []
-        num_crossings = []
+        num_weight_crossings = []
         
         #Track count of regions mapping to each shape.
         map_count = np.zeros((self.m,self.n))
@@ -228,79 +257,67 @@ class SOM(object):
             #Training iterations
             for epoch in range(self.iterations):
                 print("Training epoch " + str(epoch))
-                try:
-                    #Fill in input data and train.
-                    for minibatch in tqdm(range(ceil(regions.shape[0] / batch_size))):
-                        #Get data for training.
-                        [label_batch, batch_data, first_regions, num_crossings] = self.fill_in_data(regions, first_regions, minibatch, batch_size)
+                #Permute the data for this epoch.
+                random.shuffle(regions)
+                #Fill in input data and train.
+                for minibatch in tqdm(range(math.floor(len(regions) / batch_size))):
+                    #Get data for training.
+                    [label_batch, batch_data, num_weight_crossings] = self.fill_in_data(regions, minibatch, batch_size)
+                    #Update location counts if we are on the last iteration.
+                    if epoch == self.iterations - 1:
+                        locations = self.bmu_locations.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
+                        for loc in range(batch_size):
+                            map_count[locations[loc][0], locations[loc][1]] += 1
+                  
+                    #Train the model.
+                    self.weight_crossings = list(self.num_weight_crossings.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings}))
+                    self.sess.run(self.shrink_weightage, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
+                    self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
+                    
+                    cc = self.crosscorrs.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
+                    print(str(np.min(cc)) + " " + str(np.max(cc)))
                         
-                        #Update location counts if we are on the last iteration.
-                        if epoch == self.iterations - 1:
-                            locations = self.bmu_locations.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_crossings: num_crossings})
-                            for loc in range(batch_size):
-                                map_count[locations[loc][0], locations[loc][1]] += 1
-
-                        #Train the model.
-                        self.crossings = list(self.num_crossings.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_crossings: num_crossings}))
-                        self.sess.run(self.shrink_weightage, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_crossings: num_crossings})
-                        self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_crossings: num_crossings})
-                        
-                        #Re-set lists.
-                        label_batch = []
-                        batch_data = []
-                        num_crossings = []
-                            
-                        #Update weightages.
-                        self.weightages = list(self.weightage_vects.value().eval()) 
-        
-                #Re-set lists and start at the first region again.
-                label_batch = []
-                batch_data = []
-                first_regions = []
+                    #Update weightages.
+                    self.old_weightages = self.weightages
+                    self.weightages = list(self.weightage_vects.value().eval()) 
+                    
+                # Print the change in weights.
+                if epoch > 0:
+                    print("Delta: " + str(np.sum(np.absolute(np.asarray(self.weightages) - np.asarray(self.old_weightages)))))
                 
             #Store a centroid grid and list of counts for easy retrieval later on
             shapes = []
             self.locations = list(self.sess.run(self.location_vects))
             for i, loc in enumerate(self.locations):
-                shapes.append(region_defs.Shape(loc[0], map_count[loc[0],loc[1]], self.weightages[i]))
+                shapes.append(region_defs.Shape(str(loc[0]) + "_" + str(loc[1]), map_count[loc[0],loc[1]], self.weightages[i]))
             self.shapes = shapes
             
             self.trained = True
     """
     Fills in the label and data values needed for training.
     """
-    def fill_in_data(self, regions, first_regions, minibatch_idx, batch_size):
+    def fill_in_data(self, regions, minibatch_idx, batch_size):
         
         #Get enough lines to fill in mini-batch for training.
         index = 0
+        label_batch = []
+        batch_data = []
+        num_weight_crossings = []
         while index in range(batch_size):
             
-            #If there are no more training regions, fill in the first lines.
-            if minibatch_idx * batch_size + index > len(regions):
-                #Fill in rest of batch with beginning of file.
-                if index > 0:
-                    for k in range(index, batch_size, 1):
-                        idx = minibatch * batch_size + k
-                        labels.append([str(first_regions[idx].chromosome), str(first_regions[idx].start), str(first_regions[idx].end)])
-                        num_crossings.append([first_regions[idx].crossings])
-                        inputStr.append(first_regions[idx].signals)
-                        index += 1
-                else:
-                    raise EOFError()
-            #If there are more training regions, fill in the next one.
-            else:
-                region = regions[minibatch_idx * batch_size + index]
-                labels.append([str(region.chromosome), str(region.start), str(region.end)])
-                num_crossings.append([self.crossings])
-                inputs.append([region.signals])
-                
-                #Initialize beginning of file to use when end is reached and mini-batch is not filled in completely.
-                if loop_count == 0:
-                    first_regions.append(region)
+            # Fill in the next region.
+            region = regions[minibatch_idx * batch_size + index]
+            label_batch.append([str(region.chromosome), str(region.start), str(region.end)])
+            num_weight_crossings.append([region.crossings])
+            batch_data.append([region.signals])
                     
             index += 1 
-        
-        return total_index
+            
+        label_batch_arr = np.stack(label_batch)
+        batch_data_arr = np.squeeze(np.stack(batch_data))
+        num_weight_crossings_arr = np.stack(num_weight_crossings)
+            
+        return [label_batch_arr, batch_data_arr, num_weight_crossings_arr]
                 
     """
     Returns a list of shapes, each one containing location in the grid, counts, and weightages.
