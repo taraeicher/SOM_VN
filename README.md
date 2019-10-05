@@ -1,94 +1,81 @@
 <h1>Getting Started</h1>
-<p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface. 
- <h2>Dependencies</h2>
-<ul><li>Python 2. Our script generates a WIG file using the tool <b>gosr binbam</b>, for which we have included a modified version. This tool is only compatible with Python 2.</li>
-<li>wig_split.py. This can be obtained via the following repository: https://github.com/taoliu/taolib</li>
-<li>The GCC compiler. Some our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.</li>
- <li>bedtools. This can be installed here: https://github.com/arq5x/bedtools2/releases</li>
-  <li>The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.</li>
-<li>The Python modules numpy and scipy.</li>
-<li>The Python modules HTSeq, argparse, logging, sys, itertools, and pysam. These are necessary for running gosr.</li>
-<li>Your version of Python must be compiled to use UCS2. You can check this by running the following commands on the Python command line:
- <p><code>>import sys</code></p>
- <p><code>>print sys.maxunicode</code></p>
- If it uses UCS2, it should print "65535".</li></ul>
- <h2>Installing gosr</h2>
- <p>While a pre-existing version of gosr exists at https://github.com/wresch/gosr, our framework uses a modified version that preserves zeros in the signal profile. gosr should automatically be downloaded when you download our repository. To install it, simply untar the file file <b>gosr.tar</b> provided in this repository.
- <ol></ol>
-<h2>Add to System Path</h2>
-<ul><li>The directory where you installed bedtools.</li>
-<li>The gosr/bin directory under the directory where you installed gosr.</li>
-<li>The directory containing the python packages for gosr.</li>
-<li>The directory containing wig_split.py.</li></ul>
-<h1>Annotating New Samples</h1>
-<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND SOM-VN model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
-<h3>Options</h3>
-<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
-<p><b>-s:</b> The path to the shape file to use for annotation. <em>Required</em></p>
-<p><b>-b:</b> The path to the input BAM file. <em>Required</em></p>
-<p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to learn the shapes.</em></p>
-<p><b>-w:</b> The path to wig_split. <em>Required</em></p>
-<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
-<p></p>
-<p><b>Note:</b> If running the TSS AND SOM-VN model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
-<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
-<p><b>-t:</b> The path to a file containing the transcription start sites.  <em>Required</em></p>
-<p><b>-g:</b> The path to a file containing the chromosome sizes for the genome.  <em>Required</em></p>
-<h3>Output</h3>
-<ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
-<li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
-<li>The signal data for each region to annotate in the directory <b>wig_chroms_annotation</b>.</li>
-<li>An annotated file for each chromosome with the signal data for each region in the directory <b>annotated</b>.</li>
-<li>A sorted annotated file with the annotations and signal in the directory <b>annotated_sorted</b>.</li>
-<li>An annotated file without overlap and including the signal in the directory <b>annotated_consolidated</b>.</li>
-<li>A BED file of the annotations in the directory, excluding the signal, in the directory <b>annotated_consolidated</b>.</li>
-<li>A file with only the signal data for each annotation in the directory <b>annotated_consolidated</b>.</li></ul>
-<h3>Description of Helper Scripts</h3>
-<ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the shapes, the signals for each region, and the WIG file.</li>
-<li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
-<li><b>get_file_data.c:</b> Segments WIG file into regions for annotation.</li></ul>
-<h1>Creating / Appending to a Shape List</h1>
-<p>The code you will need for this task is in the folder <b>shape_learning_scripts</b>. You should only need to run <b>learn_shapes.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
-<h3>Additional Dependencies</h3>
-This code requires the Tensorflow framework, which can be installed here: https://www.tensorflow.org/install/. It also requires the imp module to import the gap statistic code from an external repository. Alternatively, you can download the gap statistic code here: https://github.com/minddrummer/gap.
-<h3>Options</h3>
-<p><b>-n:</b> The name you wish to assign to your training sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like your shapes and all intermediary files to be saved. <em>Required</em></p>
-<p><b>-b:</b> The path to the ChromHMM regions. <em>Required</em></p>
-<p><b>-b:</b> The path to the training BAM file. <em>Required</em></p>
-<p><b>-i:</b> The size of bins you wish to use in training (in bp). The default is 50. <em>This must be the same bin size as you wish to use for annotation.</em></p>
-<p><b>-w:</b> The path to wig_split. <em>Required</em></p>
-<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 4000. </p>
-<p><b>-s:</b> The name of the shape list to save. To append to one of our shape lists, download it and use that name here. <em>Required</em></p>
-
-<h3>Output</h3>
-<ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
-<li>A WIG file for each chromosome in the directory <b>wig_chroms</b>.</li>
-<li>The signal data for each region to use in training in the directory <b>training</b>.</li>
- <li>The signal data for each region to annotate with shapes during training in the directory <b>training_anno</b>.</li>
- <li>The signal data for each sub-region found in our segmentation procedure in the directory <b>training_shifted</b>.</li>
- <li>The shapes learned by the SOM-VN in the directory <b>som_output</b>.</li>
- <li>The shapes with at least one mapping in the last iteration in the directory <b>som_output_filtered</b>.</li>
- <li>The shapes with all shifted regions merged in the directory <b>som_output_shifted</b>.</li>
- <li>The shapes clustered using K-means in the directory <b>som_output_final</b>.</li>
- <li>The regions in <b>training_anno</b> annotated with shapes from <b>som_output_final</b> in the directory <b>anno_beds</b>.</li>
-<li>The sorted list of regions annotated with these shapes in the directory <b>anno_beds_sorted</b>.</li>
-<li>The consolidated non-overlapping list of regions annotated with these shapes in the directory <b>anno_beds_final</b>.</li>
-<li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>anno_intersects</b>.</li>
-<li>The shapes containing all learned shapes on all chromosomes in the file <b>shapes_all</b>.</li>
-<li>The shapes containing a consolidated list of shapes merged using cross-correlation in the file you specified.</li>
-</ul>
-<h3>Description of Helper Scripts</h3>
-<ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li>
- <li><b>shift_input.py:</b> Collects sub-regions to use in training the SOM-VN given the training regions with margins.</li>
- <li><b>som_vn.py:</b> The central SOM-VN script. It learnes the shapes given the input regions.</li>
- <li><b>remove_by_cutoff.py:</b> Removes shapes learned by the SOM-VN that did not have any regions mapping to them in the last iteration of the algorithm.</li>
- <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the SOM-VN using cross-correlation.</li>
- <li><b>kmeans_shapes.py:</b> Clusters shapes learned by the SOM-VN using K-means.</li>
- <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the SOM-VN.</li>
- <li><b>consolidate_chromHMM.py:</b> Creates a shapes of regulatory-associated shapes given the intersections between our shapes and ChromHMM annotations.</li></ul>
+    <p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface. 
+    <h2>Dependencies</h2>
+    <ul>
+        <li>Python 3. Our scripts are all written to run in Python 3. If using an older version of Python, they may be incompatible.</li>
+        <li>bedtools. This can be installed here: https://github.com/arq5x/bedtools2/releases</li>
+        <li>The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.</li>
+        <li>The Python modules numpy, scipy, and tqdm.</li>
+    </ul>
+<h1>Downloading Our Data</h1>
+    <p> To download the data used in our paper, run <b>common_scripts/download_all_files.sh</b>. Make sure you run this command from the folder where you wish to download the files. This will download all BAM files and peaks used in our analyses and concatenate them where needed. This script takes no parameters and will name the BAM files according to cell type.</p>
+    <h3>Additional Dependencies</h3>
+    <ul>
+        <li>bamtools. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
+        <li>wget. This can be installed here: https://ftp.gnu.org/gnu/wget/</li>
+    </ul>
+<h1>Learning Shapes</h1>
+    <p>The code you will need for this task is in the folder <b>shape_learning_scripts</b>. Given the input BAM and ChromHMM mnemonic files, follow these steps to learn shapes and associate them with ChromHMM mnemonics.</p>
+    <h3>Additional Dependencies</h3>
+    <ul>
+        <li>bamtools. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
+        <li>bigWigToWig. This can be installed here: https://www.encodeproject.org/software/bigwigtowig/</li>
+        <li>Tensorflow. This can be installed here: https://www.tensorflow.org/install/.</li>
+        <li>bamCoverage. This can be installed here: https://deeptools.readthedocs.io/en/develop/content/installation.html</li>
+        <li>The python library pysam</li>
+    </ul>
+    <h3>Steps</h3>
+    <ol>
+        <li>Download the Kundaje Lab blacklist file from http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/hg38-human/</li>
+        <li>Run <b>bedtools merge -i hg38.blacklist.bed -o hg38.blacklist_merged.bed</b> to create a merged blacklist.</li>
+        <li>Run <b>convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
+        <ul>
+            <li> <b>-n:</b> The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.</li>
+            <li> <b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+            <li> <b>-b:</b> The BAM file used as input.</li>
+            <li> <b>-i:</b> The bin size used to generate the WIG file (default: 50 bp).</li>
+            <li> <b>-s:</b> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.</li>
+            <li> <b>-l:</b> The blacklist regions to exclude. This is the merged blacklist file you created.</li>
+        </ul>
+        </li>
+        <li> Run <b>learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. You may also use the script <b>learn_all_shapes_vnssom_pbs</b> if you wish to learn shapes on all chromosomes and are running on a supercomputer that uses a PBS job system. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, <b>_som</b>, and <b>_wigperm</b>. This requires the following parameters to be specified:
+        <ul>
+            <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+            <-h> The ChromHMM file used for intersecting.\n
+            <-i> The bin size used to generate the WIG file (default: 50 bp)\n
+            <-r> The size of the input regions (default: 4000)\n
+            <-t> The cutoff to use for cross-correlation significance.\n
+            <-a> Directory containing training regions\n
+            <-u> Percentile cutoff file
+            <-c> The chromosome name"
+        </ul>
+        </li>
+    </ol>
+    <h3>Description of Helper Scripts</h3>
+    <ul>
+        <li><b>create_index_pysam.py:</b> Indexes a BAM file using Pysam. This is necessary because, if you index using bamtools, the <b>bamCoverage</b> utility cannot process the file.</li>
+        <li><b>split_regions.py:</b> Splits the WIG file into regions to use for training the VNSSOM.</li>
+        <li><b>vnssom.py:</b> The central VNSSOM script. It learnes the shapes given the training regions.</li>
+        <li><b>som.py:</b> The vanilla version of the central VNSSOM script.</li>
+        <li><b>permute_chromhmm.py:</b> Permutes the ChromHMM mnemonics.</li>
+        <li><b>permute_wig.py:</b> Permutes the WIG signal intensities.</li>
+        <li><b>extract_signal.py:</b> Extracts pickled input regions and stores them in CSV files for use by CAGT.</li>
+        <li><b>run_cagt.m:</b> Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB.</li>
+        <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the VNSSOM using cross-correlation.</li>
+        <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the VNSSOM.</li>
+        <li><b>find_chromhmm_distrib.py:</b> Finds the distribution of ChromHMM mnemonics across each shape.</li>
+        <li><b>signal_chromhmm_distrib.py:</b> Finds the distribution of ChromHMM mnemonics across each signal intensity.</li>
+    </ul>
+    <h3>Output</h3>
+    <ul>
+        <li>A WIG file for each chromosome in the directory <b>wig</b> in the base directory.</li>
+        <li>The training regions in the directory specified.</li>
+        <li>The shapes learned by the VNSSOM and shifting procedure in the directory <b>vnssom_output_shifted</b> in the base directory.</li>
+        <li>The training regions annotated with shapes in the directory <b>vnssom_anno_beds</b> in the base directory.</li>
+        <li>The sorted list of regions annotated with these shapes in the directory <b>anno_beds_sorted</b> in the base directory.</li>
+        <li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>vnssom_intersects</b> in the base directory.</li>
+        <li>The shapes with their associated ChromHMM mnemonics in the directory <vnssom_chromhmm_distrib" in the base directory.</li>
+    </ul>
 <h1>Replicating Our Results</h1>
 <p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
 <h3>Additional Dependencies</h3>
@@ -112,3 +99,32 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <li><b>Supplementary Fig. 7, 8, and 9: </b> Run <b>plot_precision_recall.py</b>.</li>
 <li><b>Supplementary Fig. 10: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
 <li><b>Supplementary Fig. 11: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li></ul>
+<h1>Annotating New Samples</h1>
+    <p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND SOM-VN model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
+    <h3>Options</h3>
+        <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
+        <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
+        <p><b>-s:</b> The path to the shape file to use for annotation. <em>Required</em></p>
+        <p><b>-b:</b> The path to the input BAM file. <em>Required</em></p>
+        <p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to learn the shapes.</em></p>
+        <p><b>-w:</b> The path to wig_split. <em>Required</em></p>
+        <p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
+        <p></p>
+        <p><b>Note:</b> If running the TSS AND SOM-VN model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
+        <p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
+        <p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
+        <p><b>-t:</b> The path to a file containing the transcription start sites.  <em>Required</em></p>
+        <p><b>-g:</b> The path to a file containing the chromosome sizes for the genome.  <em>Required</em></p>
+    <h3>Output</h3>
+<ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
+<li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
+<li>The signal data for each region to annotate in the directory <b>wig_chroms_annotation</b>.</li>
+<li>An annotated file for each chromosome with the signal data for each region in the directory <b>annotated</b>.</li>
+<li>A sorted annotated file with the annotations and signal in the directory <b>annotated_sorted</b>.</li>
+<li>An annotated file without overlap and including the signal in the directory <b>annotated_consolidated</b>.</li>
+<li>A BED file of the annotations in the directory, excluding the signal, in the directory <b>annotated_consolidated</b>.</li>
+<li>A file with only the signal data for each annotation in the directory <b>annotated_consolidated</b>.</li></ul>
+<h3>Description of Helper Scripts</h3>
+<ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the shapes, the signals for each region, and the WIG file.</li>
+<li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
+<li><b>get_file_data.c:</b> Segments WIG file into regions for annotation.</li></ul>

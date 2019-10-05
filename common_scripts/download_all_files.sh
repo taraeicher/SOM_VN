@@ -1,23 +1,60 @@
-#GM12878 BAM - https://www.encodeproject.org/experiments/ENCSR000EMT/
-wget https://www.encodeproject.org/files/ENCFF593WBR/@@download/ENCFF593WBR.bam
-wget https://www.encodeproject.org/files/ENCFF445PZT/@@download/ENCFF445PZT.bam
-cat ENCFF593WBR.bam ENCFF445PZT.bam > GM12878.bam
-samtools sort -o GM12878_sorted.bam -T GM12878_tmp.bam GM12878.bam
+#GM12878 - https://www.encodeproject.org/experiments/ENCSR000EJD/
+#BAM 
+wget https://www.encodeproject.org/files/ENCFF577DUO/@@download/ENCFF577DUO.bam
+cp ENCFF577DUO.bam GM12878.bam
+#Peak
+wget https://www.encodeproject.org/files/ENCFF588OCA/@@download/ENCFF588OCA.bed.gz
+gunzip ENCFF588OCA.bed.gz
+cp ENCFF588OCA.bed GM12878_peaks.bed
+#ChromHMM mnemonics
+wget https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E116_15_coreMarks_hg38lift_mnemonics.bed.gz
+gunzip E116_15_coreMarks_hg38lift_mnemonics.bed.gz
+cp E116_15_coreMarks_hg38lift_mnemonics.bed GM12878_mnemonics.bed
 
-#A549 BAM - https://www.encodeproject.org/experiments/ENCSR000ELW/
-#NOTE: https://www.encodeproject.org/experiments/ENCSR136DNA/ did not work with gosr binbam.
-#All positions were set to 0 in the WIG file.
-wget https://www.encodeproject.org/files/ENCFF566SPI/@@download/ENCFF566SPI.bam
-wget https://www.encodeproject.org/files/ENCFF414MBW/@@download/ENCFF414MBW.bam
-cat ENCFF566SPI.bam ENCFF414MBW.bam > A549.bam
-samtools sort -o A549_sorted.bam -T A549_tmp.bam A549.bam
+#A549 - https://www.encodeproject.org/experiments/ENCSR136DNA/
+#BAM
+wget https://www.encodeproject.org/files/ENCFF473YHH/@@download/ENCFF473YHH.bam
+wget https://www.encodeproject.org/files/ENCFF809KIH/@@download/ENCFF809KIH.bam
+wget https://www.encodeproject.org/files/ENCFF961WXW/@@download/ENCFF961WXW.bam
+wget https://www.encodeproject.org/files/ENCFF821UUL/@@download/ENCFF821UUL.bam
+bamtools merge -in ENCFF473YHH.bam -in ENCFF809KIH.bam -in ENCFF961WXW.bam -in ENCFF821UUL.bam -out A549.bam
+#Peak
+wget https://www.encodeproject.org/files/ENCFF135JRM/@@download/ENCFF135JRM.bed.gz
+gunzip ENCFF135JRM.bed.gz
+wget https://www.encodeproject.org/files/ENCFF698UAH/@@download/ENCFF698UAH.bed.gz
+gunzip ENCFF698UAH.bed.gz
+wget https://www.encodeproject.org/files/ENCFF079DJV/@@download/ENCFF079DJV.bed.gz
+gunzip ENCFF079DJV.bed.gz
+wget https://www.encodeproject.org/files/ENCFF045PYX/@@download/ENCFF045PYX.bed.gz
+gunzip ENCFF045PYX.bed.gz
+bedtools intersect -a ENCFF135JRM.bed -b ENCFF698UAH.bed ENCFF079DJV.bed ENCFF045PYX.bed > A549_peaks.bed
+#ChromHMM mnemonics
+wget https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E114_15_coreMarks_hg38lift_mnemonics.bed.gz
+gunzip E114_15_coreMarks_hg38lift_mnemonics.bed.gz
+cp E114_15_coreMarks_hg38lift_mnemonics.bed A549_mnemonics.bed
 
-#H1-hESC BAM - https://www.encodeproject.org/experiments/ENCSR794OFW/
-wget https://www.encodeproject.org/files/ENCFF059BEU/@@download/ENCFF059BEU.bam
-cp ENCFF059BEU.bam H1.bam
+#H1-hESC - https://www.encodeproject.org/experiments/ENCFF546PJU/
+#BAM
+wget https://www.encodeproject.org/files/ENCFF546PJU/@@download/ENCFF546PJU.bam
+cp ENCFF546PJU.bam H1.bam
+#Peak
+wget https://www.encodeproject.org/files/ENCFF030XPN/@@download/ENCFF030XPN.bed.gz
+gunzip ENCFF030XPN.bed.gz
+cp ENCFF030XPN.bed H1_peaks.bed
+#ChromHMM mnemonics
+wget https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E003_15_coreMarks_hg38lift_mnemonics.bed.gz
+gunzip E003_15_coreMarks_hg38lift_mnemonics.bed.gz
+cp E003_15_coreMarks_hg38lift_mnemonics.bed. H1_mnemonics.bed
 
-#Brain tissue BAM - https://www.encodeproject.org/experiments/ENCSR595CSH/
-wget https://www.encodeproject.org/files/ENCFF226FCY/@@download/ENCFF226FCY.bam
-wget https://www.encodeproject.org/files/ENCFF982IRZ/@@download/ENCFF982IRZ.bam
-cat ENCFF226FCY.bam ENCFF982IRZ.bam > Brain.bam
-samtools sort -o Brain_sorted.bam -T Brain_tmp.bam Brain.bam
+#Brain tissue - https://www.encodeproject.org/experiments/ENCSR649KBB/
+#BAM
+wget https://www.encodeproject.org/files/ENCFF002QDM/@@download/ENCFF002QDM.bam
+cp ENCFF002QDM.bam Brain.bam
+#Peak
+wget https://www.encodeproject.org/files/ENCFF286XIL/@@download/ENCFF286XIL.bed.gz
+gunzip ENCFF286XIL.bed.gz
+cp ENCFF286XIL.bed Brain_peaks.bed
+#ChromHMM mnemonics
+wget https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E081_15_coreMarks_hg38lift_mnemonics.bed.gz
+gunzip E081_15_coreMarks_hg38lift_mnemonics.bed.gz
+cp E081_15_coreMarks_hg38lift_mnemonics.bed Brain_mnemonics.bed

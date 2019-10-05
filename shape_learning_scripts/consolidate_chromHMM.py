@@ -95,6 +95,7 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
         cumulative_vec[idx] = np.sum(sum_matrix[:,idx])
     
     #Get the set of percentages.
+    print(cumulative_vec)
     cumulative_matrix = np.tile(cumulative_vec, (4, 1))
     return sum_matrix / cumulative_matrix
    
