@@ -38,7 +38,19 @@
             <li> <b>-l:</b> The blacklist regions to exclude. This is the merged blacklist file you created.</li>
         </ul>
         </li>
-        <li> Run <b>learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. You may also use the script <b>learn_all_shapes_vnssom_pbs</b> if you wish to learn shapes on all chromosomes and are running on a supercomputer that uses a PBS job system. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, <b>_som</b>, and <b>_wigperm</b>. This requires the following parameters to be specified:
+        <li> Run <b>create_regions.sh</b> to create training regions. To create training regions from a permuted WIG file, run <b>create_training_regions_permuted.sh</b>. The requires the following parameters to be specified:
+        <ul>
+            <li><b>-n</b> The name of the cell line (e.g. Brain)</li>
+            <li><b>-d</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+            <li><b>-i</b> The bin size used to generate the WIG file (default: 50 bp)</li>
+            <li><b>-r</b> The region size used for splitting (default: 4 kbp)</li>
+            <li><b>-w</b> The directory containing the WIG file</li>
+            <li><b>-o</b> The directory to contain the split regions</li>
+            <li><b>-m</b> The margin to use in splitting the regions</li>
+            <li><b>-f</b> The factor to use in splitting the regions</li>
+        </ul>
+        </li>
+        <li> Run <b>learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. You may also use the script <b>learn_all_shapes_vnssom_pbs</b> if you wish to learn shapes on all chromosomes and are running on a supercomputer that uses a PBS job system. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, and <b>_som</b>. This requires the following parameters to be specified:
         <ul>
             <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
             <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
@@ -69,7 +81,8 @@
     <h3>Output</h3>
     <ul>
         <li>A WIG file for each chromosome in the directory <b>wig</b> in the base directory.</li>
-        <li>The training regions in the directory specified.</li>
+        <li>Percentile cutoffs for computing crossing count in the <b>percentile_cutoffs</b> folder of the directory specified.</li>
+        <li>The training regions in the <b>shifted</b> directory of the directory specified.</li>
         <li>The shapes learned by the VNSSOM and shifting procedure in the directory <b>vnssom_output_shifted</b> in the base directory.</li>
         <li>The training regions annotated with shapes in the directory <b>vnssom_anno_beds</b> in the base directory.</li>
         <li>The sorted list of regions annotated with these shapes in the directory <b>anno_beds_sorted</b> in the base directory.</li>

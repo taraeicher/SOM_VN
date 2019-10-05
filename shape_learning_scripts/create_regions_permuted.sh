@@ -30,9 +30,9 @@
     BASE_FILENAME=""
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
     BIN_SIZE=50
-    BLACKLIST=""
     MARGIN=0
     FACTOR=0.5
+    BLACKLIST=""
     WIG=""
     SPLIT_DIR=""
     while getopts n:d:i:r:w:o:m:f: option; do
@@ -74,9 +74,8 @@
     fi
     for c in $CHROMS_NUM;
     do
-        python ../common_scripts/split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/chrom${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/chrom${c}.pkl $SPLIT_DIR/crossings/chrom${c}.txt $SPLIT_DIR/percentile_cutoffs/chrom${c}.txt
-        
-        echo "Splitting complete for chromosome $c with factor $factor and margin $margin"
+        python permute_wig.py ${WIG}/${c}_perm.wig
+        python ../common_scripts/split_regions.py ${WIG}/${c}_perm.wig $BIN_SIZE $c $SPLIT_DIR/chrom${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/chrom${c}.pkl $SPLIT_DIR/crossings/chrom${c}.txt $SPLIT_DIR/percentile_cutoffs/chrom${c}.txt
 
     done    
     
