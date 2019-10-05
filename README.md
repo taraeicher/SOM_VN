@@ -8,7 +8,7 @@
         <li>The Python modules numpy, scipy, and tqdm.</li>
     </ul>
 <h1>Downloading Our Data</h1>
-    <p> To download the data used in our paper, run <b>common_scripts/download_all_files.sh</b>. Make sure you run this command from the folder where you wish to download the files. This will download all BAM files and peaks used in our analyses and concatenate them where needed. This script takes no parameters and will name the BAM files according to cell type.</p>
+    <p> To download the data used in our paper, run <b>common_scripts/download_all_files.sh</b>. Make sure you run this command from the folder where you wish to download the files. This will download all BAM files, peaks, and ChromHMM mnemonics used in our analyses and concatenate them where needed. This script takes no parameters and will name the BAM files according to cell type.</p>
     <h3>Additional Dependencies</h3>
     <ul>
         <li>bamtools. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
@@ -41,13 +41,13 @@
         <li> Run <b>learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. You may also use the script <b>learn_all_shapes_vnssom_pbs</b> if you wish to learn shapes on all chromosomes and are running on a supercomputer that uses a PBS job system. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, <b>_som</b>, and <b>_wigperm</b>. This requires the following parameters to be specified:
         <ul>
             <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
-            <-h> The ChromHMM file used for intersecting.\n
-            <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-            <-r> The size of the input regions (default: 4000)\n
-            <-t> The cutoff to use for cross-correlation significance.\n
-            <-a> Directory containing training regions\n
-            <-u> Percentile cutoff file
-            <-c> The chromosome name"
+            <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
+            <li><b>-i:</b> The bin size used to generate the WIG file (default: 50 bp)</li>
+            <li><b>-r:</b> The size of the input regions (default: 4000)</li>
+            <li><b>-t:</b> The cutoff to use for cross-correlation significance.</li>
+            <li><b>-a:</b> Directory containing training regions</li>
+            <li><b>-u:</b> Percentile cutoff file</li>
+            <li><b>-c:</b> The chromosome name</li>
         </ul>
         </li>
     </ol>
@@ -74,7 +74,7 @@
         <li>The training regions annotated with shapes in the directory <b>vnssom_anno_beds</b> in the base directory.</li>
         <li>The sorted list of regions annotated with these shapes in the directory <b>anno_beds_sorted</b> in the base directory.</li>
         <li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>vnssom_intersects</b> in the base directory.</li>
-        <li>The shapes with their associated ChromHMM mnemonics in the directory <vnssom_chromhmm_distrib" in the base directory.</li>
+        <li>The shapes with their associated ChromHMM mnemonics in the directory <b>vnssom_chromhmm_distrib</b> in the base directory.</li>
     </ul>
 <h1>Replicating Our Results</h1>
 <p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
