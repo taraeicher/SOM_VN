@@ -14,7 +14,7 @@
         <li>bamtools. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
         <li>wget. This can be installed here: https://ftp.gnu.org/gnu/wget/</li>
     </ul>
-<h1>Learning Shapes</h1>
+<h1>Learning Shapes (VNSSOM)</h1>
     <p>The code you will need for this task is in the folder <b>shape_learning_scripts</b>. Given the input BAM and ChromHMM mnemonic files, follow these steps to learn shapes and associate them with ChromHMM mnemonics.</p>
     <h3>Additional Dependencies</h3>
     <ul>
@@ -23,6 +23,7 @@
         <li>Tensorflow. This can be installed here: https://www.tensorflow.org/install/.</li>
         <li>bamCoverage. This can be installed here: https://deeptools.readthedocs.io/en/develop/content/installation.html</li>
         <li>The python library pysam</li>
+        <li>BedOps. This can be installed here: https://bedops.readthedocs.io/en/latest/index.html</li>
     </ul>
     <h3>Steps</h3>
     <ol>
@@ -72,7 +73,7 @@
         <li><b>permute_chromhmm.py:</b> Permutes the ChromHMM mnemonics.</li>
         <li><b>permute_wig.py:</b> Permutes the WIG signal intensities.</li>
         <li><b>extract_signal.py:</b> Extracts pickled input regions and stores them in CSV files for use by CAGT.</li>
-        <li><b>run_cagt.m:</b> Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB.</li>
+        <li><b>run_cagt.m:</b> Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB. CAGT must also be installed; you can download it here: https://github.com/sofiakp/cagt/tree/master/matlab</li>
         <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the VNSSOM using cross-correlation.</li>
         <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the VNSSOM.</li>
         <li><b>find_chromhmm_distrib.py:</b> Finds the distribution of ChromHMM mnemonics across each shape.</li>
@@ -89,6 +90,8 @@
         <li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>vnssom_intersects</b> in the base directory.</li>
         <li>The shapes with their associated ChromHMM mnemonics in the directory <b>vnssom_chromhmm_distrib</b> in the base directory.</li>
     </ul>
+    
+
 <h1>Replicating Our Results</h1>
 <p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
 <h3>Additional Dependencies</h3>
