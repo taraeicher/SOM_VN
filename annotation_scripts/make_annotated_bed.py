@@ -3,9 +3,11 @@ import numpy as np
 
 #Import glob for obtaining the files.
 import glob, os
+import pickle
 
 #Import sys for obtaining command line args.
 import sys
+from tqdm import tqdm
 sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
 
@@ -18,7 +20,10 @@ def main():
     input = sys.argv[1]
     shape = sys.argv[2]
     output_dir = sys.argv[3]
-    cutoff = float(sys.argv[4])
+    p_promoter = sys.argv[4]
+    p_enhancer = sys.argv[5]
+    p_weak = sys.argv[6]
+    p_repressor = sys.argv[7]
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
@@ -29,8 +34,8 @@ def main():
     shape_count = 0
     
     #Open all input files.
-    in_file = open(input, 'r')
-    shape_file = open(shape, 'r')
+    in_file = pkl.load(open(input, 'rb'))
+    shape_file = pkl.load(open(shape, 'rb'))
 
     #Notify the user that files were found
     print("Using the input file:")
@@ -41,7 +46,7 @@ def main():
     print(shape_file.name)
 
     #Match the inputs to shapes and close the files.
-    match_shapes_cutoff(in_file.name, shape_file.name, output_dir, wig_path, cutoff)
+    match_shapes(in_file, shape_file, output_dir, p_promoter, p_enhancer, p_weak, p_repressor)
     in_file.close()
     shape_file.close()
 
@@ -49,47 +54,18 @@ def main():
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes_cutoff(in_file_name, shape_file_name, out_dir, cutoff):
-    
-    #Open input and shape files.
-    in_file = open(in_file_name, "r")
-    shape_file = open(shape_file_name, "r")
-    
+def match_shapes(regions, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
+        
     #Open output files.
     out_file = open(out_dir, "w")
     out_clust = open(out_dir + "clust", "w")
     
-    #Read in shape data.
-    shapes = []
-    shape_anno = []
-    shape_name = []
-    next_shape = shape_file.readline()
-    counter = 0
-    while next_shape:
-        split_tabs = next_shape.split("\t")
-        shape_anno.append(split_tabs[1])
-        shape_name.append(split_tabs[0])
-        shapes.append([float(i) for i in split_tabs[2].split(",")])
-        next_shape = shape_file.readline()
-    shape_file.close()
-    
     #Read in each line in the file and map it.
     if(len(shapes) > 1):
-        next_line = in_file.readline()
-        while(next_line):
-        
-            #Get the chromosome and position info to print to the output file.
-            #Get the input signal to match with the shapes.
-            inputStr = []
-            labels = []
-            split_line = next_line.split(",")
-            labels = list(split_line[0:3])
-            inputStr = list(split_line[3:len(split_line)])
-            input = [float(i) for i in inputStr] 
-            input_scaled = input * np.tile(scale, len(input))
-            
+        for region in tqdm(regions):
+                   
             #Match the data to the nearest shape and obtain the match and the ambiguity metric.
-            [match, ambig, crosscorr, out_str] = match_region(input_scaled, shapes, shape_anno)
+            [match, ambig, crosscorr, out_str] = match_region(region.signal, shapes, )
             
             #If the cross-correlation is within the threshold, assign the label as the correct label for the region.
             #Otherwise, assign it as unknown.
@@ -121,7 +97,7 @@ Find the closest match for the input in the list of shapes.
 Return an ambiguity metric which measures how close the input
 is to its nearest shape as opposed to other shapes.
 """
-def match_region(region, shapes, annotations):
+def match_region(region, shapes):
 
     #Create array to hold distances between region and shapes.
     max_crosscorr = 0
@@ -132,45 +108,30 @@ def match_region(region, shapes, annotations):
     #For each shape, determine the region's distance from it.
     for i in range(len(shapes)):
         shape = shapes[i]
-        if annotations[i] != "Unknown":
             crosscorr, d = get_max_crosscorr(region, shape)
             crosscorr_list.append(crosscorr)
             if crosscorr_list[len(crosscorr_list) - 1] > max_crosscorr:
                 max_crosscorr = crosscorr_list[len(crosscorr_list) - 1]
                 match = i
                 opt_delay = d
-
-    #Calculate the ambiguity metric. Only do so if not all cross-correlations are zero.
-    #If they are all zero, set ambiguity to 1 (completely ambiguous) and do not assign
-    #it to a shape.
-    ambig = 1.0
-    if not max_crosscorr == 0:
-        ambig = get_ambiguity(crosscorr_list, region)
-    else:
-        match = -1
-    
-    #Write the shape values to a separate file.
-    #This file will be used for shape validity analysis.
-    
-    comma = ","
-    out_str = comma.join(str(e) for e in region)
-            
-    #The ambiguity metric is the ratio of the closest shape's distance
-    #to the distance of the second closest shape.
-    return [match, ambig, max_crosscorr, out_str]
-
-"""
-Compute the ambiguity metric. It is equivalent to the smallest distance
-from the region to a shape centroid, divided by the second smallest
-distance from the region to a shape centroid.
-""" 
-def get_ambiguity(list, region):
-    list_array = np.asarray(list)
-    max_idx = np.argmax(list_array)
-    list_max_removed = np.delete(list_array, max_idx)
-    max_idx_2 = np.argmax(list_max_removed)
-    ambiguity = list_max_removed[max_idx_2] / list_array[max_idx]
-    return ambiguity
+                
+    # Get the annotation type comprising the maximum of regions
+    # with this shape.
+    label = None
+    argmax = wsu.get_annotation(match, p_promoter, p_enhancer, p_weak, p_repressor)
+    if argmax == 0:
+        label = "Promoter"
+    elif argmax == 1:
+        label = "Enhancer"
+    elif argmax == 2:
+        label = "Repressed"
+    elif argmax == 3:
+        label = "Weak"
+        
+    # Get the confidence of this annotation.
+    total_anno = np.sum(match)
+    percent_label = match[argmax] / total_anno
+    return [label, percent_label]
 
 """
 Find the minimum distance between the region and shifted shape.
