@@ -69,11 +69,6 @@ Save a list of mapped regions to a BED file, where the ambiguity is the score of
 def save_to_bed(bed, regions):
     bed_out = open(bed, "w")
     for region in regions:
-        print(region.chromosome)
-        print(region.start)
-        print(region.end)
-        print(region.shape.name)
-        print(region.crosscorr)
         bed_out.write("chr" + str(region.chromosome) + "\t" + str(int(region.start)) + "\t" + str(int(region.end))
             + "\t" + str(region.shape.name) + "\t" + str(region.crosscorr) + "\n")
             

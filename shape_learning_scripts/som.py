@@ -256,7 +256,6 @@ class SOM(object):
                     self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch)})
                     
                     cc = self.crosscorrs.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch)})
-                    print(str(np.min(cc)) + " " + str(np.max(cc)))
                         
                     #Update weightages.
                     self.old_weightages = self.weightages
