@@ -89,7 +89,8 @@
             <li><b>permute_wig.py:</b> Permutes the WIG signal intensities.</li>
             <li><b>extract_signal.py:</b> Extracts pickled input regions and stores them in CSV files for use by CAGT.</li>
             <li><b>run_cagt.m:</b> Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB. CAGT must also be installed; you can download it here: https://github.com/sofiakp/cagt/tree/master/matlab</li>
-            <li><b>writeTextResults.m:</b> This is a hackish solution for running CAGT (There is a formatting issue with CAGT that cannot be resolved at this time). After installing CAGT, you must replace the <b>writeTextResults.m</b> file in the <b>matlab/src</b> directory with our file.</li>
+            <li><b>writeTextResults.m:</b> This is a hackish solution for running CAGT (There is an I/O issue between our code and the original CAGT). After installing CAGT, you must replace the <b>writeTextResults.m</b> file in the <b>matlab/src</b> directory with our file. Note that ONLY the I/O format has been changed.</li>
+            <li><b>cagt.m:</b> This is a hackish solution for running CAGT (There is an I/O issue between our code and the original CAGT). After installing CAGT, you must replace the <b>cagt.m</b> file in the <b>matlab/src</b> directory with our file. Note that ONLY the I/O format has been changed.</li>
             <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the VNSSOM using cross-correlation.</li>
             <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the VNSSOM.</li>
             <li><b>find_chromhmm_distrib.py:</b> Finds the distribution of ChromHMM mnemonics across each shape.</li>

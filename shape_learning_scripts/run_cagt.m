@@ -15,15 +15,13 @@ function X=run_cagt(in_file, mat_loc, csv_file, cagt_path)
     sz_rem = size(M_mat);
     C    = cell(sz_rem(1), 1);
     C(:) = {'+'};
-    %intervalData.strand = transpose(C);
-    %intervalData.Properties.VarNames = string([1:sz_rem(2)]).'
     intervalData = dataset(chr, start, stop, C);
     intervalData.Properties.VarNames = ["chr", "start", "stop", "strand"];
     
     % Read the CAGT file, run CAGT, and save the shapes found in a CSV file.
-    save('mat_loc','intervalData', 'signal');
+    save('mat_loc','intervalData', 'signal')
     addpath(cagt_path)
-    cagt(char(mat_loc), 'od', '../data/test', 'op', 'nucleo_around_ctcf_', 'tt', 'CTCF', 'st', 'NUCLEOSOME', ...
+    cagt('mat_loc', 'od', '../data/test', 'op', 'nucleo_around_ctcf_', 'tt', 'CTCF', 'st', 'NUCLEOSOME', ...
       'merge', true, 'bed', true, 'txt', true, 'maxiter', 1000, 'replicates', 1, 'start', 'plus', ...
       'overwrite', true, 'flip', true, 'mergeDist', 0.8, 'mergeK', 1, 'lowvarcut', 0.01, 'distance', 'correlation', 'maxlag', 20, ...
       'emptyaction', 'drop', 'avgFun', 'median')

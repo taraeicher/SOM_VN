@@ -24,10 +24,9 @@ def main():
     shapes = []
     for i in range(csv_shapes.shape[0]):
         shapes.append(region_defs.Shape(str(i), 0, np.asarray(csv_shapes.iloc[i])))
-        print(shapes[i].name)
         
     # Save the pickled list.
-    pkl.dump(shapes, open(output_file, "wb"))
+    pkl.dump([shapes], open(output_file, "wb"))
     
 if __name__ == "__main__":
     main()
