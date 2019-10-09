@@ -109,45 +109,33 @@
         <ol>
             <li> Run <b>convert_bam_to_wig.sh</b> and <b>create_regions.sh</b> as described in the <b>Learning Shapes</b> section.</li>
             <li>If you want to annotate new samples using region shape, run <b>python make_annotation_bed.py</b> with the following parameters:
-                <ol>
+                <ul>
                     <li>The name of the file containing your regions to annotate (generated in step 1).</li>
                     <li>The name of the file containing your learned shapes (as provided in <b>learned_shapes</b>).</li>
                     <li>The name of the file where you wish to store your annotated BED file.</li>
                     <li>The percentage cutoff for a shape to be associated with a promoter</li>
                     <li>The percentage cutoff for a shape to be associated with an enhancer, given that it is not a promoter</li>
                     <li>The percentage cutoff for a shape to be associated with a repressor, given that it is neither a promoter nor an enhancer</li>
-                </ol>
+                </ul>
             </li>
             <li>If you want to annotate new samples using maximum region signal intensity, run <b>python signal_chromhmm_match.py</b> with the following parameters:
-                <ol>
+                <ul>
                     <li>The name of the file containing your regions to annotate (generated in step 1).</li>
                     <li>The name of the file containing your binned signal values (as provided in <b>learned_shapes</b>).</li>
                     <li>The name of the file where you wish to store your annotated BED file.</li>
                     <li>The percentage cutoff for a region's maximum intensity to be associated with a promoter</li>
                     <li>The percentage cutoff for a region's maximum intensity to be associated with an enhancer, given that it is not a promoter</li>
                     <li>The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer</li>
-                </ol>
+                </ul>
             </li>
 <h1>Evaluating Ground Truth on Peaks</h1>
     <p>The code you will need for this task is in the folder <b>annotation_scripts</b>. Here, it is assumed that you have BED files generated using the annotation scripts above, peaks called for your input data, and a BED file with ground truth mnemonics in the format of ChromHMM mnemonics. 
     <h3>Steps</h3>
-        <ol>
+        <ul>
             <li> Run <b>bedtools intersect -a <i>annotated-region-bed</i> -b <i>peak-bed</i> > <i>annotated-peak-bed</i></b></li>
             <li> Run <b>bedtools intersect -wao -a <i>annotated-peak-bed</i> -b <i>chromhmm-bed</i> > <i>peak-chromhmm-overlap-bed</i></b></li>
-            <li>Run <b>python save_precision_recall.py</b>
-    pr_path = sys.argv[4]
-    win = sys.argv[5]
-    cell = sys.argv[6]
-    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
-
-    #Plot ROC curve for each chromosome. Plot curve for each annotation separately.
-    c = 0
-    for chrom in all_chroms:
-        #Get files for each category.
-        our_bed = sys.argv[1] + "anno" + str(chrom) + ".bed"
-        our_sig = sys.argv[2] + "clusters_anno" + str(chrom)
-        wig = sys.argv[3] + str(chrom) + ".wig"
-            </li>
+            <li>Run <b>python save_precision_recall.py <i>peak-chromhmm-overlap-bed</i> <i>precision-recall-file</i></b></li>
+        </ul>
 <h1>Reproducing Our Figures</h1>
     <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
     <ul>
