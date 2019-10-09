@@ -3,13 +3,13 @@
 #!/bin/bash   
 
 #Variables
-    USAGE="This script is used for associating a set of signals with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift and clustered using k-means. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n
+    USAGE="\n\nThis script is used for associating a set of signals with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift and clustered using k-means. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-h> The ChromHMM file used for intersecting.\n
     <-i> The bin size used to generate the WIG file (default: 50 bp)\n
     <-c> The chromosome name\n
     <-w> The WIG directory for this chromosome\n
-    <-s> The directory containing the scripts"
+    <-s> The directory containing the scripts\n\n"
     
     echo -e $USAGE
     REGION_SIZE=4000
@@ -25,7 +25,7 @@
             h) CHROMHMM=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
             w) WIG=$(realpath $OPTARG);;
-            c) CHROM=$(realpath $OPTARG);;
+            c) CHROM=$OPTARG;;
             s) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
@@ -52,12 +52,12 @@
     fi
     
     # Convert WIG files to BED files.
-    wig2bed < $WIG/$CHROM.wig > $WIGBED/$CHROM.bed
+    wig2bed --zero-indexed < $WIG > $WIGBED/$CHROM.bed
     
     # Intersect signal BED file with ChromHMM.
     bedtools intersect -wao -a $WIGBED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
-    python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $SOM_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl
+    python signal_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CHROMHMM_DISTRIB/$CHROM.pkl
         
     #Exit
 	wait

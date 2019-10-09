@@ -40,7 +40,6 @@ def main():
 
     #Get distribution of ChromHMM classes per signal bin.
     total_percent_all = get_all_percentage_pairs(signal_col, bio_col, bin_start, bin_end, bio_len, bed, promoter, enhancer, repressed, weak, signal_bins)
-    print(total_percent_all)
     pkl.dump(total_percent_all, open(output, "wb"))
     
 """
@@ -72,7 +71,6 @@ def get_all_bins(bed, sig_c):
         else:
             bin = bin - 1
 
-    print(highest_bin)
     return bins[0:highest_bin+1]
 """
 Compute percentage for each shape-annotation pair.
