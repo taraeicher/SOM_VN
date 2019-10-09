@@ -16,7 +16,6 @@
     BAM=""
     CHROMHMM=""
     BIN_SIZE=50
-    TRAINING=""
     CCCUTOFF=0.75
     while getopts h:d:c:i:w: option; do
         case "${option}" in

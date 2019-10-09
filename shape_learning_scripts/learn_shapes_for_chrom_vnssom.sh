@@ -34,8 +34,6 @@
         esac
     done
 	
-    for 
-    
     #Create all needed directories.
     SOM_OUT="$BASE_PATH/vnssom_output"
     if [[ ! -e $SOM_OUT ]]; then

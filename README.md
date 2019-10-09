@@ -56,11 +56,23 @@
                     <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
                     <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
                     <li><b>-i:</b> The bin size used to generate the WIG file (default: 50 bp)</li>
-                    <li><b>-r:</b> The size of the input regions (default: 4000)</li>
-                    <li><b>-t:</b> The cutoff to use for cross-correlation significance.</li>
-                    <li><b>-a:</b> Directory containing training regions</li>
-                    <li><b>-u:</b> Percentile cutoff file</li>
+                    <li><b>-r:</b> The size of the input regions (default: 4000) (not needed for <b>_signal</b>)</li>
+                    <li><b>-t:</b> The cutoff to use for cross-correlation significance (not needed for <b>_signal</b>)</li>
+                    <li><b>-a:</b> Directory containing training regions (not needed for <b>_signal</b>)</li>
+                    <li><b>-u:</b> Percentile cutoff file (not needed for <b>_signal</b>)</li>
                     <li><b>-c:</b> The chromosome name</li>
+                    <li><b>-p:</b> The path where the cagt.m file from the CAGT installation is stored (<b>_cagt</b> only)</li>
+                    <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
+                </ul>
+            Note that you may also learn shapes on all 24 chromosomes in parallel using the scripts <b>run_all_chroms_vnssom.sh</b>, <b>_som.sh</b>, <b>_signal.sh</b>, or <b>_cagt.sh</b> if you have access to a supercomputer that uses the PBS queueing system. This will run using the default parameters in our paper. In this case, the only parameters you need are:
+                <ul>
+                    <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+                    <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
+                    <li><b>-a:</b> Directory containing training regions (not needed for <b>_signal</b>)</li>
+                    <li><b>-c:</b> The chromosome name</li>
+                    <li><b>-p:</b> The project number to which you wish to charge your run</li>
+                    <li><b>-g:</b> The path where the cagt.m file from the CAGT installation is stored (<b>_cagt</b> only)</li>
+                    <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
                 </ul>
             </li>
         </ol>
@@ -74,6 +86,7 @@
             <li><b>permute_wig.py:</b> Permutes the WIG signal intensities.</li>
             <li><b>extract_signal.py:</b> Extracts pickled input regions and stores them in CSV files for use by CAGT.</li>
             <li><b>run_cagt.m:</b> Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB. CAGT must also be installed; you can download it here: https://github.com/sofiakp/cagt/tree/master/matlab</li>
+            <li><b>writeTextResults.m:</b> This is a hackish solution for running CAGT (There is a formatting issue with CAGT that cannot be resolved at this time). After installing CAGT, you must replace the <b>writeTextResults.m</b> file in the <b>matlab/src</b> directory with our file.</li>
             <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the VNSSOM using cross-correlation.</li>
             <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the VNSSOM.</li>
             <li><b>find_chromhmm_distrib.py:</b> Finds the distribution of ChromHMM mnemonics across each shape.</li>
@@ -114,6 +127,26 @@
                     <li>The percentage cutoff for a region's maximum intensity to be associated with an enhancer, given that it is not a promoter</li>
                     <li>The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer</li>
                 </ol>
+            </li>
+<h1>Evaluating Ground Truth on Peaks</h1>
+    <p>The code you will need for this task is in the folder <b>annotation_scripts</b>. Here, it is assumed that you have BED files generated using the annotation scripts above, peaks called for your input data, and a BED file with ground truth mnemonics in the format of ChromHMM mnemonics. 
+    <h3>Steps</h3>
+        <ol>
+            <li> Run <b>bedtools intersect -a <i>annotated-region-bed</i> -b <i>peak-bed</i> > <i>annotated-peak-bed</i></b></li>
+            <li> Run <b>bedtools intersect -wao -a <i>annotated-peak-bed</i> -b <i>chromhmm-bed</i> > <i>peak-chromhmm-overlap-bed</i></b></li>
+            <li>Run <b>python save_precision_recall.py</b>
+    pr_path = sys.argv[4]
+    win = sys.argv[5]
+    cell = sys.argv[6]
+    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+
+    #Plot ROC curve for each chromosome. Plot curve for each annotation separately.
+    c = 0
+    for chrom in all_chroms:
+        #Get files for each category.
+        our_bed = sys.argv[1] + "anno" + str(chrom) + ".bed"
+        our_sig = sys.argv[2] + "clusters_anno" + str(chrom)
+        wig = sys.argv[3] + str(chrom) + ".wig"
             </li>
 <h1>Reproducing Our Figures</h1>
     <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
