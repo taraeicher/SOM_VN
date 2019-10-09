@@ -19,11 +19,10 @@ def main():
 
     input = sys.argv[1]
     shape = sys.argv[2]
-    output_dir = sys.argv[3]
+    output_file = sys.argv[3]
     p_promoter = sys.argv[4]
     p_enhancer = sys.argv[5]
-    p_weak = sys.argv[6]
-    p_repressor = sys.argv[7]
+    p_repressor = sys.argv[6]
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
@@ -46,7 +45,7 @@ def main():
     print(shape_file.name)
 
     #Match the inputs to shapes and close the files.
-    match_shapes(in_file, shape_file, output_dir, p_promoter, p_enhancer, p_weak, p_repressor)
+    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_weak, p_repressor)
     in_file.close()
     shape_file.close()
 
@@ -54,11 +53,10 @@ def main():
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes(regions, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
+def match_shapes(regions, out_file_name, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
         
     #Open output files.
-    out_file = open(out_dir, "w")
-    out_clust = open(out_dir + "clust", "w")
+    out_file = open(out_file_name, "w")
     
     #Read in each line in the file and map it.
     if(len(shapes) > 1):
@@ -79,7 +77,6 @@ def match_shapes(regions, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
             #chrom  start   end shape_num 1 - ambiguity
             #Score is the opposite of the ambiguity metric.
             out_file.write("chr" + labels[0] + "\t" + labels[1] + "\t" + labels[2] + "\t" + anno_label + "\t" + str(1 - ambig) + "\t" + out_str + "\n")
-            out_clust.write("chr" + labels[0] + "\t" + labels[1] + "\t" + labels[2] + "\t" + anno_name + "\t" + str(1 - ambig) + "\t" + out_str + "\n")
 
             #Read the next line in the file.            
             next_line = in_file.readline()
@@ -89,8 +86,6 @@ def match_shapes(regions, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
     else:
         print("Only one shape. No annotation performed.")
     out_file.close()
-    out_clust.close()
-    in_file.close()
 
 """
 Find the closest match for the input in the list of shapes.

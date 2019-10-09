@@ -46,7 +46,6 @@ def main():
     total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, bed, promoter, enhancer, repressed, weak, shape_names)
 
     #Print all shapes with significant annotations, along with their annotations.
-    print(total_percent_all)
     pkl.dump([shape_names, total_percent_all], open(output, "wb"))
     
 """

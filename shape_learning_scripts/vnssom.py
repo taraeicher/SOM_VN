@@ -104,7 +104,7 @@ class SOM(object):
         self.m = m
         self.n = n
         sigma = math.sqrt(grid_size / 2)
-        self.iterations = 100
+        self.iterations = 3#100
         self.weightages = []
         
         ##INITIALIZE GRAPH
@@ -275,7 +275,6 @@ class SOM(object):
                     self.sess.run(self.add_delta, feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
                     
                     cc = self.crosscorrs.eval(feed_dict = {self.batch_input: batch_data, self.label: label_batch, self.iteration_input: float(epoch), self.input_num_weight_crossings: num_weight_crossings})
-                    print(str(np.min(cc)) + " " + str(np.max(cc)))
                         
                     #Update weightages.
                     self.old_weightages = self.weightages

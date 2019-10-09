@@ -64,7 +64,7 @@
     fi
     for c in $CHROMS_NUM;
     do
-        python split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/chrom${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/chrom${c}.pkl $SPLIT_DIR/crossings/chrom${c}.txt $SPLIT_DIR/percentile_cutoffs/chrom${c}.txt
+        python split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/${c}.pkl $SPLIT_DIR/crossings/${c}.txt $SPLIT_DIR/percentile_cutoffs/${c}.txt
         
         echo "Splitting complete for chromosome $c with factor $factor and margin $margin"
 
