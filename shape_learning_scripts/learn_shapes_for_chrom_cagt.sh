@@ -10,9 +10,10 @@
     <-r> The size of the input regions (default: 4000)\n
     <-t> The cutoff to use for cross-correlation significance.\n
     <-a> Directory containing training regions\n
-    <-u> Percentile cutoff file
-    <-c> The chromosome name
-    <-p> The path to the CAGT file"
+    <-u> Percentile cutoff file\n
+    <-c> The chromosome name\n
+    <-p> The path to the CAGT file\n
+    <-s> The directory containing the scripts"
     
     echo -e $USAGE
     REGION_SIZE=4000
@@ -23,6 +24,7 @@
     TRAINING=""
     CCCUTOFF=0.75
     CAGT_PATH="/fs/project/PAS0272/Tara/DNase_SOM/Brain/cagt/matlab/src"
+    SCRIPTS=""
     while getopts h:d:c:i:r:t:a:u:p: option; do
         case "${option}" in
             d) BASE_PATH=$(realpath $OPTARG);;
@@ -34,10 +36,12 @@
             c) CHROM=$(realpath $OPTARG);;
             t) CCCUTOFF=$OPTARG;;
             p) CAGT_PATH=$(realpath $OPTARG);;
+            s) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
 	
-    for 
+    #Move to the directory containing the scripts.
+    cd $SCRIPTS
     
     #Create all needed directories.
     MATLAB_MATRIX="$BASE_PATH/cagt_matlab_mat"

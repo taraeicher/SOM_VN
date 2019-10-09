@@ -11,7 +11,8 @@
     <-t> The cutoff to use for cross-correlation significance.\n
     <-a> Directory containing training regions\n
     <-u> Percentile cutoff file
-    <-c> The chromosome name"
+    <-c> The chromosome name\n
+    <-s> The directory containing the scripts"
     
     echo -e $USAGE
     REGION_SIZE=4000
@@ -21,7 +22,8 @@
     BIN_SIZE=50
     TRAINING=""
     CCCUTOFF=0.75
-    while getopts h:d:c:i:r:t:a:u: option; do
+    SCRIPTS=""
+    while getopts h:d:c:i:r:t:a:u:s: option; do
         case "${option}" in
             d) BASE_PATH=$(realpath $OPTARG);;
             h) CHROMHMM=$(realpath $OPTARG);;
@@ -31,10 +33,12 @@
             u) CUTOFFS=$(realpath $OPTARG);;
             c) CHROM=$(realpath $OPTARG);;
             t) CCCUTOFF=$OPTARG;;
+            s) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
 	
-    for 
+    #Move to the directory containing the scripts.
+    cd $SCRIPTS
     
     #Create all needed directories.
     SOM_OUT="$BASE_PATH/som_output"

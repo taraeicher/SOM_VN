@@ -18,18 +18,18 @@
     <p>The code you will need for this task is in the folder <b>shape_learning_scripts</b> and <b>common_scripts</b>. Given the input BAM and ChromHMM mnemonic files, follow these steps to learn shapes and associate them with ChromHMM mnemonics.</p>
     <h3>Additional Dependencies</h3>
         <ul>
-            <li>bamtools. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
-            <li>bigWigToWig. This can be installed here: https://www.encodeproject.org/software/bigwigtowig/</li>
-            <li>Tensorflow. This can be installed here: https://www.tensorflow.org/install/.</li>
-            <li>bamCoverage. This can be installed here: https://deeptools.readthedocs.io/en/develop/content/installation.html</li>
+            <li><b>bamtools</b>. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
+            <li><b>bigWigToWig</b>. This can be installed here: https://www.encodeproject.org/software/bigwigtowig/</li>
+            <li><b>Tensorflow</b> (for VNSSOM and Vanilla SOM models). This can be installed here: https://www.tensorflow.org/install/.</li>
+            <li><b>bamCoverage</b>. This can be installed here: https://deeptools.readthedocs.io/en/develop/content/installation.html</li>
             <li>The python library pysam</li>
-            <li>BedOps. This can be installed here: https://bedops.readthedocs.io/en/latest/index.html</li>
+            <li><b>BedOps</b> (for signal intensity model only). This can be installed here: https://bedops.readthedocs.io/en/latest/index.html</li>
         </ul>
     <h3>Steps</h3>
         <ol>
             <li>Download the Kundaje Lab blacklist file from http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/hg38-human/</li>
             <li>Run <b>bedtools merge -i hg38.blacklist.bed -o hg38.blacklist_merged.bed</b> to create a merged blacklist.</li>
-            <li>Run <b>./convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
+            <li>Run <b>shape_learning_scripts/convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
                 <ul>
                     <li> <b>-n:</b> The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.</li>
                     <li> <b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
@@ -39,7 +39,7 @@
                     <li> <b>-l:</b> The blacklist regions to exclude. This is the merged blacklist file you created.</li>
                 </ul>
             </li>
-            <li> Run <b>common_scripts/create_regions.sh</b> to create training regions. To create training regions from a permuted WIG file, run <b>./create_training_regions_permuted.sh</b>. The requires the following parameters to be specified:
+            <li> Run <b>common_scripts/create_regions.sh</b> to create training regions. To create training regions from a permuted WIG file, run <b>common_scripts/create_regions_permuted.sh</b>. The requires the following parameters to be specified:
                 <ul>
                     <li><b>-n</b> The name of the cell line (e.g. Brain)</li>
                     <li><b>-d</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
@@ -49,9 +49,10 @@
                     <li><b>-o</b> The directory to contain the split regions</li>
                     <li><b>-m</b> The margin to use in splitting the regions</li>
                     <li><b>-f</b> The factor to use in splitting the regions</li>
+                    <li><b>-s</b> The path to the helper scripts (i.e. the <b>common_scripts</b> directory.</li>
                 </ul>
             </li>
-            <li> Run <b>./learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, and <b>_som</b>. This requires the following parameters to be specified:
+            <li> Run <b>shape_learning_scripts/learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, and <b>_som</b>. This requires the following parameters to be specified:
                 <ul>
                     <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
                     <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
@@ -63,8 +64,9 @@
                     <li><b>-c:</b> The chromosome name</li>
                     <li><b>-p:</b> The path where the cagt.m file from the CAGT installation is stored (<b>_cagt</b> only)</li>
                     <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
+                    <li><b>-s:</b> The path to the helper scripts (i.e. the <b>shape_learning_scripts</b> directory.</li>
                 </ul>
-            Note that you may also learn shapes on all 24 chromosomes in parallel using the scripts <b>run_all_chroms_vnssom.sh</b>, <b>_som.sh</b>, <b>_signal.sh</b>, or <b>_cagt.sh</b> if you have access to a supercomputer that uses the PBS queueing system. This will run using the default parameters in our paper. In this case, the only parameters you need are:
+            Note that you may also learn shapes on all 24 chromosomes in parallel using the scripts <b>shape_learning_scripts/run_all_chroms_vnssom.sh</b>, <b>_som.sh</b>, <b>_signal.sh</b>, or <b>_cagt.sh</b> if you have access to a supercomputer that uses the PBS queueing system. This will run using the default parameters in our paper. In this case, the only parameters you need are:
                 <ul>
                     <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
                     <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
@@ -73,6 +75,7 @@
                     <li><b>-p:</b> The project number to which you wish to charge your run</li>
                     <li><b>-g:</b> The path where the cagt.m file from the CAGT installation is stored (<b>_cagt</b> only)</li>
                     <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
+                    <li><b>-s:</b> The path to the helper scripts (i.e. the <b>shape_learning_scripts</b> directory.</li>
                 </ul>
             </li>
         </ol>
@@ -107,8 +110,8 @@
     <p>The code you will need for this task is in the folder <b>annotation_scripts</b> and <b>common_scripts</b>. 
     <h3>Steps</h3>
         <ol>
-            <li> Run <b>convert_bam_to_wig.sh</b> and <b>create_regions.sh</b> as described in the <b>Learning Shapes</b> section.</li>
-            <li>If you want to annotate new samples using region shape, run <b>python make_annotation_bed.py</b> with the following parameters:
+            <li> Run <b>common_scripts/convert_bam_to_wig.sh</b> and <b>common_scripts/create_regions.sh</b> as described in the <b>Learning Shapes</b> section.</li>
+            <li>If you want to annotate new samples using region shape, run <b>python annotation_scripts/make_annotation_bed.py</b> with the following parameters:
                 <ul>
                     <li>The name of the file containing your regions to annotate (generated in step 1).</li>
                     <li>The name of the file containing your learned shapes (as provided in <b>learned_shapes</b>).</li>
@@ -118,7 +121,7 @@
                     <li>The percentage cutoff for a shape to be associated with a repressor, given that it is neither a promoter nor an enhancer</li>
                 </ul>
             </li>
-            <li>If you want to annotate new samples using maximum region signal intensity, run <b>python signal_chromhmm_match.py</b> with the following parameters:
+            <li>If you want to annotate new samples using maximum region signal intensity, run <b>python annotation_scripts/signal_chromhmm_match.py</b> with the following parameters:
                 <ul>
                     <li>The name of the file containing your regions to annotate (generated in step 1).</li>
                     <li>The name of the file containing your binned signal values (as provided in <b>learned_shapes</b>).</li>
@@ -128,14 +131,15 @@
                     <li>The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer</li>
                 </ul>
             </li>
+        </ol>
 <h1>Evaluating Ground Truth on Peaks</h1>
     <p>The code you will need for this task is in the folder <b>annotation_scripts</b>. Here, it is assumed that you have BED files generated using the annotation scripts above, peaks called for your input data, and a BED file with ground truth mnemonics in the format of ChromHMM mnemonics. 
     <h3>Steps</h3>
-        <ul>
+        <ol>
             <li> Run <b>bedtools intersect -a <i>annotated-region-bed</i> -b <i>peak-bed</i> > <i>annotated-peak-bed</i></b></li>
             <li> Run <b>bedtools intersect -wao -a <i>annotated-peak-bed</i> -b <i>chromhmm-bed</i> > <i>peak-chromhmm-overlap-bed</i></b></li>
-            <li>Run <b>python save_precision_recall.py <i>peak-chromhmm-overlap-bed</i> <i>precision-recall-file</i></b></li>
-        </ul>
+            <li>Run <b>python annotation_scripts/save_precision_recall.py <i>peak-chromhmm-overlap-bed</i> <i>precision-recall-file</i></b></li>
+        </ol>
 <h1>Reproducing Our Figures</h1>
     <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
     <ul>

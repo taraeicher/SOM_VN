@@ -23,7 +23,7 @@
     <-l> The blacklist regions to exclude."
     
     CELL_LINE=""
-    BASE_FILENAME=""
+    BASE_PATH=""
     BAM=""
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
     BIN_SIZE=50
@@ -31,14 +31,13 @@
     while getopts n:d:b:i:s:l: option; do
         case "${option}" in
             n) CELL_LINE=$OPTARG;;
-            d) BASE_FILENAME=$(realpath $OPTARG);;
+            d) BASE_PATH=$(realpath $OPTARG);;
             b) BAM=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
             s) CHROMSIZES=$OPTARG;;
             l) BLACKLIST=$OPTARG;;
         esac
     done
-    BASE_PATH=$BASE_FILENAME/$CELL_LINE
     
 #Print message to user.
     echo -e $USAGE

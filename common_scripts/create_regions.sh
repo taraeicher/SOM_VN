@@ -1,29 +1,18 @@
 #PBS -l nodes=1:ppn=28
 #PBS -l walltime=2:00:00 
 #!/bin/bash   
-# """
-# Dependencies:
-# 1. Tensorflow, which can be installed here: https://www.tensorflow.org/install/install_linux
-# 2. Samtools: https://sourceforge.net/projects/samtools/files/
-# 3. Taolib directory: https://github.com/taoliu/taolib
-# 4. Gap statistic code: https://github.com/minddrummer/gap
-# 5. Added to your path: gap
-# 6. Bedtools
-# 7. Kent utilities
-# 8. Bamtools
-# 9. BamCoverage
 
 #Variables
     USAGE="This script is used for creating training regions from an input WIG file for each chromosome, which can be obtained from a BAM file using convert_bam_to_wig.sh. It splits the WIG file into regions of a specified size with a specified overlap margin and a specified factor for the linear decrease in weights from the center of the region. In this script, a grid of factors and overlap margins are tested, and the optimal pair of parameters is reported.\n
     The following parameters are optional, but recommended:\n
-    <-n> The name of the cell line (e.g. Brain)\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-i> The bin size used to generate the WIG file (default: 50 bp)\n
     <-r> The region size used for splitting (default: 4 kbp)\n
     <-w> The directory containing the WIG file\n
     <-o> The directory to contain the split regions\n
     <-m> The margin to use in splitting the regions\n
-    <-f> The factor to use in splitting the regions"
+    <-f> The factor to use in splitting the regions\n
+    <-s> The path to the helper scripts"
     
     CELL_LINE=""
     REGION_SIZE=4000
@@ -35,19 +24,20 @@
     FACTOR=0.5
     WIG=""
     SPLIT_DIR=""
-    while getopts n:d:i:r:w:o:m:f: option; do
+    while getopts n:d:i:r:w:o:m:f:s: option; do
         case "${option}" in
-            n) CELL_LINE=$OPTARG;;
-            d) BASE_FILENAME=$(realpath $OPTARG);;
+            d) BASE_PATH=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
             r) REGION_SIZE=$OPTARG;;
             w) WIG=$OPTARG;;
             o) SPLIT_DIR=$OPTARG;;
             m) MARGIN=$OPTARG;;
             f) FACTOR=$OPTARG;;
+            s) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
-    BASE_PATH=$BASE_FILENAME/$CELL_LINE
+#Move to location of scripts.
+    cd $SCRIPTS
     
 #Print message to user.
     echo -e $USAGE
@@ -74,7 +64,7 @@
     fi
     for c in $CHROMS_NUM;
     do
-        python ../common_scripts/split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/chrom${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/chrom${c}.pkl $SPLIT_DIR/crossings/chrom${c}.txt $SPLIT_DIR/percentile_cutoffs/chrom${c}.txt
+        python split_regions.py ${WIG}/$c.wig $BIN_SIZE $c $SPLIT_DIR/chrom${c}.pkl $REGION_SIZE $MARGIN $FACTOR 0.95 $SPLIT_DIR/shifted/chrom${c}.pkl $SPLIT_DIR/crossings/chrom${c}.txt $SPLIT_DIR/percentile_cutoffs/chrom${c}.txt
         
         echo "Splitting complete for chromosome $c with factor $factor and margin $margin"
 

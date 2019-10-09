@@ -7,8 +7,9 @@
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-h> The ChromHMM file used for intersecting.\n
     <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-c> The chromosome name
-    <-w> The WIG directory for this chromosome"
+    <-c> The chromosome name\n
+    <-w> The WIG directory for this chromosome\n
+    <-s> The directory containing the scripts"
     
     echo -e $USAGE
     REGION_SIZE=4000
@@ -17,17 +18,20 @@
     CHROMHMM=""
     BIN_SIZE=50
     CCCUTOFF=0.75
-    while getopts h:d:c:i:w: option; do
+    SCRIPTS=""
+    while getopts h:d:c:i:w:s: option; do
         case "${option}" in
             d) BASE_PATH=$(realpath $OPTARG);;
             h) CHROMHMM=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
             w) WIG=$(realpath $OPTARG);;
             c) CHROM=$(realpath $OPTARG);;
+            s) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
 	
-    for 
+    #Move to the directory containing the scripts.
+    cd $SCRIPTS
     
     #Create all needed directories.
     WIGBED="$BASE_PATH/signal_bed"
