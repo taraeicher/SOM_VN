@@ -1,6 +1,18 @@
+"""
+This script computes the precision and recall values for each
+peak in a BED file. Precision and recall are computed separately
+for each RE.
+
+Required parameters:
+1. An intersected BED file with the following format:
+    peak_start  peak_end    peak_annotation chromhmm_start  chromhmm_end    chromhmm_annotation overlap_length
+2. The file where you wish to store the precision and recall in CSV format.
+"""
+
 import sys
-import plot_precision_recall as ppr
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 import glob, os
 sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
@@ -15,38 +27,38 @@ BIN_SIZE = 50
 def main():
 
     #Read in the chromHMM and annotated files.
-    our_bed = np.genfromtxt(sys.argv[1])
+    our_bed = pd.read_csv(sys.argv[1], sep = "\t")
     pr_path = sys.argv[2]
-
-    #Save precision and recall for the given experiment. 
-    #Open the file to test that it exists.
-    open_test = open(our_bed, "r")
-    open_test.close()
     
     #Get all precision and recall values.
-    [precision, recall] = get_all_precision_or_recall(our_bed)
+    get_all_precision_and_recall(our_bed).to_csv(open(pr_path, "w"))
     
-    #Output reports for all types of annotations, including unknown.
-    if len(precision) > 0:
-        print_report(precision, recall, chrom, cell, win, pr_path)
-    
-def get_all_precision_or_recall(bed):
+"""
+Get the precision and recall for each RE.
+"""
+def get_all_precision_and_recall(bed):
 
-    annotations = ["Promoter", "Enhancer", "Repressed", "Weak"]
+    annotations = ["Promoter", "Enhancer", "Repressor", "Weak"]
     length = len(annotations)
 
     #Get precision and recall for each type.
     [pred, gt] = get_labels_and_ground_truth(bed, annotations)
-    precision = dict()
-    recall = dict()
-    if len(pred) > 0:
-        for i in range(length):
-            precision[i] = precision_score(gt[:, i], pred[:, i])
-            recall[i] = recall_score(gt[:, i], pred[:, i])
+    promoter_pr = [precision_score(gt[:,0], pred[:,0]), recall_score(gt[:,0], pred[:,0])]
+    enhancer_pr = [precision_score(gt[:,1], pred[:,1]), recall_score(gt[:,1], pred[:,1])]
+    repressor_pr = [precision_score(gt[:,2], pred[:,2]), recall_score(gt[:,2], pred[:,2])]
+    weak_pr = [precision_score(gt[:,3], pred[:,3]), recall_score(gt[:,3], pred[:,3])]
+    pr_all = pd.DataFrame({"Promoter": promoter_pr,
+        "Enhancer": enhancer_pr,
+        "Repressor": repressor_pr,
+        "Weak": weak_pr},
+        index = ["Precision", "Recall"],
+        columns = annotations)
         
-    return [precision, recall]
+    return pr_all
     
-#Get the percentage of the peak belonging to each ChromHMM annotation.
+"""
+Get the percentage of the chromosome belonging to each ChromHMM annotation.
+"""
 def get_labels_and_ground_truth(bed, annotations):
     
     #Set up percentage matrix.
@@ -60,92 +72,53 @@ def get_labels_and_ground_truth(bed, annotations):
     current_end = -1
     prev_start = -1
     prev_end = -1
+    sum_vec = np.zeros(4)
     
-    #Do not move forward if the first line is blank in the sig file.
-    try:
-        sum_vec = np.zeros(4)
+    #Keep track of regions with no ChromHMM annotations.
+    #These regions will not be used in the analysis.
+    not_annotated_count = 0
+    count_in_region = 0
+    for i in tqdm(range(0, bed.shape[0])):            
+            
+        #Get the next peak-ChromHMM overlap.
+        current_start = bed.iloc[i,1]
+        current_end = bed.iloc[i,2]
+        a = bed.iloc[i,8]
+        anno_start = bed.iloc[i,6]
+        anno_end = bed.iloc[i,7]
+        our_anno = bed.iloc[i,3]
+        anno_length = bed.iloc[i,9]
         
-        #Keep track of regions with no ChromHMM annotations.
-        #These regions will not be used in the analysis.
-        not_annotated_count = 0
-        count_in_region = 0
-        for i in range(0, bed.shape[0]):            
-                
-            #Get the next element data.
-            next_line = bed[i,:]
-            current_start = int(next_line[1])
-            current_end = int(next_line[2])
-            a = next_line[8]
-            anno_start = int(next_line[6])
-            anno_end = int(next_line[7])
-            our_anno = next_line[3]
-            anno_length = int(next_line[9])
-            
-            #Get next signals if needed.
-            #If we are still on the same region, don't get it.
-            if current_start != prev_start:
-                sum_vec = np.zeros(3)
-                sig_i += 1
-           
-            #Add to the existing percentages.
-            if a == "1_TssA" or a == "2_TssAFlnk" or a == "10_TssBiv" or a == "11_BivFlnk":
-                    sum_vec[0] += anno_length
-            elif a == "6_EnhG" or a == "7_Enh" or a == "12_EnhBiv":
-                    sum_vec[1] += anno_length
-            elif a == "13_ReprPC" or a == "14_ReprPCWk":
-                    sum_vec[2] += anno_length
-            elif a == "9_Het" or a == "15_Quies":
-                    sum_vec[3] += anno_length
-            
-            #This case is when there is no annotation. Do not count it.
-            else:
-                not_annotated_count += 1
-            count_in_region += 1
-            
-            #Add the ground truth and predicted value.
-            next_start = current_start + 1
-            if i + 1 < len(bed):
-                next_start = int(bed[i + 1,:][1])
-            if next_start != current_start and not_annotated_count != count_in_region:
+        #If this ChromHMM annotation is the first to overlap
+        #with this peak, zero out the sum vector and start summing
+        #ChromHMM annotation size counts for this peak.
+        if current_start != prev_start:
+            sum_vec = np.zeros(4)
+       
+        #Add to the existing peak counts of ChromHMM annotations for that peak.
+        [sum_vec, not_annotated_count, count_in_region] = add_chromhmm_annotation(sum_vec, anno_length, a, not_annotated_count, count_in_region)
+        
+        #If we are done with this peak, compute ground truth vs predicted.
+        next_start = current_start + 1
+        if i + 1 < len(bed):
+            next_start = int(bed.iloc[i + 1,1])
+        if next_start != current_start and not_annotated_count != count_in_region:
 
-                #Add another element to the ground truth and prediction vectors.
-                vec_gt.append(np.zeros(len(sum_vec)))
-                vec_pred.append(np.zeros(len(sum_vec)))
-                max = np.argmax(sum_vec)
-                for sum in range(0, len(sum_vec)):
-                    #Add ground truth.
-                    if sum == max:
-                        vec_gt[len(vec_gt) - 1][sum] = 1
-                    else:
-                        vec_gt[len(vec_gt) - 1][sum] = 0 
-                    #Add predictions.
-                    if annotations[sum] == our_anno:
-                        vec_pred[len(vec_pred) - 1][sum] = 1
-                    else:
-                        vec_pred[len(vec_pred) - 1][sum] = 0 
-                #If it is unknown according to our analysis, do not consider it.
-                #This includes cases where there is no annotation from ChromHMM or where
-                #There is signal above the threshold but no ChromHMM annotation in the signal.
-                if vec_pred[len(vec_pred) - 1][0] == 0 and vec_pred[len(vec_pred) - 1][1] == 0 and vec_pred[len(vec_pred) - 1][2] == 0:
-                    del vec_pred[len(vec_pred) - 1]
-                    del vec_gt[len(vec_pred) - 1]
-                elif sum_vec[0] == 0 and sum_vec[1] == 0 and sum_vec[2] == 0:
-                    del vec_pred[len(vec_pred) - 1]
-                    del vec_gt[len(vec_pred) - 1]
-                    
-                #Set count and unannotated count to 0. Do the same for summation vec.
-                not_annotated_count = 0
-                count_in_region = 0
+            #Add another element to the ground truth and prediction vectors.
+            [vec_gt, vec_pred] = add_another_gt_pred(vec_gt, vec_pred, sum_vec, annotations, our_anno)
                 
-            #Get the previous data, if applicable.
-            prev_start = current_start
-            prev_end = current_end
+            #Set count and unannotated count to 0. Do the same for summation vec.
+            not_annotated_count = 0
+            count_in_region = 0
+            
+        #Get the previous data, if applicable.
+        prev_start = current_start
+        prev_end = current_end
             
         #Stack all values.
         final_stack_pred = np.stack(vec_pred)
         final_stack_gt = np.stack(vec_gt)
-    except:
-        pass
+        
     #Return value.
     return [final_stack_pred, final_stack_gt]
     
@@ -166,6 +139,53 @@ def print_report(precision, recall, chrom, win, cell, pr):
     
     #Close the report.
     report.close()
+    
+"""
+Using the next known overlap between peak and ChromHMM, add to the summation vector of bp with
+each mnemonic in this peak and track the total number of overlaps and overlaps without mnemonics
+in this peak.
+"""
+def add_chromhmm_annotation(sum_vec, overlap_length, chromhmm_annotation, not_annotated_count, count_in_region):
+    promoters = ["1_TssA", "2_TssAFlnk", "10_TssBiv", "11_BivFlnk"]
+    enhancers = ["6_EnhG", "7_Enh", "12_EnhBiv"]
+    repressors = ["13_ReprPC", "14_ReprPCWk"]
+    weak = ["9_Het", "15_Quies"]
+    if chromhmm_annotation in promoters:
+        sum_vec[0] += overlap_length
+    elif chromhmm_annotation in enhancers:
+        sum_vec[1] += overlap_length
+    elif chromhmm_annotation in repressors:
+        sum_vec[2] += overlap_length
+    elif chromhmm_annotation in weak:
+        sum_vec[3] += overlap_length
+    #This case is when there is no annotation. Do not count it.
+    else:
+        not_annotated_count += 1
+    count_in_region += 1
+    return [sum_vec, not_annotated_count, count_in_region]
+    
+"""
+Add the ground truth annotation of the peak as the
+annotation that is most prominent inside the peak.
+Add the annotation predicted using our method to the
+vector of predictions.
+"""
+def add_another_gt_pred(vec_gt, vec_pred, sum_vec, annotations, our_anno):
+    vec_gt.append(np.zeros(len(sum_vec)))
+    vec_pred.append(np.zeros(len(sum_vec)))
+    max = np.argmax(sum_vec)
+    for sum in range(0, len(sum_vec)):
+        #Add ground truth.
+        if sum == max:
+            vec_gt[len(vec_gt) - 1][sum] = 1
+        else:
+            vec_gt[len(vec_gt) - 1][sum] = 0 
+        #Add predictions.
+        if annotations[sum] == our_anno:
+            vec_pred[len(vec_pred) - 1][sum] = 1
+        else:
+            vec_pred[len(vec_pred) - 1][sum] = 0 
+    return [vec_gt, vec_pred]
     
 if __name__ == "__main__":
     main()

@@ -3,7 +3,7 @@ import numpy as np
 
 #Import glob for obtaining the files.
 import glob, os
-import pickle
+import pickle as pkl
 
 #Import sys for obtaining command line args.
 import sys
@@ -20,9 +20,9 @@ def main():
     input = sys.argv[1]
     shape = sys.argv[2]
     output_file = sys.argv[3]
-    p_promoter = sys.argv[4]
-    p_enhancer = sys.argv[5]
-    p_repressor = sys.argv[6]
+    p_promoter = float(sys.argv[4])
+    p_enhancer = float(sys.argv[5])
+    p_repressor = float(sys.argv[6])
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
@@ -36,24 +36,14 @@ def main():
     in_file = pkl.load(open(input, 'rb'))
     shape_file = pkl.load(open(shape, 'rb'))
 
-    #Notify the user that files were found
-    print("Using the input file:")
-    print(in_file.name)
-
-    #Notify the user that files were found
-    print("Using the shape file:")
-    print(shape_file.name)
-
-    #Match the inputs to shapes and close the files.
-    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_weak, p_repressor)
-    in_file.close()
-    shape_file.close()
+    #Match the inputs to shapes.
+    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor)
 
 """
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes(regions, out_file_name, shapes, p_promoter, p_enhancer, p_weak, p_repressor):
+def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repressor):
         
     #Open output files.
     out_file = open(out_file_name, "w")
@@ -63,23 +53,12 @@ def match_shapes(regions, out_file_name, shapes, p_promoter, p_enhancer, p_weak,
         for region in tqdm(regions):
                    
             #Match the data to the nearest shape and obtain the match and the ambiguity metric.
-            [match, ambig, crosscorr, out_str] = match_region(region.signal, shapes, )
-            
-            #If the cross-correlation is within the threshold, assign the label as the correct label for the region.
-            #Otherwise, assign it as unknown.
-            anno_label = "Unknown"
-            anno_name = "Unknown"
-            if crosscorr >= cutoff and match != -1:
-                anno_label = shape_anno[match]
-                anno_name = shape_name[match]
+            [match_label, score] = match_region(region.signals, shapes, p_promoter, p_enhancer, p_repressor)
 
             #Print match to BED file. Format is:
             #chrom  start   end shape_num 1 - ambiguity
             #Score is the opposite of the ambiguity metric.
-            out_file.write("chr" + labels[0] + "\t" + labels[1] + "\t" + labels[2] + "\t" + anno_label + "\t" + str(1 - ambig) + "\t" + out_str + "\n")
-
-            #Read the next line in the file.            
-            next_line = in_file.readline()
+            out_file.write("chr" + region.chromosome + "\t" + str(int(region.start)) + "\t" + str(int(region.end)) + "\t" + match_label + "\t" + str(score) + "\n")
             
         #Print a message to the user.
         print("Files done")
@@ -92,7 +71,7 @@ Find the closest match for the input in the list of shapes.
 Return an ambiguity metric which measures how close the input
 is to its nearest shape as opposed to other shapes.
 """
-def match_region(region, shapes):
+def match_region(region, shapes, p_promoter, p_enhancer, p_repressor):
 
     #Create array to hold distances between region and shapes.
     max_crosscorr = 0
@@ -102,31 +81,30 @@ def match_region(region, shapes):
     
     #For each shape, determine the region's distance from it.
     for i in range(len(shapes)):
-        shape = shapes[i]
-            crosscorr, d = get_max_crosscorr(region, shape)
-            crosscorr_list.append(crosscorr)
-            if crosscorr_list[len(crosscorr_list) - 1] > max_crosscorr:
-                max_crosscorr = crosscorr_list[len(crosscorr_list) - 1]
-                match = i
-                opt_delay = d
+        shape_assoc = shapes[i].shape.signals
+        crosscorr, d = get_max_crosscorr(region, shape_assoc)
+        crosscorr_list.append(crosscorr)
+        if crosscorr_list[len(crosscorr_list) - 1] > max_crosscorr:
+            max_crosscorr = crosscorr_list[len(crosscorr_list) - 1]
+            match = i
+            opt_delay = d
                 
     # Get the annotation type comprising the maximum of regions
     # with this shape.
     label = None
-    argmax = wsu.get_annotation(match, p_promoter, p_enhancer, p_weak, p_repressor)
-    if argmax == 0:
-        label = "Promoter"
-    elif argmax == 1:
-        label = "Enhancer"
-    elif argmax == 2:
-        label = "Repressed"
-    elif argmax == 3:
-        label = "Weak"
+    label = wsu.get_annotation(shapes[match], p_promoter, p_enhancer, p_repressor)
+    percent_label = 0
+    if label == "Promoter":
+        percent_label = shapes[match].promoter_percentage
+    elif label == "Enhancer":
+        label = shapes[match].enhancer_percentage
+    elif label == "Repressor":
+        percent_label = shapes[match].repressed_percentage
+    elif label == "Weak":
+        percent_label = shapes[match].weak_percentage
         
     # Get the confidence of this annotation.
-    total_anno = np.sum(match)
-    percent_label = match[argmax] / total_anno
-    return [label, percent_label]
+    return [label, percent_label * ((max_crosscorr + 1) / 2)]
 
 """
 Find the minimum distance between the region and shifted shape.

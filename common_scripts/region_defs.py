@@ -149,7 +149,7 @@ class Shape:
 This class holds a learned shape with its percentage distribution.
 """   
 class Shape_Association:
-    def __init__(shape, promoter, enhancer, repressor, weak):
+    def __init__(self, shape, promoter, enhancer, repressor, weak):
         self.shape = shape
         self.promoter_percentage = promoter
         self.enhancer_percentage = enhancer

@@ -2,7 +2,7 @@
 #PBS -l walltime=3:00:00
 #!/bin/bash   
 
-USAGE="This script is used for annotating the regions of one cell type and chromosome with learned shapes. Parameters:\n
+USAGE="\n\nThis script is used for annotating the regions of one cell type and chromosome with learned shapes. Parameters:\n\n
     <-t> The file containing regions to annotate.\n
     <-s> The file containing learned shapes.\n
     <-d> The base directory for output.\n
@@ -12,7 +12,7 @@ USAGE="This script is used for annotating the regions of one cell type and chrom
     <-p> The percentage cutoff for associating a shape with a promoter.\n
     <-e> The percentage cutoff for associating a non-promoter shape with an enhancer.\n
     <-r> The percentage cutoff for associating a non-promoter and non-enhancer shape with a repressor.\n
-    <-i> The directory containing the scripts"
+    <-i> The directory containing the scripts\n\n"
 
 echo -e $USAGE
     REGIONS=""
@@ -25,17 +25,17 @@ echo -e $USAGE
     REPRESSOR_CUTOFF=""
     SCRIPTS=""
     PEAKS=""
-    while getopts t:s:d:c:h:p:e:r:i: option; do
+    while getopts t:s:d:c:h:p:e:r:i:a: option; do
         case "${option}" in
             t) REGIONS=$(realpath $OPTARG);;
             s) SHAPES=$(realpath $OPTARG);;
             d) BASE_PATH=$(realpath $OPTARG);;
-            c) CHROM=$(realpath $OPTARG);;
+            c) CHROM=$OPTARG;;
             a) PEAKS=$(realpath $OPTARG);;
             h) CHROMHMM=$(realpath $OPTARG);;
-            p) PROMOTER_CUTOFF=$(realpath $OPTARG);;
-            e) ENHANCER_CUTOFF=$(realpath $OPTARG);;
-            r) REPRESSOR_CUTOFF=$(realpath $OPTARG);;
+            p) PROMOTER_CUTOFF=$OPTARG;;
+            e) ENHANCER_CUTOFF=$OPTARG;;
+            r) REPRESSOR_CUTOFF=$OPTARG;;
             i) SCRIPTS=$(realpath $OPTARG);;
         esac
     done
@@ -53,8 +53,8 @@ echo -e $USAGE
         mkdir $PEAK_INTERSECT_BED
     fi
     CHROMHMM_INTERSECT_BED="$BASE_PATH/chromhmm_intersect"
-    if [[ ! -e $PEAK_INTERSECT_BED ]]; then
-        mkdir $PEAK_INTERSECT_BED
+    if [[ ! -e $CHROMHMM_INTERSECT_BED ]]; then
+        mkdir $CHROMHMM_INTERSECT_BED
     fi
     PRECISION_RECALL="$BASE_PATH/precision_recall"
     if [[ ! -e $PRECISION_RECALL ]]; then
@@ -62,9 +62,9 @@ echo -e $USAGE
     fi
     
     # Make the annotated BED file.
-    python make_annotated_bed.py $REGIONS $SHAPES $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF
+    #python make_annotated_bed.py $REGIONS $SHAPES $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF
     
     # Compute the intersect of the annotated regions and the peaks.
-    bedtools intersect -a $ANNOTATED_BED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed
+    #bedtools intersect -a $ANNOTATED_BED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed
     bedtools intersect -wao -a $PEAK_INTERSECT_BED/$CHROM.bed -b $CHROMHMM > $CHROMHMM_INTERSECT_BED/$CHROM.bed
-    python save_precision_recall.py $CHROMHMM_INTERSECT_BED/$CHROM.bed $PRECISION_RECALL/$CHROM.bed
+    python save_precision_recall.py $CHROMHMM_INTERSECT_BED/$CHROM.bed $PRECISION_RECALL/$CHROM.csv

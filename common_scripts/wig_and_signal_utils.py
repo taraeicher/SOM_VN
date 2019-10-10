@@ -8,13 +8,13 @@ in a matched shape or signal, use the criteria
 to determine the RE annotation of that shape
 or signal.
 """ 
-def get_annotation(distribution, promoter, enhancer, weak, repressor):
+def get_annotation(distribution, promoter, enhancer, repressor):
     label = None
-    if distribution[0] >= promoter:
+    if distribution.promoter_percentage >= promoter:
         label = "Promoter"
-    elif distribution[1] >= enhancer:
+    elif distribution.enhancer_percentage >= enhancer:
         label = "Enhancer"
-    elif distribution[2] >= repressor:
+    elif distribution.repressor_percentage >= repressor:
         label = "Repressor"
     else:
         label = "Weak"

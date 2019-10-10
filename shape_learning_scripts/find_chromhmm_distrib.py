@@ -17,6 +17,7 @@ import math
 from scipy import stats
 sys.path.append(os.path.abspath("../common_scripts"))
 import pickle as pkl
+import region_defs
 
 BIN_SIZE = 50
 def main():
@@ -45,8 +46,14 @@ def main():
     shape_names = get_names_of_shapes(shapes)
     total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, bed, promoter, enhancer, repressed, weak, shape_names)
 
+    #Build the list of shapes.
+    assoc_shapes = []
+    for i in range(len(shapes)):
+        shape = shapes[i]
+        assoc_shapes.append(region_defs.Shape_Association(shape, total_percent_all[0,i], total_percent_all[1,i], total_percent_all[2,i], total_percent_all[3,i]))
+    
     #Print all shapes with significant annotations, along with their annotations.
-    pkl.dump([shape_names, total_percent_all], open(output, "wb"))
+    pkl.dump(assoc_shapes, open(output, "wb"))
     
 """
 Compute percentage for each shape-annotation pair.
