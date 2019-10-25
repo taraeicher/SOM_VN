@@ -31,7 +31,7 @@
             <li>Download the Kundaje Lab blacklist file from http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/hg38-human/ and unzip it using <b>gunzip</b>.</li>
             <li>Run <b>sort -k1,1 -k2,2n hg38.blacklist.bed > hg38.blacklist_sorted.bed</b>.</li>
             <li>Run <b>bedtools merge -i hg38.blacklist_sorted.bed > hg38.blacklist_merged.bed</b> to create a merged blacklist.</li>
-            <li>Run <b>shape_learning_scripts/convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
+            <li>Run <b>common_scripts/convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
                 <ul>
                     <li> <b>-b:</b> The BAM file used as input.</li>
                     <li> <b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
