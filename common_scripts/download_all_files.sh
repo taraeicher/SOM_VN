@@ -13,21 +13,12 @@ cp E116_15_coreMarks_hg38lift_mnemonics.bed GM12878_mnemonics.bed
 
 #A549 - https://www.encodeproject.org/experiments/ENCSR136DNA/
 #BAM
-wget https://www.encodeproject.org/files/ENCFF473YHH/@@download/ENCFF473YHH.bam
-wget https://www.encodeproject.org/files/ENCFF809KIH/@@download/ENCFF809KIH.bam
 wget https://www.encodeproject.org/files/ENCFF961WXW/@@download/ENCFF961WXW.bam
-wget https://www.encodeproject.org/files/ENCFF821UUL/@@download/ENCFF821UUL.bam
-bamtools merge -in ENCFF473YHH.bam -in ENCFF809KIH.bam -in ENCFF961WXW.bam -in ENCFF821UUL.bam -out A549.bam
+cp ENCFF961WXW.bam A549.bam
 #Peak
-wget https://www.encodeproject.org/files/ENCFF135JRM/@@download/ENCFF135JRM.bed.gz
-gunzip ENCFF135JRM.bed.gz
-wget https://www.encodeproject.org/files/ENCFF698UAH/@@download/ENCFF698UAH.bed.gz
-gunzip ENCFF698UAH.bed.gz
 wget https://www.encodeproject.org/files/ENCFF079DJV/@@download/ENCFF079DJV.bed.gz
 gunzip ENCFF079DJV.bed.gz
-wget https://www.encodeproject.org/files/ENCFF045PYX/@@download/ENCFF045PYX.bed.gz
-gunzip ENCFF045PYX.bed.gz
-bedtools intersect -a ENCFF135JRM.bed -b ENCFF698UAH.bed ENCFF079DJV.bed ENCFF045PYX.bed > A549_peaks.bed
+cp ENCFF079DJV.bed.gz A549_peaks.bed
 #ChromHMM mnemonics
 wget https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E114_15_coreMarks_hg38lift_mnemonics.bed.gz
 gunzip E114_15_coreMarks_hg38lift_mnemonics.bed.gz
