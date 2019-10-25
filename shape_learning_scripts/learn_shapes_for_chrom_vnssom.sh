@@ -4,36 +4,44 @@
 
 #Variables
     USAGE="\n\nThis script is used for learning a set of representative shapes from the training regions output by create_regions.sh and annotating them with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
-    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
-    <-h> The ChromHMM file used for intersecting.\n
-    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-r> The size of the input regions (default: 4000)\n
-    <-t> The cutoff to use for cross-correlation significance.\n
     <-a> Directory containing training regions\n
-    <-u> Percentile cutoff file\n
+    <-b> The bin size used to generate the WIG file (default: 10 bp)\n
     <-c> The chromosome name\n
-    <-s> The directory containing the scripts\n\n"
+    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-g> The grid size to use in the SOM (total)\n
+    <-h> The ChromHMM file used for intersecting.\n
+    <-i> The number of iterations to use in the SOM\n
+    <-l> The learning rate to use in the SOM\n
+    <-n> The neighborhood size to use in the SOM (single dimensional)\n 
+    <-r> The size of the input regions (default: 1000)\n
+    <-s> The directory containing the scripts\n
+    <-t> The cutoff to use for cross-correlation significance.\n
+    <-u> Percentile cutoff file\n\n"
     
     echo -e $USAGE
-    REGION_SIZE=4000
+    REGION_SIZE=1000
     BASE_PATH=""
     BAM=""
     CHROMHMM=""
-    BIN_SIZE=50
+    BIN_SIZE=10
     TRAINING=""
     CCCUTOFF=0.75
     SCRIPTS=""
-    while getopts h:d:c:i:r:t:a:u:s: option; do
+    while getopts a:b:c:d:g:h:i:l:n:r:s:t:u: option; do
         case "${option}" in
-            d) BASE_PATH=$(realpath $OPTARG);;
-            h) CHROMHMM=$(realpath $OPTARG);;
-            i) BIN_SIZE=$OPTARG;;
-            r) REGION_SIZE=$OPTARG;;
             a) TRAINING=$(realpath $OPTARG);;
-            u) CUTOFFS=$(realpath $OPTARG);;
+            b) BIN_SIZE=$OPTARG;;
             c) CHROM=$OPTARG;;
-            t) CCCUTOFF=$OPTARG;;
+            d) BASE_PATH=$(realpath $OPTARG);;
+            g) GRID=$OPTARG;;
+            h) CHROMHMM=$(realpath $OPTARG);;
+            i) ITERATIONS=$OPTARG;;
+            l) LEARNING_RATE=$OPTARG;;
+            n) NEIGHBORHOOD=$OPTARG;;
+            r) REGION_SIZE=$OPTARG;;
             s) SCRIPTS=$(realpath $OPTARG);;
+            t) CCCUTOFF=$OPTARG;;
+            u) CUTOFFS=$(realpath $OPTARG);;
         esac
     done
 	
@@ -67,7 +75,7 @@
     fi
 
     # Run the SOM.
-    python vnssom.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $BIN_SIZE
+    python vnssom.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $LEARNING_RATE $NEIGHBORHOOD $GRID $ITERATIONS $BIN_SIZE
     echo -e "SOM model is ready for chrom $CHROM.\n"
     
     # Merge shifted regions.

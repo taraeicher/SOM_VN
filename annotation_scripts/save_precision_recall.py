@@ -23,7 +23,6 @@ from sklearn.metrics import recall_score
 For each of the annotations, find its information gain for each sig.
 For those sig-annotation pairs that are significant, print them to a list.
 """
-BIN_SIZE = 50
 def main():
 
     #Read in the chromHMM and annotated files.

@@ -15,7 +15,6 @@ sys.path.append(os.path.abspath("../common_scripts"))
 import pickle as pkl
 import wig_and_signal_utils as wsu
 
-BIN_SIZE = 50
 def main():
 
     # Arguments

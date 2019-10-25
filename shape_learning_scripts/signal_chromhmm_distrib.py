@@ -18,7 +18,6 @@ sys.path.append(os.path.abspath("../common_scripts"))
 import pickle as pkl
 from tqdm import tqdm
 
-BIN_SIZE = 50
 def main():
 
     signal_col = 4 # Signal intensity annotation

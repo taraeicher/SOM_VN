@@ -4,37 +4,46 @@
 
 #Variables
     USAGE="\n\nThis script is used for learning a set of representative shapes from the training regions output by create_regions.sh and annotating them with an RE. Shapes are learned for each chromosome using CAGT, then merged to correct for signal shift. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
-    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
-    <-h> The ChromHMM file used for intersecting.\n
-    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-r> The size of the input regions (default: 4000)\n
     <-a> Directory containing training regions\n
-    <-u> Percentile cutoff file\n
     <-c> The chromosome name\n
+    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-e> The maximum number of iterations for CAGT\n
+    <-h> The ChromHMM file used for intersecting.\n
+    <-i> The bin size used to generate the WIG file (default: 10 bp)\n
+    <-k> The number of clusters to learn prior to agglomerative clustering\n
+    <-m> The maximum distance for merging to occur in the agglomerative clustering step of CAGT (default: 0.8)\n
     <-p> The path to the CAGT file\n
-    <-s> The directory containing the scripts\n\n"
+    <-r> The size of the input regions (default: 1000)\n
+    <-s> The directory containing the scripts\n
+    <-u> Percentile cutoff file\n"
     
     echo -e $USAGE
-    REGION_SIZE=4000
+    REGION_SIZE=1000
     BASE_PATH=""
     BAM=""
     CHROMHMM=""
-    BIN_SIZE=50
+    BIN_SIZE=10
     TRAINING=""
     CCCUTOFF=0.75
     CAGT_PATH="/fs/project/PAS0272/Tara/DNase_SOM/Brain/cagt/matlab/src"
     SCRIPTS=""
-    while getopts h:d:c:i:r:t:a:u:p:s: option; do
+    MERGE_DIST=0.8
+    ITERATIONS=1000
+    K=40
+    while getopts a:b:c:d:h:i:k:m:p:r:s:t: option; do
         case "${option}" in
+            a) TRAINING=$(realpath $OPTARG);;
+            b) BIN_SIZE=$OPTARG;;
+            c) CHROM=$OPTARG;;
             d) BASE_PATH=$(realpath $OPTARG);;
             h) CHROMHMM=$(realpath $OPTARG);;
-            i) BIN_SIZE=$OPTARG;;
-            r) REGION_SIZE=$OPTARG;;
-            a) TRAINING=$(realpath $OPTARG);;
-            c) CHROM=$OPTARG;;
-            t) CCCUTOFF=$OPTARG;;
+            i) ITERATIONS=$OPTARG;;
+            k) K=$OPTARG;;
+            m) MERGE_DIST=$OPTARG;;
             p) CAGT_PATH=$(realpath $OPTARG);;
+            r) REGION_SIZE=$OPTARG;;
             s) SCRIPTS=$(realpath $OPTARG);;
+            t) CCCUTOFF=$OPTARG;;
         esac
     done
 	
@@ -82,7 +91,7 @@
     #Extract the signal and run CAGT.
     python extract_signal.py $TRAINING $TRAINING_CSV/$CHROM.csv
     module load matlab
-    matlab -nodisplay -nodesktop -r "run_cagt('$TRAINING_CSV/$CHROM.csv','$MATLAB_MATRIX/$CHROM.mat','$CAGT_OUT_CSV/$CHROM.csv','$CAGT_PATH')"
+    matlab -nodisplay -nodesktop -r "run_cagt('$TRAINING_CSV/$CHROM.csv','$MATLAB_MATRIX/$CHROM.mat','$CAGT_OUT_CSV/$CHROM.csv','$CAGT_PATH', '$MERGE_DIST', '$ITERATIONS', '$K')"
     python convert_to_pickle.py $CAGT_OUT_CSV/$CHROM.csv $CAGT_OUT/$CHROM.pkl
     echo -e "CAGT model is ready for chrom $CHROM.\n"
     

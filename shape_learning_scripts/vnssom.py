@@ -40,13 +40,18 @@ def main():
     output = sys.argv[2]
     intensity_threshold = np.genfromtxt(open(sys.argv[3], 'rb'))
     region_size = int(sys.argv[4])
-    bin_size = int(sys.argv[5])
+    alpha = float(sys.argv[5])
+    sigma = float(sys.argv[6])
+    grid_size = float(sys.argv[7])
+    iterations = float(sys.argv[8])
+    bin_size = float(sys.argv[9])
+    region_bins = region_size / bin_size
     
     #Create list of shapes from the grid.
     som_shapes = []
 
     #Create and train the SOMs and close the input files.
-    train_som(regions, som_shapes, output, intensity_threshold, region_size, bin_size)
+    train_som(regions, som_shapes, output, intensity_threshold, region_bins, alpha, sigma, grid_size, iterations)
     
     #Print message to user.
     print("Grid for " + sys.argv[1] + " is complete.")
@@ -54,13 +59,12 @@ def main():
 """
 Method to create train SOM model for a given window size and print stats.
 """
-def train_som(regions, som_shapes, out, intensity_threshold, window, bin):
+def train_som(regions, som_shapes, out, intensity_threshold, region_size, alpha, sigma, grid_size, iterations):
     
     #If there is at least one region, learn SOM.
     if len(regions) > 0:
         #Create new SOM
-        region_size = int(math.floor(window / bin))
-        som = SOM(regions, intensity_threshold, region_size)
+        som = SOM(regions, intensity_threshold, region_size, alpha, sigma, grid_size, iterations)
         
         #Train new SOM
         som.train(som.batch_size, regions, region_size)
@@ -87,24 +91,19 @@ class SOM(object):
     while training.
     'dim' is the dimensionality of the training inputs.
     'alpha' is a number denoting the initial time(iteration no)-based
-    learning rate. Default value is 0.3
+    learning rate.
     'sigma' is the the initial neighbourhood value, denoting
     the radius of influence of the BMU while training. By default, its
     taken to be half of max(m, n).
     """
-    def __init__(self, regions, intensity_threshold, dim):
+    def __init__(self, regions, intensity_threshold, dim, alpha, sigma, grid_size, iterations):
         
         #Set parameters.
         batch_size = int(math.floor(len(regions) / 10))
         self.batch_size = batch_size
-        alpha = 0.2
-        grid_size = 100
-        m = int(math.sqrt(grid_size))
-        n = int(math.sqrt(grid_size))
+        m = int(math.sqrt(grid_size)))
         self.m = m
-        self.n = n
-        sigma = math.sqrt(grid_size / 2)
-        self.iterations = 100
+        self.iterations = iterations
         self.weightages = []
         
         ##INITIALIZE GRAPH

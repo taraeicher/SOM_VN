@@ -14,28 +14,31 @@
 # 9. BamCoverage
 
 #Variables
-    USAGE="This script is used for creating training regions from an input BAM file. It first converts the BAM file to a set of BAM files, one for each chromosome. Then, it converts these files to WIG files containing a single RPKM value at each 50 bp bin.\n
-    <-n> The name of the cell line (e.g. Brain)\n
-    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    USAGE="This script is used for creating training regions from an input BAM file. It first converts the BAM file to a set of BAM files, one for each chromosome. Then, it converts these files to WIG files containing a single RPKM value at each 10 bp bin.\n
     <-b> The BAM file used as input.\n
-    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-s> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.\n
-    <-l> The blacklist regions to exclude."
+    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-i> The bin size used to generate the WIG file (default: 10 bp)\n
+    <-l> The blacklist regions to exclude.\n
+    <-m> The smoothing length (default: 180 bp)\n
+    <-n> The name of the cell line (e.g. Brain)\n   
+    <-s> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.\n\n"
     
     CELL_LINE=""
     BASE_PATH=""
     BAM=""
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
-    BIN_SIZE=50
+    BIN_SIZE=10
+    SMOOTH_LENGTH=180
     BLACKLIST=""
-    while getopts n:d:b:i:s:l: option; do
+    while getopts b:d:i:l:m:n:s: option; do
         case "${option}" in
-            n) CELL_LINE=$OPTARG;;
-            d) BASE_PATH=$(realpath $OPTARG);;
             b) BAM=$(realpath $OPTARG);;
+            d) BASE_PATH=$(realpath $OPTARG);;
             i) BIN_SIZE=$OPTARG;;
-            s) CHROMSIZES=$OPTARG;;
             l) BLACKLIST=$OPTARG;;
+            m) SMOOTH_LENGTH=$OPTARG;;
+            n) CELL_LINE=$OPTARG;;
+            s) CHROMSIZES=$OPTARG;;
         esac
     done
     
@@ -66,7 +69,7 @@
         chr=$1
         bamtools sort -in $BAM/$CELL_LINE.REF_chr$chr.bam -out $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam 
         python create_index_pysam.py $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam
-        bamCoverage -b $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam -o ${BASE_PATH}/bigwig/$chr.bw -bs $BIN_SIZE -bl $BLACKLIST --normalizeUsing RPKM
+        bamCoverage -b $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam -o ${BASE_PATH}/bigwig/$chr.bw -bs $BIN_SIZE -bl $BLACKLIST --normalizeUsing TPM --smoothLength $SMOOTH_LENGTH
         bigWigToWig ${BASE_PATH}/bigwig/$chr.bw ${BASE_PATH}/wig/${chr}_unfiltered.wig
         awk -v chrom="chr${chr}" '{ if ($1 == chrom) { print } }' ${BASE_PATH}/wig/${chr}_unfiltered.wig > ${BASE_PATH}/wig/${chr}.wig
         rm ${BASE_PATH}/wig/${chr}_unfiltered.wig

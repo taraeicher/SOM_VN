@@ -21,6 +21,7 @@
             <li><b>bamtools</b>. This can be installed here: https://bioconda.github.io/recipes/bamtools/README.html</li>
             <li><b>bigWigToWig</b>. This can be installed here: https://www.encodeproject.org/software/bigwigtowig/</li>
             <li><b>Tensorflow</b> (for VNSSOM and Vanilla SOM models). This can be installed here: https://www.tensorflow.org/install/.</li>
+            <li><b>Wiggler</b>. This can be installed here: https://code.google.com/archive/p/align2rawsignal/downloads</li>
             <li><b>bamCoverage</b>. This can be installed here: https://deeptools.readthedocs.io/en/develop/content/installation.html</li>
             <li>The python library pysam</li>
             <li><b>BedOps</b> (for signal intensity model only). This can be installed here: https://bedops.readthedocs.io/en/latest/index.html</li>
@@ -31,42 +32,46 @@
             <li>Run <b>bedtools merge -i hg38.blacklist.bed -o hg38.blacklist_merged.bed</b> to create a merged blacklist.</li>
             <li>Run <b>shape_learning_scripts/convert_bam_to_wig.sh</b> to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
                 <ul>
-                    <li> <b>-n:</b> The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.</li>
-                    <li> <b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
                     <li> <b>-b:</b> The BAM file used as input.</li>
-                    <li> <b>-i:</b> The bin size used to generate the WIG file (default: 50 bp).</li>
-                    <li> <b>-s:</b> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.</li>
+                    <li> <b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+                    <li> <b>-i:</b> The bin size used to generate the WIG file (default: 10 bp).</li>
                     <li> <b>-l:</b> The blacklist regions to exclude. This is the merged blacklist file you created.</li>
+                    <li> <b>-m:</b> The smoothing length (default: 180 bp). </li>
+                    <li> <b>-n:</b> The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.</li>
+                    <li> <b>-s:</b> The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.</li>           
                 </ul>
             </li>
             <li> Run <b>common_scripts/create_regions.sh</b> to create training regions. To create training regions from a permuted WIG file, run <b>common_scripts/create_regions_permuted.sh</b>. The requires the following parameters to be specified:
                 <ul>
-                    <li><b>-n</b> The name of the cell line (e.g. Brain)</li>
+                    <li><b>-b</b> The bin size used to generate the WIG file (default: 10 bp)</li>
                     <li><b>-d</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
-                    <li><b>-i</b> The bin size used to generate the WIG file (default: 50 bp)</li>
-                    <li><b>-r</b> The region size used for splitting (default: 4 kbp)</li>
-                    <li><b>-w</b> The directory containing the WIG file</li>
                     <li><b>-o</b> The directory to contain the split regions</li>
-                    <li><b>-m</b> The margin to use in splitting the regions</li>
-                    <li><b>-f</b> The factor to use in splitting the regions</li>
+                    <li><b>-r</b> The region size used for splitting (default: 1 kbp)</li>
                     <li><b>-s</b> The path to the helper scripts (i.e. the <b>common_scripts</b> directory.</li>
+                    <li><b>-w</b> The directory containing the WIG file</li>
                 </ul>
             </li>
             <li> Run <b>shape_learning_scripts/learn_shapes_for_chrom_vnssom.sh</b> to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions <b>_cagt</b>, <b>_chromhmmperm</b>, <b>_signal</b>, and <b>_som</b>. This requires the following parameters to be specified:
                 <ul>
-                    <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
-                    <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
-                    <li><b>-i:</b> The bin size used to generate the WIG file (default: 50 bp)</li>
-                    <li><b>-r:</b> The size of the input regions (default: 4000) (not needed for <b>_signal</b>)</li>
-                    <li><b>-t:</b> The cutoff to use for cross-correlation significance (not needed for <b>_signal</b>)</li>
                     <li><b>-a:</b> Directory containing training regions (not needed for <b>_signal</b>)</li>
-                    <li><b>-u:</b> Percentile cutoff file (not needed for <b>_signal</b>)</li>
+                    <li><b>-b:</b> The bin size used to generate the WIG file (default: 10 bp)</li>
                     <li><b>-c:</b> The chromosome name</li>
+                    <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
+                    <li><b>-g:</b> The total number of cells in the SOM grid (only needed for SOM and VNSSOM, default: 100)</li>
+                    <li><b>-h:</b> The ChromHMM file used for intersecting.</li>
+                    <li><b>-i:</b> The number of iterations to use in building the model</li>
+                    <li><b>-k:</b> The number of clusters to learn prior to agglomerative clustering (CAGT only, default: 40)</li>
+                    <li><b>-l:</b> The learning rate to use in the SOM (default: 0.2)</li>
+                    <li><b>-m:</b> The maximum distance for merging to occur in the agglomerative clustering step of CAGT (CAGT only, default: 0.8)</li>
+                    <li><b>-n:</b> The single-dimensional neighborhood size to use in the SOM (SOM and VNSSOM only, default: 17)</li>
                     <li><b>-p:</b> The path where the cagt.m file from the CAGT installation is stored (<b>_cagt</b> only)</li>
-                    <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
+                    <li><b>-r:</b> The size of the input regions (default: 1000) (not needed for <b>_signal</b>)</li>
                     <li><b>-s:</b> The path to the helper scripts (i.e. the <b>shape_learning_scripts</b> directory.</li>
+                    <li><b>-t:</b> The cutoff to use for cross-correlation significance (not needed for <b>_signal</b>)</li>
+                    <li><b>-u:</b> Percentile cutoff file (not needed for <b>_signal</b>)</li>
+                    <li><b>-w:</b> The path to the WIG file for this chromosome (<b>_signal</b> only).</li>
                 </ul>
-            Note that you may also learn shapes on all 24 chromosomes in parallel using the scripts <b>shape_learning_scripts/run_all_chroms_vnssom.sh</b>, <b>_som.sh</b>, <b>_signal.sh</b>, or <b>_cagt.sh</b> if you have access to a supercomputer that uses the PBS queueing system. This will run using the default parameters in our paper. In this case, the only parameters you need are:
+            Note that you may also learn shapes on the 22 nuclear chromosomes in parallel using the scripts <b>shape_learning_scripts/run_all_chroms_vnssom.sh</b>, <b>_som.sh</b>, <b>_signal.sh</b>, or <b>_cagt.sh</b> if you have access to a supercomputer that uses the PBS queueing system. This will run using the default parameters in our paper. In this case, the only parameters you need are:
                 <ul>
                     <li><b>-d:</b> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').</li>
                     <li><b>-h:</b> The ChromHMM file used for intersecting.</li>

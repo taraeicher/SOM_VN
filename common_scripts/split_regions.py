@@ -46,7 +46,7 @@ def main():
     
     # Shift the regions.
     wig_file = open(sys.argv[1], "r")
-    [shifted_regions, crossings_counts, percentile_cutoff] = shift_all_regions(regions, int(region_size / resolution), percentile, factor, wig_file)
+    [shifted_regions, crossings_counts, percentile_cutoff] = shift_all_regions(regions, int(region_size / resolution), percentile, factor, wig_file, resolution)
     wig_file.close()
     
     # Save all files.
@@ -67,8 +67,8 @@ def main():
 For each region in the WIG file, shift it to its best
 representation. Return the list of all shifted regions.
 """
-def shift_all_regions(regions, region_size, percentile, factor, wig_file):
-    threshold = wsu.get_intensity_percentile(percentile, wig_file)
+def shift_all_regions(regions, region_size, percentile, factor, wig_file, bin_size):
+    threshold = wsu.get_intensity_percentile(percentile, wig_file, bin_size)
     
     shifted_regions = []
     all_crossings = []

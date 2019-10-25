@@ -54,13 +54,12 @@ def find_crossing_count(region, threshold):
 Returns the Xth percentile of intensity for all records in the file. 
 NOTE: 1000000 is the highest possible RPKM intensity.
 """
-def get_intensity_percentile(percentile, file):
+def get_intensity_percentile(percentile, file, bin_sz):
    
     fine_bin_count = 4
     max_threshold = 1000000 * fine_bin_count
     counts = np.zeros(max_threshold)        
     file_line_count = 0
-    bin_sz = 50
     
     #Use each entry in the file to calculate running metadata.
     next_line = file.readline()

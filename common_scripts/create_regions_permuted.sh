@@ -18,18 +18,18 @@
     The following parameters are optional, but recommended:\n
     <-n> The name of the cell line (e.g. Brain)\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
-    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-r> The region size used for splitting (default: 4 kbp)\n
+    <-i> The bin size used to generate the WIG file (default: 10 bp)\n
+    <-r> The region size used for splitting (default: 1 kbp)\n
     <-w> The directory containing the WIG file\n
     <-o> The directory to contain the split regions\n
     <-m> The margin to use in splitting the regions\n
     <-f> The factor to use in splitting the regions"
     
     CELL_LINE=""
-    REGION_SIZE=4000
+    REGION_SIZE=1000
     BASE_FILENAME=""
     CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
-    BIN_SIZE=50
+    BIN_SIZE=10
     MARGIN=0
     FACTOR=0.5
     BLACKLIST=""

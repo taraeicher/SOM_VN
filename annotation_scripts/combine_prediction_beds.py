@@ -8,8 +8,6 @@ Otherwise, leave it as is.
 import numpy as np
 import sys
 
-BIN_SIZE = 50
-
 def main():
     
     #Get list of shapes.
@@ -126,7 +124,7 @@ def has_overlap(start1, end1, start2, end2):
 Expand the TSS promoter region so that it does not overlap existing regions.
 If this cannot be done, send a notification to overwrite.
 """    
-def get_expanded(line, before, after, prev_promoter, start, end, annotation):
+def get_expanded(line, before, after, prev_promoter, start, end, annotation, BIN_SIZE):
 
     #Pad the promoter region with 500 bp on each side.
     padding = 500

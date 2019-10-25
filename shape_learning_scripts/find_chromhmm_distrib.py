@@ -19,7 +19,6 @@ sys.path.append(os.path.abspath("../common_scripts"))
 import pickle as pkl
 import region_defs
 
-BIN_SIZE = 50
 def main():
 
     #Read in the bed file and shape data.
@@ -62,7 +61,6 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
     
     #Set up percentage matrix.
     sum_matrix = np.zeros((4, len(shapes)))
-    cumulative_vec = np.zeros(len(shapes))
     
     #Loop through bed file to compute percentage for each region.
     current_start = -1

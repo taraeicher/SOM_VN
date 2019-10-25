@@ -1,4 +1,4 @@
-function X=run_cagt(in_file, mat_loc, csv_file, cagt_path)
+function X=run_cagt(in_file, mat_loc, csv_file, cagt_path, merge_dist, iterations, k_val)
     
     % Read the table of input training regions. Retain only the signals, not the labels.
     M_head=readtable(in_file);
@@ -22,8 +22,8 @@ function X=run_cagt(in_file, mat_loc, csv_file, cagt_path)
     save('mat_loc','intervalData', 'signal')
     addpath(cagt_path)
     cagt('mat_loc', 'od', '../data/test', 'op', 'nucleo_around_ctcf_', 'tt', 'CTCF', 'st', 'NUCLEOSOME', ...
-      'merge', true, 'bed', true, 'txt', true, 'maxiter', 1000, 'replicates', 1, 'start', 'plus', ...
-      'overwrite', true, 'flip', true, 'mergeDist', 0.8, 'mergeK', 1, 'lowvarcut', 0.01, 'distance', 'correlation', 'maxlag', 20, ...
+      'merge', true, 'bed', true, 'txt', true, 'maxiter', iterations, 'replicates', 1, 'k', k_val, 'start', 'plus', ...
+      'overwrite', true, 'flip', true, 'mergeDist', merge_dist, 'mergeK', 1, 'lowvarcut', 0.01, 'distance', 'correlation', 'maxlag', 20, ...
       'emptyaction', 'drop', 'avgFun', 'median')
     res = load("../data/test/nucleo_around_ctcf_results.mat")
     csvwrite(csv_file,res.kmeansResults.centroids)
