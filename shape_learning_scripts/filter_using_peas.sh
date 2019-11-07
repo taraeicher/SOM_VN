@@ -98,48 +98,12 @@ cd /fs/project/PAS0272/Tara/DNase_SOM/scripts/shape_learning_scripts
         awk '{ if ( $4 != "AP" && $4 != "OP" && $4 != "GE" && $4 != "TS") { print; } }' $CHROMHMM > ${CHROMHMM}_nopromoter.bed
         awk '{ if ( $4 == "AP" || $4 == "OP" || $4 == "GE" || $4 == "TS") { print; } }' $CHROMHMM > ${CHROMHMM}_onlypromoter.bed
         
-         #Retain only training regions contained within an annotated ChromHMM region.
-         awk -F ',' '{printf ("chr%s\t%s\t%s\t%s\n", $1,$2,$3,$0)}' $TRAINING_FILES/chrom$c > $TRAINING_FILES/chrom${c}_nopromoter.bed
-         bedtools intersect -a $TRAINING_FILES/chrom${c}_nopromoter.bed -b ${CHROMHMM}_onlypromoter.bed -v > $TRAINING_FILES/chrom${c}_nopromoter_intersect.bed
-         awk '{ print $4 }' $TRAINING_FILES/chrom${c}_nopromoter_intersect.bed > $TRAINING_FILES/chrom${c}_nopromoter_final
+        #Retain only training regions contained within an annotated ChromHMM region.
+        awk -F ',' '{printf ("chr%s\t%s\t%s\t%s\n", $1,$2,$3,$0)}' $TRAINING_FILES/chrom$c > $TRAINING_FILES/chrom${c}_nopromoter.bed
+        bedtools intersect -a $TRAINING_FILES/chrom${c}_nopromoter.bed -b ${CHROMHMM}_onlypromoter.bed -v > $TRAINING_FILES/chrom${c}_nopromoter_intersect.bed
+        awk '{ print $4 }' $TRAINING_FILES/chrom${c}_nopromoter_intersect.bed > $TRAINING_FILES/chrom${c}_nopromoter_final
         
-         #Retain only regions to annotate contained within an annotated ChromHMM region.
-         awk -F ',' '{printf ("chr%s\t%s\t%s\t%s\n", $1,$2,$3,$0)}' $TRAINING_ANNOTATION_FILES/chrom${c} > $TRAINING_ANNOTATION_FILES/chrom${c}_nopromoter.bed
-         bedtools intersect -a $TRAINING_ANNOTATION_FILES/chrom${c}_nopromoter.bed -b ${CHROMHMM}_onlypromoter.bed -v > $TRAINING_ANNOTATION_FILES/chrom${c}_nopromoter_intersect.bed
-         awk '{ print $4 }' $TRAINING_ANNOTATION_FILES/chrom${c}_nopromoter_intersect.bed > $TRAINING_ANNOTATION_FILES/chrom${c}_nopromoter_final
-        
-         #Run the SOM.
-		 python som_vn.py $TRAINING_FILES/chrom${c}_nopromoter_final $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
-		 echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
-		
-		 #Remove all shapes to which no regions map.
-		 python remove_by_cutoff.py $SOM_OUT/chrom${c}som_centroid 1 $SOM_OUT_FILTERED/chrom${c}som_centroid
-		 echo -e "------------------------------------------------Removal complete for chrom $c.---------------------------------------\n"
-		
-		 #Merge shifted regions.
-        python merge_shifted.py $SOM_OUT_FILTERED/chrom${c}som_centroid $SOM_OUT_SHIFTED/chrom${c}som_centroid 0
-		echo -e "------------------------------------------------Merging complete for chrom $c.----------------------------------------\n"
-		
-		#Remove duplicate shapes using kmeans.
-		python kmeans_shapes.py $SOM_OUT_SHIFTED/chrom${c}som_centroid $SOM_OUT_FINAL/chrom${c}som_centroid
-		echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
-		
-		#Annotate regions with shape.
-		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c} $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
-        echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
-        
-        bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
-        python consolidate.py $SHAPE_ANNOTATED_SORTED/anno${c} $SHAPE_ANNOTATED_FINAL/anno${c}
-        cut -d$'\t' -f 1,2,3,4,5 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/anno${c}.bed
-        awk '{ print $6}' $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/clusters_anno${c}
-        cut -d$'\t' -f 7,8,9,10 $SHAPE_ANNOTATED_FINAL/anno${c} > $SHAPE_ANNOTATED_FINAL/scores_anno${c}.bed
-        echo -e "\n------------------------------------Consolidating complete for chrom $c.-----------------------------\n"
-        
-        #Save shapes to file.
-        bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b ${CHROMHMM}_nopromoter.bed > $CHROMHMM_INTERSECTS/anno${c}_nopromoter.bed	
-        bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}_nopromoter.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted_nopromoter.bed
-        python consolidate_chromHMM_peas_ground_truth.py $CHROMHMM_INTERSECTS/anno${c}_sorted_nopromoter.bed $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPES_COMPREHENSIVE ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c} 0
-        echo -e "\n------------------------------------Generating of full shape list complete for chrom $c.---------------------\n"
+        # Retain only 
 	}
     
     #Run the pipeline from split WIG files to final set of annotations.

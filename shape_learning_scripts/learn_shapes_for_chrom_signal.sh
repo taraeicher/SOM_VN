@@ -4,29 +4,28 @@
 
 #Variables
     USAGE="\n\nThis script is used for associating a set of signals with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift and clustered using k-means. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
+    <-b> The bin size used to generate the WIG file (default: 10 bp)\n
+    <-c> The chromosome name\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-h> The ChromHMM file used for intersecting.\n
-    <-i> The bin size used to generate the WIG file (default: 50 bp)\n
-    <-c> The chromosome name\n
-    <-w> The WIG directory for this chromosome\n
-    <-s> The directory containing the scripts\n\n"
+    <-s> The directory containing the scripts\n
+    <-w> The WIG file for this chromosome\n\n"
     
     echo -e $USAGE
-    REGION_SIZE=4000
     BASE_PATH=""
     BAM=""
     CHROMHMM=""
-    BIN_SIZE=50
+    BIN_SIZE=10
     CCCUTOFF=0.75
     SCRIPTS=""
-    while getopts h:d:c:i:w:s: option; do
+    while getopts b:c:d:h:s:w: option; do
         case "${option}" in
+            b) BIN_SIZE=$OPTARG;;
+            c) CHROM=$OPTARG;;
             d) BASE_PATH=$(realpath $OPTARG);;
             h) CHROMHMM=$(realpath $OPTARG);;
-            i) BIN_SIZE=$OPTARG;;
-            w) WIG=$(realpath $OPTARG);;
-            c) CHROM=$OPTARG;;
             s) SCRIPTS=$(realpath $OPTARG);;
+            w) WIG=$(realpath $OPTARG);;
         esac
     done
 	

@@ -5,17 +5,17 @@
 #Variables
     USAGE="\n\nThis script is used for learning a set of representative shapes from the training regions output by create_regions.sh and annotating them with an RE. Shapes are learned for each chromosome using CAGT, then merged to correct for signal shift. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
     <-a> Directory containing training regions\n
+    <-b> The bin size used to generate the WIG file (default: 10 bp)\n
     <-c> The chromosome name\n
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
-    <-e> The maximum number of iterations for CAGT\n
     <-h> The ChromHMM file used for intersecting.\n
-    <-i> The bin size used to generate the WIG file (default: 10 bp)\n
+    <-i> The maximum number of iterations for CAGT\n
     <-k> The number of clusters to learn prior to agglomerative clustering\n
     <-m> The maximum distance for merging to occur in the agglomerative clustering step of CAGT (default: 0.8)\n
     <-p> The path to the CAGT file\n
     <-r> The size of the input regions (default: 1000)\n
     <-s> The directory containing the scripts\n
-    <-u> Percentile cutoff file\n"
+    <-t> cross-correlation cutoff\n"
     
     echo -e $USAGE
     REGION_SIZE=1000

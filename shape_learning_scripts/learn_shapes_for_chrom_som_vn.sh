@@ -7,7 +7,7 @@
     <-a> Directory containing training regions\n
     <-b> The bin size used to generate the WIG file (default: 10 bp)\n
     <-c> The chromosome name\n
-    <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
+    <-d> The base filename where the output files will be stored (e.g. '/root/annoshaperun/').\n
     <-g> The grid size to use in the SOM (total)\n
     <-h> The ChromHMM file used for intersecting.\n
     <-i> The number of iterations to use in the SOM\n
@@ -49,33 +49,33 @@
     cd $SCRIPTS
     
     # Create all needed directories.
-    SOM_OUT="$BASE_PATH/vnssom_output"
+    SOM_OUT="$BASE_PATH/som_vn_output"
     if [[ ! -e $SOM_OUT ]]; then
         mkdir $SOM_OUT
     fi
-    SOM_SHIFTED="$BASE_PATH/vnssom_som_output_shifted"
+    SOM_SHIFTED="$BASE_PATH/som_vn_som_output_shifted"
     if [[ ! -e $SOM_SHIFTED ]]; then
         mkdir $SOM_SHIFTED
     fi
-    ANNOTATED="$BASE_PATH/vnssom_anno_beds"
+    ANNOTATED="$BASE_PATH/som_vn_anno_beds"
     if [[ ! -e $ANNOTATED ]]; then
         mkdir $ANNOTATED
     fi
-    INTERSECTS="$BASE_PATH/vnssom_intersects"
+    INTERSECTS="$BASE_PATH/som_vn_intersects"
     if [[ ! -e $INTERSECTS ]]; then
         mkdir $INTERSECTS
     fi
-    INTERSECTS_SORTED="$BASE_PATH/vnssom_intersects_sorted"
+    INTERSECTS_SORTED="$BASE_PATH/som_vn_intersects_sorted"
     if [[ ! -e $INTERSECTS_SORTED ]]; then
         mkdir $INTERSECTS_SORTED
     fi
-    CHROMHMM_DISTRIB="$BASE_PATH/vnssom_chromhmm_distrib"
+    CHROMHMM_DISTRIB="$BASE_PATH/som_vn_chromhmm_distrib"
     if [[ ! -e $CHROMHMM_DISTRIB ]]; then
         mkdir $CHROMHMM_DISTRIB
     fi
 
     # Run the SOM.
-    python vnssom.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $LEARNING_RATE $NEIGHBORHOOD $GRID $ITERATIONS $BIN_SIZE
+    python som_vn.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $LEARNING_RATE $NEIGHBORHOOD $GRID $ITERATIONS $BIN_SIZE
     echo -e "SOM model is ready for chrom $CHROM.\n"
     
     # Merge shifted regions.

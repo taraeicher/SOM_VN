@@ -54,7 +54,7 @@ def find_percents(chromhmm, region_size, promoter, enhancer, repressor, weak):
         if i % 10000 == 0:
             print("Percentages complete up to " + chrom + " " + str(start))
         [p, e, r, w, i] = get_percentages(chrom, chromhmm, start, end, promoter, enhancer, repressor, weak, i)
-        if p != 0 or e != 0 or r != 0 or w != 0:
+        if p + e + r + w > 0:
             promoter_percent.append(p)
             enhancer_percent.append(e)
             repressor_percent.append(r)
@@ -110,6 +110,15 @@ def get_percentages(chrom, chromhmm, start, end, promoter, enhancer, repressor, 
             i = i + 1
         else:
             stop = True
+            
+    # Consider each percentage as a percentage of the
+    # total annotated, excluding unannotated parts of the region.
+    total_percent = percent_p + percent_e + percent_r + percent_w
+    if total_percent > 0:
+        percent_p = percent_p / total_percent
+        percent_e = percent_e / total_percent
+        percent_r = percent_r / total_percent
+        percent_w = percent_w / total_percent
             
     return [percent_p, percent_e, percent_r, percent_w, i]
     

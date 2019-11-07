@@ -143,7 +143,7 @@ def get_crosscorr(shape1, shape2, delay):
     #Return the cross-correlation result.
     return_val = 0
     if R_1_1 > 0 or R_2_2 > 0:
-        return_val = R_1_2 / max(R_1_1, R_2_2)
+        return_val = R_1_2 / math.sqrt(R_1_1 * R_2_2)
     return return_val
     
 #Count signals above a value.

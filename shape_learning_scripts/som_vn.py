@@ -156,15 +156,15 @@ class SOM(object):
                 # Compute normalized input-to-input autocorrelation value.
                 R_inputs_inputs = np.sum(inputs * inputs, axis = signal_axis)
                 avg_input_by_input = (sum_inputs * sum_inputs) / length
-                R_inputs_inputs_norm = np.clip(R_inputs_inputs - avg_input_by_input, a_min = 0, a_max = None)
+                R_inputs_inputs_norm = R_inputs_inputs - avg_input_by_input
                 
                 # Compute normalized weight-to-weight autocorrelation value.
                 R_weights_weights = np.sum(weights * weights, axis = signal_axis)
                 avg_weight_by_weight = (sum_weights * sum_weights) / length
-                R_weights_weights_norm = np.clip(R_weights_weights - avg_weight_by_weight, a_min = 0, a_max = None)
+                R_weights_weights_norm = R_weights_weights - avg_weight_by_weight
                 
                 # Compute final metric
-                crosscorr = R_weights_inputs_norm / np.maximum(R_inputs_inputs_norm, R_weights_weights_norm)
+                crosscorr = R_weights_inputs_norm / math.sqrt(R_inputs_inputs_norm * R_weights_weights_norm)
                 return crosscorr
                 
             #Calculate crossings for all weightage vects, with a delay of 0.

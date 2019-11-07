@@ -1,10 +1,10 @@
 * [Getting Started](#Getting-Started)
-* [Downloading Our Data] (#Downloading-Our-Data)
-* [Learning Shapes] (#Learning-Shapes)
-* [Annotating New Samples] (#Annotating-New-Samples)
-* [Evaluating Ground Truth on Peaks] (#Evaluating-Ground-Truth-On-Peaks)
-* [Replicating Our Experiments] (#Replicating-Our-Experiments)
-* [Replicating Our Figures] (#Replicating-Our-Figures)
+* [Downloading Our Data](#Downloading-Our-Data)
+* [Learning Shapes](#Learning-Shapes)
+* [Annotating New Samples](#Annotating-New-Samples)
+* [Evaluating Ground Truth on Peaks](#Evaluating-Ground-Truth-On-Peaks)
+* [Replicating Our Experiments](#Replicating-Our-Experiments)
+* [Replicating Our Figures](#Replicating-Our-Figures)
 
 # Getting Started
 This repository contains the shapes and in-house scripts used in our paper *Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps*. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface.
@@ -39,22 +39,22 @@ The code you will need for this task is in the folder `shape_learning_scripts` a
 3. Run `bedtools merge -i hg38.blacklist_sorted.bed > hg38.blacklist_merged.bed` to create a merged blacklist.
 4. Run `common_scripts/convert_bam_to_wig.sh` to convert the BAM files to chromosome-specific WIG files. This requires the following parameters to be specified:
 
-  * **-b:** The BAM file used as input.
-  * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
-  * **-i:** The bin size used to generate the WIG file (default: 10 bp).
-  * **-l:** The blacklist regions to exclude. This is the merged blacklist file you created.
-  * **-m:** The smoothing length (default: 180 bp).
-  * **-n:** The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.
-  * **-s:** The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.   
+   * **-b:** The BAM file used as input.
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
+   * **-i:** The bin size used to generate the WIG file (default: 10 bp).
+   * **-l:** The blacklist regions to exclude. This is the merged blacklist file you created.
+   * **-m:** The smoothing length (default: 180 bp).
+   * **-n:** The name of the cell line (e.g. Brain). This will be used to locate the input BAM file and to name the output WIG files.
+   * **-s:** The file containing a list of chromosome sizes. This is needed for splitting the BAM file by chromosome.   
   
 5. Run `common_scripts/create_regions.sh` to create training regions. To create training regions from a permuted WIG file, run `common_scripts/create_regions_permuted.sh`. The requires the following parameters to be specified:
 
-   * **-b** The bin size used to generate the WIG file (default: 10 bp)
-   * **-d** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/')
-   * **-o** The directory to contain the split regions
-   * **-r** The region size used for splitting (default: 1 kbp)
-   * **-s** The path to the helper scripts (i.e. the `common_scripts` directory
-   * **-w** The directory containing the WIG file
+   * **-b:** The bin size used to generate the WIG file (default: 10 bp)
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/')
+   * **-o:** The directory to contain the split regions
+   * **-r:** The region size used for splitting (default: 1 kbp)
+   * **-s:** The path to the helper scripts (i.e. the `common_scripts` directory
+   * **-w:** The directory containing the WIG file
    
 6. Run `shape_learning_scripts/learn_shapes_for_chrom_som_vn.sh` to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions *_cagt*, *_chromhmmperm*, *_signal*, and *_som*. This requires the following parameters to be specified:
 
@@ -86,7 +86,6 @@ The code you will need for this task is in the folder `shape_learning_scripts` a
    * `extract_signal.py`: Extracts pickled input regions and stores them in CSV files for use by CAGT.
    * run_cagt.m`: Runs CAGT. Note that MATLAB is required to run this script, because CAGT is implemented in MATLAB. CAGT must also be installed; you can download it here: https://github.com/sofiakp/cagt/tree/master/matlab
    * `writeTextResults.m`: This is a hackish solution for running CAGT (There is an I/O issue between our code and the original CAGT). After installing CAGT, you must replace the `writeTextResults.m` file in the `matlab/src` directory with our file. Note that ONLY the I/O format has been changed.
-   `cagt.m`: This is a hackish solution for running CAGT (There is an I/O issue between our code and the original CAGT). After installing CAGT, you must replace the `cagt.m` file in the `matlab/src` directory with our file. Note that ONLY the I/O format has been changed.
    * `merge_shifted.py`: Consolidates shifted shapes learned by the SOM-VN using cross-correlation.
    * `make_shape_bed.py`: Annotate each region with its closest shape learned by the SOM-VN.
    * `find_chromhmm_distrib.py`: Finds the distribution of ChromHMM mnemonics across each shape.
@@ -109,21 +108,21 @@ The code you will need for this task is in the folder `annotation_scripts` and `
 1. Run `common_scripts/convert_bam_to_wig.sh` and `common_scripts/create_regions.sh` as described in [Learning Shapes] (#Learning-Shapes).
 2. If you want to annotate new samples using region shape, run `python annotation_scripts/make_annotation_bed.py` with the following parameters:
 
-  * The name of the file containing your regions to annotate (generated in step 1).
-  * The name of the file containing your learned shapes.
-  * The name of the file where you wish to store your annotated BED file.
-  * The percentage cutoff for a shape to be associated with a promoter.
-  * The percentage cutoff for a shape to be associated with an enhancer, given that it is not a promoter.
-  * The percentage cutoff for a shape to be associated with a repressor, given that it is neither a promoter nor an enhancer.
+   * The name of the file containing your regions to annotate (generated in step 1).
+   * The name of the file containing your learned shapes.
+   * The name of the file where you wish to store your annotated BED file.
+   * The percentage cutoff for a shape to be associated with a promoter.
+   * The percentage cutoff for a shape to be associated with an enhancer, given that it is not a promoter.
+   * The percentage cutoff for a shape to be associated with a repressor, given that it is neither a promoter nor an enhancer.
   
 3. If you want to annotate new samples using maximum region signal intensity, run `python annotation_scripts/signal_chromhmm_match.py` with the following parameters:
 
-  * The name of the file containing your regions to annotate (generated in step 1).
-  * The name of the file containing your binned signal values.
-  * The name of the file where you wish to store your annotated BED file.
-  * The percentage cutoff for a region's maximum intensity to be associated with a promoter.
-  * The percentage cutoff for a region's maximum intensity to be associated with an enhancer, given that it is not a promoter.
-  * The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer
+   * The name of the file containing your regions to annotate (generated in step 1).
+   * The name of the file containing your binned signal values.
+   * The name of the file where you wish to store your annotated BED file.
+   * The percentage cutoff for a region's maximum intensity to be associated with a promoter.
+   * The percentage cutoff for a region's maximum intensity to be associated with an enhancer, given that it is not a promoter.
+   * The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer
 
 # Evaluating Ground Truth on Peaks
 The code you will need for this task is in the folder `annotation_scripts`. Here, it is assumed that you have BED files generated using the annotation scripts above, peaks called for your input data, and a BED file with ground truth mnemonics in the format of ChromHMM mnemonics. 
@@ -139,26 +138,26 @@ Perform the following steps to replicate our experiments:
 2. Follow Steps 1-5 from [Learning Shapes](#Learning-Shapes) for each cell type.
 3. Run `filter_using_peas.sh` with the following parameters:
 4. Run `learn_shapes_all_cells_and_chromosomes.sh` with the following parameters:
-  * **-c:** The path to the CAGT MATLAB file.
-  * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
-  * **-f:** A comma-delimited file with the following format: Cell line name, Training file directory, Permuted training file directory, ChromHMM annotations, Permuted ChromHMM annotations, WIG directory, Training file directory (PEAS), Ground truth  annotations (PEAS), WIG directory (PEAS).
-  * **-p:** The project to which you want to charge resources.
-  * **-s:** The directory containing the scripts.
+   * **-c:** The path to the CAGT MATLAB file.
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
+   * **-f:** A comma-delimited file with the following format: Cell line name, Training file directory, Permuted training file directory, ChromHMM annotations, Permuted ChromHMM annotations, WIG directory, Training file directory (PEAS), Ground truth  annotations (PEAS), WIG directory (PEAS).
+   * **-p:** The project to which you want to charge resources.
+   * **-s:** The directory containing the scripts.
 5. Run `evaluate_same_chromosome.sh` with the following parameters:
 6. Run `evaluate_cross_chromosome.sh` with the following parameters:
 7. Run `evaluate_cross_cell_type.sh` with the following parameters:
 
 # Reproducing Our Figures
 To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.
-* **Fig. 3:** 
-  1. Run `python plot_scripts\mnemonic_distrib_per_region.py` on each cell type with the following parameters:
-    * The ChromHMM file for that cell type
-    * The region size (default: 1000 bp)
-    * The output file (CSV format) containing the distribution of each ChromHMM annotation per region
-  2. Run `python plot_scripts\plot_chromhmm_distribs_density.py` with the following parameters:
-    * The CSV file generated in Step 1 for GM12878
-    * The CSV file generated in Step 1 for A549
-    * The CSV file generated in Step 1 for Brain
-    * The CSV file generated in Step 1 for H1
-    * The file where you wish to store the figure
-    * Whether to remove regions with no annotations (True / False). We removed them.
+## Fig. 3 
+1. Run `python plot_scripts\mnemonic_distrib_per_region.py` on each cell type with the following parameters:
+   * The ChromHMM file for that cell type
+   * The region size (default: 1000 bp)
+   * The output file (CSV format) containing the distribution of each ChromHMM annotation per region
+2. Run `python plot_scripts\plot_chromhmm_distribs_density.py` with the following parameters:
+   * The CSV file generated in Step 1 for GM12878
+   * The CSV file generated in Step 1 for A549
+   * The CSV file generated in Step 1 for Brain
+   * The CSV file generated in Step 1 for H1
+   * The file where you wish to store the figure
+   * Whether to remove regions with no annotations (True / False). We removed them.
