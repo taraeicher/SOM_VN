@@ -69,7 +69,7 @@
         chr=$1
         bamtools sort -in $BAM/$CELL_LINE.REF_chr$chr.bam -out $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam 
         python create_index_pysam.py $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam
-        bamCoverage -b $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam -o ${BASE_PATH}/bigwig/$chr.bw -bs $BIN_SIZE -bl $BLACKLIST --normalizeUsing TPM --smoothLength $SMOOTH_LENGTH
+        bamCoverage -b $BAM/$CELL_LINE.REF_chr${chr}_sorted.bam -o ${BASE_PATH}/bigwig/$chr.bw -bs $BIN_SIZE -bl $BLACKLIST --normalizeUsing BPM --smoothLength $SMOOTH_LENGTH
         bigWigToWig ${BASE_PATH}/bigwig/$chr.bw ${BASE_PATH}/wig/${chr}_unfiltered.wig
         awk -v chrom="chr${chr}" '{ if ($1 == chrom) { print } }' ${BASE_PATH}/wig/${chr}_unfiltered.wig > ${BASE_PATH}/wig/${chr}.wig
         rm ${BASE_PATH}/wig/${chr}_unfiltered.wig
