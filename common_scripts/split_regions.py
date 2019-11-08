@@ -32,12 +32,12 @@ def main():
     chrom = sys.argv[3]
     output_file = open(sys.argv[4], "wb")
     region_size = float(sys.argv[5])
-    margin = float(sys.argv[6])
-    factor = float(sys.argv[7])
-    percentile = float(sys.argv[8])
-    output_file_shifted = open(sys.argv[9], "wb")
-    crossing_counts_file = open(sys.argv[10], "w")
-    percentile_cutoff_file = open(sys.argv[11], "w")
+    margin = 0
+    factor = 0.5
+    percentile = float(sys.argv[6])
+    output_file_shifted = open(sys.argv[7], "wb")
+    crossing_counts_file = open(sys.argv[8], "w")
+    percentile_cutoff_file = open(sys.argv[9], "w")
     
     # Build list of regions and save.
     regions = build_region_list(wig_file, resolution, region_size, chrom, margin)
