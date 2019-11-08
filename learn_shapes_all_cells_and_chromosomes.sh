@@ -27,17 +27,17 @@ while getopts c:d:f:p:s: option; do
 done
 
 # Read in parameters from file.
-cell_types=( $(cut -d ',' -f1 $PARAM_FILE ) )
-training_files=( $(cut -d ',' -f2 $PARAM_FILE ) )
-perm_training_files=( $(cut -d ',' -f3 $PARAM_FILE ) )
-chromhmm_anno=( $(cut -d ',' -f4 $PARAM_FILE ) )
-perm_chromhmm_anno=( $(cut -d ',' -f5 $PARAM_FILE ) )
-wig=( $(cut -d ',' -f6 $PARAM_FILE ) )
-training_files_peas=( $(cut -d ',' -f7 $PARAM_FILE ) )
-ground_truth_peas=( $(cut -d ',' -f8 $PARAM_FILE ) )
-perm_training_files_peas=( $(cut -d ',' -f9 $PARAM_FILE ) )
-perm_ground_truth_peas=( $(cut -d ',' -f10 $PARAM_FILE ) )
-wig_peas=( $(cut -d ',' -f11 $PARAM_FILE ) )
+cell_types=$(awk -F "\"*,\"*" '{print $1;}' $PARAM_FILE | tr '\r\n' ' ')
+training_files=$(awk -F "\"*,\"*" '{print $2;}' $PARAM_FILE | tr '\r\n' ' ')
+perm_training_files=$(awk -F "\"*,\"*" '{print $3;}' $PARAM_FILE | tr '\r\n' ' ')
+chromhmm_anno=$(awk -F "\"*,\"*" '{print $4;}' $PARAM_FILE | tr '\r\n' ' ')
+perm_chromhmm_anno=$(awk -F "\"*,\"*" '{print $5;}' $PARAM_FILE | tr '\r\n' ' ')
+wig=$(awk -F "\"*,\"*" '{print $6;}' $PARAM_FILE | tr '\r\n' ' ')
+training_files_peas=$(awk -F "\"*,\"*" '{print $7;}' $PARAM_FILE | tr '\r\n' ' ')
+ground_truth_peas=$(awk -F "\"*,\"*" '{print $8;}' $PARAM_FILE | tr '\r\n' ' ')
+perm_training_files_peas=$(awk -F "\"*,\"*" '{print $9;}' $PARAM_FILE | tr '\r\n' ' ')
+perm_ground_truth_peas=$(awk -F "\"*,\"*" '{print $10;}' $PARAM_FILE | tr '\r\n' ' ')
+wig_peas=$(awk -F "\"*,\"*" '{print $11;}' $PARAM_FILE | tr '\r\n' ' ')
 
 # Parameters for all algorithms.
 grid_size = 100
