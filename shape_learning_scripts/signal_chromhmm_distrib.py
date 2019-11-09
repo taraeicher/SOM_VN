@@ -30,15 +30,22 @@ def main():
     bed = np.genfromtxt(sys.argv[1], delimiter='\t', dtype = str)
     signal_bins = get_all_bins(bed, signal_col)
     output = sys.argv[2]
+    is_peas = sys.argv[3] == "True"
     
     # Mapping from ChromHMM mnemonics to RE
     promoter = {"1_TssA", "2_TssAFlnk", "10_TssBiv", "11_BivFlnk"}
     enhancer = {"6_EnhG", "7_Enh", "12_EnhBiv"}
     repressed = {"13_ReprPC", "14_ReprPCWk"}
     weak = {"9_Het", "15_Quies"}    
+    
+    if is_peas:
+        promoter = {}
+        enhancer = {"AE", "OE"}
+        repressed = {}
+        weak = {}
 
     #Get distribution of ChromHMM classes per signal bin.
-    total_percent_all = get_all_percentage_pairs(signal_col, bio_col, bin_start, bin_end, bio_len, bed, promoter, enhancer, repressed, weak, signal_bins)
+    total_percent_all = get_all_percentage_pairs(signal_col, bio_col, bin_start, bin_end, bio_len, bed, promoter, enhancer, repressed, weak, signal_bins, is_peas)
     pkl.dump(total_percent_all, open(output, "wb"))
     
 """
@@ -74,10 +81,10 @@ def get_all_bins(bed, sig_c):
 """
 Compute percentage for each shape-annotation pair.
 """
-def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_len, bed, promoter, enhancer, repressed, weak, signal):
+def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_len, bed, promoter, enhancer, repressed, weak, signal, is_peas):
     
     #Set up percentage matrix.
-    sum_matrix = np.zeros((4, len(signal)))
+    sum_matrix = np.zeros((5, len(signal)))
     cumulative_vec = np.zeros(len(signal))
     
     #Loop through bed file to compute percentage for each region.
@@ -110,6 +117,8 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_len, be
             sum_matrix[2, idx] += int(next_line[chrom_hmm_len])
         elif chromhmm_annotation in weak:
             sum_matrix[3, idx] += int(next_line[chrom_hmm_len])
+        elif chromhmm_annotation != "." and is_peas:
+            sum_matrix[4, idx] += int(next_line[chrom_hmm_len])
     
     #Get the set of percentages.
     sum_totals = np.sum(sum_matrix, axis = 0)

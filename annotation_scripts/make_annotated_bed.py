@@ -23,6 +23,8 @@ def main():
     p_promoter = float(sys.argv[4])
     p_enhancer = float(sys.argv[5])
     p_repressor = float(sys.argv[6])
+    p_weak = float(sys.argv[7])
+    is_peas = sys.argv[8] == "True"
 
     #Create grids for labeling SOM nodes with shape indices.
     learned_shapes = []
@@ -37,13 +39,13 @@ def main():
     shape_file = pkl.load(open(shape, 'rb'))
 
     #Match the inputs to shapes.
-    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor)
+    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor, p_weak, is_peas)
 
 """
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repressor):
+def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repressor, is_peas):
         
     #Open output files.
     out_file = open(out_file_name, "w")
@@ -53,7 +55,7 @@ def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repre
         for region in tqdm(regions):
                    
             #Match the data to the nearest shape and obtain the match and the ambiguity metric.
-            [match_label, score] = match_region(region.signals, shapes, p_promoter, p_enhancer, p_repressor)
+            [match_label, score] = match_region(region.signals, shapes, p_promoter, p_enhancer, p_repressor, is_peas)
 
             #Print match to BED file. Format is:
             #chrom  start   end shape_num 1 - ambiguity
@@ -71,7 +73,7 @@ Find the closest match for the input in the list of shapes.
 Return an ambiguity metric which measures how close the input
 is to its nearest shape as opposed to other shapes.
 """
-def match_region(region, shapes, p_promoter, p_enhancer, p_repressor):
+def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, is_peas):
 
     #Create array to hold distances between region and shapes.
     max_crosscorr = 0
@@ -92,7 +94,7 @@ def match_region(region, shapes, p_promoter, p_enhancer, p_repressor):
     # Get the annotation type comprising the maximum of regions
     # with this shape.
     label = None
-    label = wsu.get_annotation(shapes[match], p_promoter, p_enhancer, p_repressor)
+    label = wsu.get_annotation(shapes[match], p_promoter, p_enhancer, p_repressor, p_weak, is_peas)
     percent_label = 0
     if label == "Promoter":
         percent_label = shapes[match].promoter_percentage
@@ -102,6 +104,8 @@ def match_region(region, shapes, p_promoter, p_enhancer, p_repressor):
         percent_label = shapes[match].repressed_percentage
     elif label == "Weak":
         percent_label = shapes[match].weak_percentage
+    elif label == "Other":
+        percent_label = shapes[match].other_percentage
         
     # Get the confidence of this annotation.
     return [label, percent_label * ((max_crosscorr + 1) / 2)]

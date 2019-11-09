@@ -28,20 +28,21 @@ def main():
     #Read in the chromHMM and annotated files.
     our_bed = pd.read_csv(sys.argv[1], sep = "\t")
     pr_path = sys.argv[2]
+    is_peas = sys.argv[3] == "True"
     
     #Get all precision and recall values.
-    get_all_precision_and_recall(our_bed).to_csv(open(pr_path, "w"))
+    get_all_precision_and_recall(our_bed, is_peas).to_csv(open(pr_path, "w"))
     
 """
 Get the precision and recall for each RE.
 """
-def get_all_precision_and_recall(bed):
+def get_all_precision_and_recall(bed, is_peas):
 
     annotations = ["Promoter", "Enhancer", "Repressor", "Weak"]
     length = len(annotations)
 
     #Get precision and recall for each type.
-    [pred, gt] = get_labels_and_ground_truth(bed, annotations)
+    [pred, gt] = get_labels_and_ground_truth(bed, annotations, is_peas)
     promoter_pr = [precision_score(gt[:,0], pred[:,0]), recall_score(gt[:,0], pred[:,0])]
     enhancer_pr = [precision_score(gt[:,1], pred[:,1]), recall_score(gt[:,1], pred[:,1])]
     repressor_pr = [precision_score(gt[:,2], pred[:,2]), recall_score(gt[:,2], pred[:,2])]
@@ -58,7 +59,7 @@ def get_all_precision_and_recall(bed):
 """
 Get the percentage of the chromosome belonging to each ChromHMM annotation.
 """
-def get_labels_and_ground_truth(bed, annotations):
+def get_labels_and_ground_truth(bed, annotations, is_peas):
     
     #Set up percentage matrix.
     vec_pred = list()
@@ -95,7 +96,7 @@ def get_labels_and_ground_truth(bed, annotations):
             sum_vec = np.zeros(4)
        
         #Add to the existing peak counts of ChromHMM annotations for that peak.
-        [sum_vec, not_annotated_count, count_in_region] = add_chromhmm_annotation(sum_vec, anno_length, a, not_annotated_count, count_in_region)
+        [sum_vec, not_annotated_count, count_in_region] = add_chromhmm_annotation(sum_vec, anno_length, a, not_annotated_count, count_in_region, is_peas)
         
         #If we are done with this peak, compute ground truth vs predicted.
         next_start = current_start + 1
@@ -144,11 +145,13 @@ Using the next known overlap between peak and ChromHMM, add to the summation vec
 each mnemonic in this peak and track the total number of overlaps and overlaps without mnemonics
 in this peak.
 """
-def add_chromhmm_annotation(sum_vec, overlap_length, chromhmm_annotation, not_annotated_count, count_in_region):
+def add_chromhmm_annotation(sum_vec, overlap_length, chromhmm_annotation, not_annotated_count, count_in_region, is_peas):
     promoters = ["1_TssA", "2_TssAFlnk", "10_TssBiv", "11_BivFlnk"]
     enhancers = ["6_EnhG", "7_Enh", "12_EnhBiv"]
     repressors = ["13_ReprPC", "14_ReprPCWk"]
     weak = ["9_Het", "15_Quies"]
+    if is_peas:
+        enhancers = ["AE", "OE"]
     if chromhmm_annotation in promoters:
         sum_vec[0] += overlap_length
     elif chromhmm_annotation in enhancers:

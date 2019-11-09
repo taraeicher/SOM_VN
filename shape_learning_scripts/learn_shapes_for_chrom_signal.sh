@@ -9,7 +9,8 @@
     <-d> The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').\n
     <-h> The ChromHMM file used for intersecting.\n
     <-s> The directory containing the scripts\n
-    <-w> The WIG file for this chromosome\n\n"
+    <-w> The WIG file for this chromosome\n
+    <-z> Whether or not this we are using PEAS annotations\n\n"
     
     echo -e $USAGE
     BASE_PATH=""
@@ -18,7 +19,8 @@
     BIN_SIZE=10
     CCCUTOFF=0.75
     SCRIPTS=""
-    while getopts b:c:d:h:s:w: option; do
+    IS_PEAS=False
+    while getopts b:c:d:h:s:w:z: option; do
         case "${option}" in
             b) BIN_SIZE=$OPTARG;;
             c) CHROM=$OPTARG;;
@@ -26,6 +28,7 @@
             h) CHROMHMM=$(realpath $OPTARG);;
             s) SCRIPTS=$(realpath $OPTARG);;
             w) WIG=$(realpath $OPTARG);;
+            z) IS_PEAS=$OPTARG;;
         esac
     done
 	
@@ -56,7 +59,7 @@
     # Intersect signal BED file with ChromHMM.
     bedtools intersect -wao -a $WIGBED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
-    python signal_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CHROMHMM_DISTRIB/$CHROM.pkl
+    python signal_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CHROMHMM_DISTRIB/$CHROM.pkl $IS_PEAS
         
     #Exit
 	wait

@@ -75,6 +75,7 @@ The code you will need for this task is in the folder `shape_learning_scripts` a
    * **-t:** The cutoff to use for cross-correlation significance (not needed for signal model)
    * **-u:** Percentile cutoff file (not needed for signal model)
    * **-w:** The path to the WIG file for this chromosome (signal model only)
+   * **-z:** Whether or not you are using PEAS ground truth ("True"/"False")
    
 ## Description of Helper Scripts
    * `create_index_pysam.py`: Indexes a BAM file using Pysam. This is necessary because, if you index using bamtools, the **bamCoverage** utility cannot process the file.
@@ -111,18 +112,22 @@ The code you will need for this task is in the folder `annotation_scripts` and `
    * The name of the file containing your regions to annotate (generated in step 1).
    * The name of the file containing your learned shapes.
    * The name of the file where you wish to store your annotated BED file.
-   * The percentage cutoff for a shape to be associated with a promoter.
-   * The percentage cutoff for a shape to be associated with an enhancer, given that it is not a promoter.
-   * The percentage cutoff for a shape to be associated with a repressor, given that it is neither a promoter nor an enhancer.
+   * The percentage cutoff for a shape to be associated with a promoter. We use 0.5.
+   * The percentage cutoff for a shape to be associated with an enhancer. We use 0.5.
+   * The percentage cutoff for a shape to be associated with a repressor. We use. 0.9.
+   * The percentage cutoff for a shape to be associated with weak RE. We use 0.9.
+   * Whether you want to annotate enhancers only (True / False), as in PEAS.
   
 3. If you want to annotate new samples using maximum region signal intensity, run `python annotation_scripts/signal_chromhmm_match.py` with the following parameters:
 
    * The name of the file containing your regions to annotate (generated in step 1).
    * The name of the file containing your binned signal values.
    * The name of the file where you wish to store your annotated BED file.
-   * The percentage cutoff for a region's maximum intensity to be associated with a promoter.
-   * The percentage cutoff for a region's maximum intensity to be associated with an enhancer, given that it is not a promoter.
-   * The percentage cutoff for a region's maximum intensity to be associated with a repressor, given that it is neither a promoter nor an enhancer
+   * The percentage cutoff for a shape to be associated with a promoter. We use 0.5.
+   * The percentage cutoff for a shape to be associated with an enhancer. We use 0.5.
+   * The percentage cutoff for a shape to be associated with a repressor. We use. 0.9.
+   * The percentage cutoff for a shape to be associated with weak RE. We use 0.9.
+   * Whether you want to annotate enhancers only (True / False), as in PEAS.
 
 # Evaluating Ground Truth on Peaks
 The code you will need for this task is in the folder `annotation_scripts`. Here, it is assumed that you have BED files generated using the annotation scripts above, peaks called for your input data, and a BED file with ground truth mnemonics in the format of ChromHMM mnemonics. 
@@ -147,8 +152,23 @@ Perform the following steps to replicate our experiments:
    * **-p:** The project to which you want to charge resources.
    * **-s:** The directory containing the scripts.
 5. Run `evaluate_same_chromosome.sh` with the following parameters:
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
+   * **-f:** A file listing the inputs for each cell type, which should be in the following format:
+        Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
+   * **-p:** The project to which you want to charge resources
+   * **-s:** The directory containing the scripts
 6. Run `evaluate_cross_chromosome.sh` with the following parameters:
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
+   * **-f:** A file listing the inputs for each cell type, which should be in the following format:
+        Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
+   * **-p** The project to which you want to charge resources
+   * **-s** The directory containing the scripts
 7. Run `evaluate_cross_cell_type.sh` with the following parameters:
+   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
+   * **-f:** A file listing the inputs for each cell type, which should be in the following format:
+        Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
+   * **-p:** The project to which you want to charge resources
+   * **-s:** The directory containing the scripts
 
 # Reproducing Our Figures
 To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.

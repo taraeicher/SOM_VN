@@ -31,6 +31,12 @@ def main():
     enhancer = {"6_EnhG", "7_Enh", "12_EnhBiv"}
     repressed = {"13_ReprPC", "14_ReprPCWk"}
     weak = {"9_Het", "15_Quies"}
+    
+    if is_peas:
+        promoter = {}
+        enhancer = {"AE", "OE"}
+        repressed = {}
+        weak = {}
         
     shape_col = 3 # Shape annotation
     bio_col = 8 # Biological (ChromHMM) annotation
@@ -43,13 +49,13 @@ def main():
 
     #Get distribution of ChromHMM classes per shape.
     shape_names = get_names_of_shapes(shapes)
-    total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, bed, promoter, enhancer, repressed, weak, shape_names)
+    total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, bed, promoter, enhancer, repressed, weak, shape_names, is_peas)
 
     #Build the list of shapes.
     assoc_shapes = []
     for i in range(len(shapes)):
         shape = shapes[i]
-        assoc_shapes.append(region_defs.Shape_Association(shape, total_percent_all[0,i], total_percent_all[1,i], total_percent_all[2,i], total_percent_all[3,i]))
+        assoc_shapes.append(region_defs.Shape_Association(shape, total_percent_all[0,i], total_percent_all[1,i], total_percent_all[2,i], total_percent_all[3,i], total_percent_all[4,i]))
     
     #Print all shapes with significant annotations, along with their annotations.
     pkl.dump(assoc_shapes, open(output, "wb"))
@@ -57,10 +63,10 @@ def main():
 """
 Compute percentage for each shape-annotation pair.
 """
-def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, chrom_hmm_end, chrom_hmm_len, bed, promoter, enhancer, repressed, weak, shapes):
+def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, chrom_hmm_end, chrom_hmm_len, bed, promoter, enhancer, repressed, weak, shapes, is_peas):
     
     #Set up percentage matrix.
-    sum_matrix = np.zeros((4, len(shapes)))
+    sum_matrix = np.zeros((5, len(shapes)))
     
     #Loop through bed file to compute percentage for each region.
     current_start = -1
@@ -92,6 +98,8 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
             sum_matrix[2, idx] += int(next_line[chrom_hmm_len])
         elif chromhmm_annotation in weak:
             sum_matrix[3, idx] += int(next_line[chrom_hmm_len])
+        elif chromhmm_annotation != "." and is_peas:
+            sum_matrix[4, idx] += int(next_line[chrom_hmm_len])
     
     #Get the set of percentages.
     sum_totals = np.sum(sum_matrix, axis = 0)

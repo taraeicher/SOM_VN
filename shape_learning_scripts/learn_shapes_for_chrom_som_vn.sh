@@ -16,7 +16,8 @@
     <-r> The size of the input regions (default: 1000)\n
     <-s> The directory containing the scripts\n
     <-t> The cutoff to use for cross-correlation significance.\n
-    <-u> Percentile cutoff file\n\n"
+    <-u> Percentile cutoff file\n
+    <-z> Whether or not this we are using PEAS annotations\n\n"
     
     echo -e $USAGE
     REGION_SIZE=1000
@@ -27,7 +28,8 @@
     TRAINING=""
     CCCUTOFF=0.75
     SCRIPTS=""
-    while getopts a:b:c:d:g:h:i:l:n:r:s:t:u: option; do
+    IS_PEAS=""
+    while getopts a:b:c:d:g:h:i:l:n:r:s:t:u:z: option; do
         case "${option}" in
             a) TRAINING=$(realpath $OPTARG);;
             b) BIN_SIZE=$OPTARG;;
@@ -89,7 +91,7 @@
     # Intersect regions with ChromHMM.
     bedtools intersect -wao -a $ANNOTATED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
-    python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $SOM_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl
+    python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $SOM_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl $IS_PEAS
         
     # Exit
 	echo Done!

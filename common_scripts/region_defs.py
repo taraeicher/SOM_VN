@@ -147,14 +147,17 @@ class Shape:
         
 """
 This class holds a learned shape with its percentage distribution.
+NOTE: The "other" category is only for use with PEAS ground truth.
+Otherwise, this value should always be set to 0.
 """   
 class Shape_Association:
-    def __init__(self, shape, promoter, enhancer, repressor, weak):
+    def __init__(self, shape, promoter, enhancer, repressor, weak, other):
         self.shape = shape
         self.promoter_percentage = promoter
         self.enhancer_percentage = enhancer
         self.repressor_percentage = repressor
         self.weak_percentage = weak
+        self.other_percentage = other
         
 """
 This class holds a matched region.

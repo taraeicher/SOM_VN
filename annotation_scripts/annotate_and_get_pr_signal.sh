@@ -11,13 +11,13 @@ USAGE="\n\nThis script is used for annotating the regions of one cell type and c
     <-i> The directory containing the scripts\n
     <-p> The percentage cutoff for associating a shape with a promoter.\n
     <-r> The percentage cutoff for associating a non-promoter and non-enhancer shape with a repressor.\n
-    <-s> The file containing learned shapes.\n
+    <-s> The file containing signal intensity associations.\n
     <-t> The file containing regions to annotate.\n
     <-z> Whether or not this we are using PEAS annotations\n"
 
 echo -e $USAGE
     REGIONS=""
-    SHAPES=""
+    SIGNALS=""
     BASE_PATH=""
     CHROM=""
     CHROMHMM=""
@@ -37,7 +37,7 @@ echo -e $USAGE
             i) SCRIPTS=$(realpath $OPTARG);;
             p) PROMOTER_CUTOFF=$OPTARG;;
             r) REPRESSOR_CUTOFF=$OPTARG;;
-            s) SHAPES=$(realpath $OPTARG);;
+            s) SIGNALS=$(realpath $OPTARG);;
             t) REGIONS=$(realpath $OPTARG);;
             w) WEAK_CUTOFF=$OPTARG;;
             z) IS_PEAS=$OPTARG;;
@@ -66,7 +66,7 @@ echo -e $USAGE
     fi
     
     # Make the annotated BED file.
-    python make_annotated_bed.py $REGIONS $SHAPES $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF $WEAK_CUTOFF $IS_PEAS
+    python signal_chromhmm_match.py $REGIONS $SIGNALS $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF $WEAK_CUTOFF $IS_PEAS
     
     # Compute the intersect of the annotated regions and the peaks.
     bedtools intersect -a $ANNOTATED_BED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed

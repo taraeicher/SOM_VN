@@ -15,7 +15,8 @@
     <-p> The path to the CAGT file\n
     <-r> The size of the input regions (default: 1000)\n
     <-s> The directory containing the scripts\n
-    <-t> cross-correlation cutoff\n"
+    <-t> cross-correlation cutoff\n
+    <-z> Whether or not this we are using PEAS annotations\n\n"
     
     echo -e $USAGE
     REGION_SIZE=1000
@@ -30,7 +31,8 @@
     MERGE_DIST=0.8
     ITERATIONS=1000
     K=40
-    while getopts a:b:c:d:h:i:k:m:p:r:s:t: option; do
+    IS_PEAS=False
+    while getopts a:b:c:d:h:i:k:m:p:r:s:t:z: option; do
         case "${option}" in
             a) TRAINING=$(realpath $OPTARG);;
             b) BIN_SIZE=$OPTARG;;
@@ -44,6 +46,7 @@
             r) REGION_SIZE=$OPTARG;;
             s) SCRIPTS=$(realpath $OPTARG);;
             t) CCCUTOFF=$OPTARG;;
+            z) IS_PEAS=$OPTARG;;
         esac
     done
 	
@@ -106,7 +109,7 @@
     #Intersect regions with ChromHMM.
     bedtools intersect -wao -a $ANNOTATED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
-    python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CAGT_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl
+    python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CAGT_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl $IS_PEAS
         
     #Exit
 	wait
