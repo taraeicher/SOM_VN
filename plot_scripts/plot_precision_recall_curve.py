@@ -33,8 +33,8 @@ def precision_recall_som_intrachrom(directory, avg_over_alpha, avg_over_sigma, a
                 for l in range(len(ALPHAS)):
                     for m in range(len(SIGMAS)):
                     
-                        precision_recall = np.genfromtxt(delim = "\t")
-                        all_precision_recall[i,j,k,l,m,:,:] = precision_recall
+                        precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + CHROMOSOMES[i] + "/" + REPEATS[i] + "/" + ALPHAS[i] + "/" + SIGMAS[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                        all_precision_recall[i,j,k,l,m,:,:] = np.asarray(precision_recall)
                         
     # Average over requested parameters.
     if avg_over_sigma:
@@ -70,8 +70,8 @@ def precision_recall_cagt_intrachrom(directory, avg_over_max_dist, avg_over_k, a
                 for l in range(len(K)):
                     for m in range(len(MAX_DIST)):
                     
-                        precision_recall = np.genfromtxt(delim = "\t")
-                        all_precision_recall[i,j,k,l,m,:,:] = precision_recall
+                        precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + CHROMOSOMES[i] + "/" + REPEATS[i] + "/" + K[i] + "/" + MAX_DIST[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                        all_precision_recall[i,j,k,l,m,:,:] = np.asarray(precision_recall)
                         
     # Average over requested parameters.
     if avg_over_k:
@@ -97,8 +97,8 @@ def precision_recall_signal_intrachrom(directory, avg_over_chromosome, avg_over_
     for i in range(len(CELL_TYPES)):
         for j in range(len(CHROMOSOMES)):
                     
-            precision_recall = np.genfromtxt(delim = "\t")
-            all_precision_recall[i,j,:,:] = precision_recall
+            precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + CHROMOSOMES[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+            all_precision_recall[i,j,:,:] = np.asarray(precision_recall)
             
     if avg_over_chromosome:
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
@@ -119,8 +119,8 @@ def precision_recall_som_crosschrom(directory, avg_over_alpha, avg_over_sigma, a
             for l in range(len(ALPHAS)):
                 for m in range(len(SIGMAS)):
                 
-                    precision_recall = np.genfromtxt(delim = "\t")
-                    all_precision_recall[i,k,l,m,:,:] = precision_recall
+                    precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + REPEATS[i] + "/" + ALPHAS[i] + "/" + SIGMAS[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                    all_precision_recall[i,k,l,m,:,:] = np.asarray(precision_recall)
                     
     # Average over requested parameters.
     if avg_over_sigma:
@@ -154,8 +154,8 @@ def precision_recall_cagt_crosschrom(directory, avg_over_max_dist, avg_over_k, a
             for l in range(len(K)):
                 for m in range(len(MAX_DIST)):
                 
-                    precision_recall = np.genfromtxt(delim = "\t")
-                    all_precision_recall[i,k,l,m,:,:] = precision_recall
+                    precision_recall = precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + REPEATS[i] + "/" + K[i] + "/" + MAX_DIST[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                    all_precision_recall[i,k,l,m,:,:] = np.asarray(precision_recall)
                     
     # Average over requested parameters.
     if avg_over_k:
@@ -181,8 +181,8 @@ def precision_recall_signal_crosschrom(directory, avg_over_chromosome, avg_over_
     for i in range(len(CELL_TYPES)):
         for j in range(len(CHROMOSOMES)):
                     
-            precision_recall = np.genfromtxt(delim = "\t")
-            all_precision_recall[i,j,:,:] = precision_recall
+            precision_recall = precision_recall = pd.read_csv(open(directory + "/" + CELL_TYPES[i] + "/" + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+            all_precision_recall[i,j,:,:] = np.asarray(precision_recall)
             
     if avg_over_chromosome:
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
@@ -203,8 +203,8 @@ def precision_recall_som_crosscelltype(directory, avg_over_alpha, avg_over_sigma
             for l in range(len(ALPHAS)):
                 for m in range(len(SIGMAS)):
                 
-                    precision_recall = np.genfromtxt(delim = "\t")
-                    all_precision_recall[j,k,l,m,:,:] = precision_recall
+                    precision_recall = precision_recall = pd.read_csv(open(directory + "/" + CHROMOSOMES[i] + "/" + REPEATS[i] + "/" + ALPHAS[i] + "/" + SIGMAS[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                    all_precision_recall[j,k,l,m,:,:] = np.asarray(precision_recall)
                     
     # Average over requested parameters.
     if avg_over_sigma:
@@ -238,8 +238,8 @@ def precision_recall_cagt_interchrom(directory, avg_over_max_dist, avg_over_k, a
             for l in range(len(K)):
                 for m in range(len(MAX_DIST)):
                 
-                    precision_recall = np.genfromtxt(delim = "\t")
-                    all_precision_recall[j,k,l,m,:,:] = precision_recall
+                    precision_recall = precision_recall = pd.read_csv(open(directory + "/" + CHROMOSOMES[i] + "/" + REPEATS[i] + "/" + K[i] + "/" + MAX_DIST[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+                    all_precision_recall[j,k,l,m,:,:] = np.asarray(precision_recall)
                     
     # Average over requested parameters.
     if avg_over_k:
@@ -264,8 +264,8 @@ def precision_recall_signal_interchrom(directory, avg_over_cell_type, avg_over_c
     
     for j in range(len(CHROMOSOMES)):
                 
-        precision_recall = np.genfromtxt(delim = "\t")
-        all_precision_recall[j,:,:] = precision_recall
+        precision_recall = precision_recall = pd.read_csv(open(directory + "/" + CHROMOSOMES[i] + "/" + REPEATS[i] + "/" + ALPHAS[i] + "/" + SIGMAS[i] + "/precision_recall" + CHROMOSOMES[i] + ".csv", delim = "\t")
+        all_precision_recall[j,:,:] = np.asarray(precision_recall)
         
     if avg_over_chromosome:
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
