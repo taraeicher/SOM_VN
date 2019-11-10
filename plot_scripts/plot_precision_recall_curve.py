@@ -47,6 +47,8 @@ def precision_recall_som_intrachrom(directory, avg_over_alpha, avg_over_sigma, a
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
                         
     
     # $BASE_PATH/som_vn_intrachrom/
@@ -84,6 +86,8 @@ def precision_recall_cagt_intrachrom(directory, avg_over_max_dist, avg_over_k, a
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/cagt_intrachrom/
     # $BASE_PATH/cagt_peas_intrachrom/
@@ -104,6 +108,8 @@ def precision_recall_signal_intrachrom(directory, avg_over_chromosome, avg_over_
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/signal_intrachrom/
     # $BASE_PATH/signal_peas_intrachrom/
@@ -133,6 +139,8 @@ def precision_recall_som_crosschrom(directory, avg_over_alpha, avg_over_sigma, a
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/som_vn_${chrom_i}_${chrom_j}/
     # $BASE_PATH/som_vn_${chrom_i}_${chrom_j}_peas/
@@ -168,6 +176,8 @@ def precision_recall_cagt_crosschrom(directory, avg_over_max_dist, avg_over_k, a
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/cagt_intrachrom/
     # $BASE_PATH/cagt_peas_intrachrom/
@@ -188,6 +198,8 @@ def precision_recall_signal_crosschrom(directory, avg_over_chromosome, avg_over_
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/signal_intrachrom/
     # $BASE_PATH/signal_peas_intrachrom/
@@ -217,6 +229,8 @@ def precision_recall_som_crosscelltype(directory, avg_over_alpha, avg_over_sigma
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/som_vn_${cell_types[$i]}_${cell_types[$j]}/
     # $BASE_PATH/som_vn_${cell_types[$i]}_${cell_types[$j]}_peas/
@@ -252,6 +266,8 @@ def precision_recall_cagt_interchrom(directory, avg_over_max_dist, avg_over_k, a
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/cagt_${cell_types[$i]}_${cell_types[$j]}/
     # $BASE_PATH/cagt_${cell_types[$i]}_${cell_types[$j]}_peas/
@@ -271,6 +287,8 @@ def precision_recall_signal_interchrom(directory, avg_over_cell_type, avg_over_c
         all_precision_recall = np.mean(all_precision_recall, axis = 1)
     if avg_over_cell_type:
         all_precision_recall = np.mean(all_precision_recall, axis = 0)
+        
+    return all_precision_recall
     
     # $BASE_PATH/signal_${cell_types[$i]}_${cell_types[$j]}/
     # $BASE_PATH/signal_${cell_types[$i]}_${cell_types[$j]}_peas/

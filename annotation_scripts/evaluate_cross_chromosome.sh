@@ -40,23 +40,23 @@ do
                 do
                     for sigma_0 in 1 2 3 4 5 6 7 8 9
                     do
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
 
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
                        
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
                        
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
                        
                        if [ ${cell_types[$i]} = "GM12878"]
                         then
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
 
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
                        
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
                        
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
                        fi
                     done
                 done
@@ -66,22 +66,22 @@ do
                     for max_dist in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
                     do
                         # CAGT
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
 
                         # Do the same for PEAS ground truth for GM12878.
                         if [ ${cell_types[$i]} = "GM12878"]
                         then
                             # CAGT with PEAS ground truth
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
                         fi
                     done
                 done
                 
-                qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
                 
                 if [ ${cell_types[$i]} = "GM12878"]
                 then
-                    qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal_peas/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno_peas[$i]} -p 0.5 -e 0.5 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                    qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal_peas/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
                 fi
             done
         done
