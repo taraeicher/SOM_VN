@@ -123,24 +123,6 @@ def get_labels_and_ground_truth(bed, annotations, is_peas):
     return [final_stack_pred, final_stack_gt]
     
 """
-Print precision and recall for all chromosomes.
-""" 
-def print_report(precision, recall, chrom, win, cell, pr):
-    #Print the cell line, chromosome, and window information
-    report = open(pr + "/report_" + chrom, "w")
-    report.write(cell + "\n")
-    report.write(chrom + "\n")
-    report.write(win + "\n\n")
-    
-    #All shape-based predictions
-    for i in range(0, 3):
-        report.write(str(precision[i]) + "\t" + str(recall[i]) + "\n")
-    report.write("\n")
-    
-    #Close the report.
-    report.close()
-    
-"""
 Using the next known overlap between peak and ChromHMM, add to the summation vector of bp with
 each mnemonic in this peak and track the total number of overlaps and overlaps without mnemonics
 in this peak.
