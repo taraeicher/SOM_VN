@@ -50,8 +50,7 @@ The code you will need for this task is in the folder `shape_learning_scripts` a
 5. Run `common_scripts/create_regions.sh` to create training regions. To create training regions from a permuted WIG file, run `common_scripts/create_regions_permuted.sh`. The requires the following parameters to be specified:
 
    * **-b:** The bin size used to generate the WIG file (default: 10 bp)
-   * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/')
-   * **-o:** The directory to contain the split regions
+   * **-d:** The directory to contain the split regions
    * **-r:** The region size used for splitting (default: 1 kbp)
    * **-s:** The path to the helper scripts (i.e. the `common_scripts` directory
    * **-w:** The directory containing the WIG file
