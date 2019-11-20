@@ -63,7 +63,7 @@
     for c in $CHROMS_NUM;
     do
         python permute_wig.py ${WIG}/${c}.wig ${WIG}/${c}_perm.wig
-        python ../common_scripts/split_regions.py ${WIG}/${c}_perm.wig $BIN_SIZE $c $SPLIT_DIR/${c}.pkl $REGION_SIZE 0.995 $SPLIT_DIR/shifted/${c}.pkl $SPLIT_DIR/crossings/${c}.txt $SPLIT_DIR/percentile_cutoffs/${c}.txt
+        python ../common_scripts/split_regions.py ${WIG}/${c}_perm.wig $BIN_SIZE $c $SPLIT_DIR/${c}.pkl $REGION_SIZE 0.95 $SPLIT_DIR/shifted/${c}.pkl $SPLIT_DIR/crossings/${c}.txt $SPLIT_DIR/percentile_cutoffs/${c}.txt
 
     done    
     
