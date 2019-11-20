@@ -15,18 +15,11 @@ from tqdm import tqdm
 
 def main():
     # arguments
-    in_wig_dir = sys.argv[1]
-    out_wig_dir = sys.argv[2]
-    
-    # Create the output directory.
-    if not os.path.exists(out_wig_dir):
-        os.makedirs(out_wig_dir)
-    
-    for file in os.listdir(in_wig_dir):
-        print("Permuting " + file)
-        in_wig = pd.read_csv(in_wig_dir + "/" + file, delimiter = "\t", header = None)
-        perm_df = permute(in_wig)
-        perm_df.to_csv(out_wig_dir + "/" + file, sep='\t', header = False, index = False)
+    in_wig = pd.read_csv(sys.argv[1], delimiter = "\t", header = None)
+    out_wig = sys.argv[2]
+
+    perm_df = permute(in_wig)
+    perm_df.to_csv(out_wig, sep='\t', header = False, index = False)
         
 def permute(wig):
 
@@ -53,11 +46,6 @@ def permute(wig):
     permuted.iloc[:,2] = end_df.values
         
     return permuted
-    
-    
-    
-    
-    
-    
+
 if __name__ == "__main__":
     main()

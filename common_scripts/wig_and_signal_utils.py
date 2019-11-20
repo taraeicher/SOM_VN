@@ -91,24 +91,21 @@ def get_intensity_percentile(percentile, file, bin_sz):
         next_line = file.readline()
 
     #Find percentile of maxes.
-    target_count = int(file_line_count * percentile)
+    target_count = np.sum(counts[1:]) * percentile
     running_sum = 0
-    i = 0
+    i = 1
     percentile_found = False
     max_sig_percentile = 0
     
     while i < len(counts) - 1 and not percentile_found:
         running_sum += counts[i]
+        print([running_sum, target_count])
         if running_sum >= target_count:
             max_sig_percentile = i
             percentile_found = True
         i += 1
-    i = 0
-    percentile_found = False
-    running_sum = 0
         
     #Rewind file and return values.
-    file.seek(0)
     retval = max_sig_percentile / fine_bin_count
     return retval
     

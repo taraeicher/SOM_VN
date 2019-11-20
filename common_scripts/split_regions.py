@@ -60,16 +60,12 @@ def main():
     percentile_cutoff_file.write(str(percentile_cutoff))
     percentile_cutoff_file.close()
 
-    # Notify user that process has completed.
-    print("Input generated for chromosome " + chrom + " for margin size " + str(margin) + " and factor " + str(factor))
-
 """
 For each region in the WIG file, shift it to its best
 representation. Return the list of all shifted regions.
 """
 def shift_all_regions(regions, region_size, percentile, factor, wig_file, bin_size):
     threshold = wsu.get_intensity_percentile(percentile, wig_file, bin_size)
-    
     shifted_regions = []
     all_crossings = []
     print("Shifting regions:")
