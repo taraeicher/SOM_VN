@@ -42,9 +42,9 @@ def main():
     alpha = float(sys.argv[4])
     sigma = float(sys.argv[5])
     grid_size = float(sys.argv[6])
-    iterations = float(sys.argv[7])
+    iterations = int(sys.argv[7])
     bin_size = float(sys.argv[8])
-    region_bins = region_size / bin_size
+    region_bins = int(math.floor(region_size / bin_size))
     
     #Create list of shapes from the grid.
     som_shapes = []
@@ -157,7 +157,7 @@ class SOM(object):
                 R_weights_weights_norm = R_weights_weights - avg_weight_by_weight
                 
                 # Compute final metric
-                crosscorr = R_weights_inputs_norm / math.sqrt(R_inputs_inputs_norm * R_weights_weights_norm)
+                crosscorr = R_weights_inputs_norm / np.sqrt(np.clip(R_inputs_inputs_norm * R_weights_weights_norm, a_min = very_small, a_max = None))
                 return crosscorr
             
             #To compute the Best Matching Unit given a vector

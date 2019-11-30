@@ -25,6 +25,7 @@ def main():
     bed = np.genfromtxt(sys.argv[1], delimiter='\t', dtype = str)
     shapes = pkl.load(open(sys.argv[2], "rb"))
     output = sys.argv[3]
+    is_peas = sys.argv[4] == "True"
     
     # Mapping from ChromHMM mnemonics to RE
     promoter = {"1_TssA", "2_TssAFlnk", "10_TssBiv", "11_BivFlnk"}
@@ -103,7 +104,7 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_start, 
     
     #Get the set of percentages.
     sum_totals = np.sum(sum_matrix, axis = 0)
-    sum_totals_rep = np.clip(np.tile(sum_totals, (4,1)), a_min = 0.0001, a_max = None)
+    sum_totals_rep = np.clip(np.tile(sum_totals, (5,1)), a_min = 0.0001, a_max = None)
     return sum_matrix / sum_totals_rep
    
 """

@@ -44,6 +44,7 @@
             s) SCRIPTS=$(realpath $OPTARG);;
             t) CCCUTOFF=$OPTARG;;
             u) CUTOFFS=$(realpath $OPTARG);;
+            z) IS_PEAS=$OPTARG;;
         esac
     done
     
