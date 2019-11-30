@@ -50,7 +50,7 @@ def main():
     som_shapes = []
 
     #Create and train the SOMs and close the input files.
-    train_som(regions, som_shapes, output, region_size, alpha, sigma, grid_size, iterations)
+    train_som(regions, som_shapes, output, region_bins, alpha, sigma, grid_size, iterations)
     
     #Print message to user.
     print("Grid for " + sys.argv[1] + " is complete.")

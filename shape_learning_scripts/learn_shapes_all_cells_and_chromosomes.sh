@@ -211,26 +211,26 @@ do
                         if [[ ! -e ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0 ]]; then
                             mkdir -p ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0
                         fi
-                        # # Normal SOM-VN with PEAS ground truth
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        # Normal SOM-VN with PEAS ground truth
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
                         
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
                         
-                        # # Permuted WIG SOM-VN with PEAS ground truth
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        # Permuted WIG SOM-VN with PEAS ground truth
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
 
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
                         
-                        # # Permuted annotation SOM-VN with PEAS ground truth
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        # Permuted annotation SOM-VN with PEAS ground truth
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
                         
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
                         
-                        # # Normal SOM with PEAS ground truth
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                        # Normal SOM with PEAS ground truth
+                        qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
                         
-                        # qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
-                    # fi
+                        qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                    fi
                 done
             done
             
@@ -252,9 +252,9 @@ do
                     
                     qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist/ -h ${chromhmm_anno[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z False
                     
-                    # # Do the same for PEAS ground truth for GM12878.
-                    # if [ ${cell_types[$i]} = "GM12878"]
-                    # then
+                    # Do the same for PEAS ground truth for GM12878.
+                    if [ ${cell_types[$i]} = "GM12878"]
+                    then
                     
                         if [[ ! -e ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist ]]; then
                             mkdir -p ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist
@@ -263,11 +263,11 @@ do
                                 mkdir -p ${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist
                         fi
                     
-                        # # CAGT with PEAS ground truth
-                        # qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                        # CAGT with PEAS ground truth
+                        qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
                         
-                        # qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
-                    # fi
+                        qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                    fi
                 done
             done
             
@@ -284,21 +284,21 @@ do
             
             qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_signal_training/$chrom/$repeat/ -h ${chromhmm_anno[$i]} -s $SCRIPTS -w ${wig}_split_training_$repeat/$chrom.wig -z False
             
-            # Submit all intensity-only jobs with PEAS ground truth.
-            # if [ ${cell_types[$i]} = "GM12878"]
-            # then
+            Submit all intensity-only jobs with PEAS ground truth.
+            if [ ${cell_types[$i]} = "GM12878"]
+            then
             
-                # if [[ ! -e ${cell_types[$i]}_peas_signal/$chrom/$repeat ]]; then
-                    # mkdir -p ${cell_types[$i]}_peas_signal/$chrom/$repeat
-                # fi
-                # if [[ ! -e ${cell_types[$i]}_peas_signal_training/$chrom/$repeat ]]; then
-                        # mkdir -p ${cell_types[$i]}_peas_signal_training/$chrom/$repeat
-                # fi
+                if [[ ! -e ${cell_types[$i]}_peas_signal/$chrom/$repeat ]]; then
+                    mkdir -p ${cell_types[$i]}_peas_signal/$chrom/$repeat
+                fi
+                if [[ ! -e ${cell_types[$i]}_peas_signal_training/$chrom/$repeat ]]; then
+                        mkdir -p ${cell_types[$i]}_peas_signal_training/$chrom/$repeat
+                fi
             
-                # qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w $wig_peas/$chrom.wig -z True
+                qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w $wig_peas/$chrom.wig -z True
                 
-                # qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal_training/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w ${wig_peas}_split_training_$repeat/$chrom.wig -z True
-            # fi
+                qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal_training/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w ${wig_peas}_split_training_$repeat/$chrom.wig -z True
+            fi
             
         done
     done
