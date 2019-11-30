@@ -46,7 +46,7 @@
             u) CUTOFFS=$(realpath $OPTARG);;
         esac
     done
-	
+    
     # Move to the directory containing the scripts.
     cd $SCRIPTS
     

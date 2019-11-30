@@ -43,9 +43,9 @@ def main():
     alpha = float(sys.argv[5])
     sigma = float(sys.argv[6])
     grid_size = float(sys.argv[7])
-    iterations = float(sys.argv[8])
+    iterations = int(sys.argv[8])
     bin_size = float(sys.argv[9])
-    region_bins = region_size / bin_size
+    region_bins = int(math.floor(region_size / bin_size))
     
     #Create list of shapes from the grid.
     som_shapes = []
@@ -101,7 +101,7 @@ class SOM(object):
         #Set parameters.
         batch_size = int(math.floor(len(regions) / 10))
         self.batch_size = batch_size
-        m = int(math.sqrt(grid_size)))
+        m = int(math.sqrt(grid_size))
         self.m = m
         self.iterations = iterations
         self.weightages = []
@@ -115,11 +115,11 @@ class SOM(object):
             ##VARIABLES AND CONSTANT OPS FOR DATA STORAGE
             #Randomly initialized weightage vectors for all neurons,
             #stored together as a matrix Variable of size [m*n, dim]
-            self.weightage_vects = tf.Variable(tf.random_uniform(shape = [m*n, dim], minval = 1, maxval = 100, dtype = tf.float32)) 
+            self.weightage_vects = tf.Variable(tf.random_uniform(shape = [m*m, dim], minval = 1, maxval = 100, dtype = tf.float32)) 
 
             #Matrix of size [m*n, 2] for SOM grid locations
             #of neurons
-            self.location_vects = tf.constant(np.array(list(self.neuron_locations(m, n))))
+            self.location_vects = tf.constant(np.array(list(self.neuron_locations(m, m))))
             
             ##PLACEHOLDERS FOR TRAINING INPUTS
             self.batch_input = tf.placeholder(tf.float32, shape = [batch_size, dim])
@@ -164,7 +164,7 @@ class SOM(object):
                 R_weights_weights_norm = R_weights_weights - avg_weight_by_weight
                 
                 # Compute final metric
-                crosscorr = R_weights_inputs_norm / math.sqrt(R_inputs_inputs_norm * R_weights_weights_norm)
+                crosscorr = R_weights_inputs_norm / np.sqrt(np.clip(R_inputs_inputs_norm * R_weights_weights_norm, a_min = very_small, a_max = None))
                 return crosscorr
                 
             #Calculate crossings for all weightage vects, with a delay of 0.
@@ -177,7 +177,7 @@ class SOM(object):
             #index of the neuron which gives the least value
             self.weightage_vects_stack = tf.stack([self.weightage_vects for i in range(batch_size)], axis = 2)
             num_weight_crossings_stack = tf.stack([self.num_weight_crossings for i in range(batch_size)], axis = 1)
-            self.batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])
+            self.batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*m)])
             self.crosscorrs = tf.py_func(get_vectorized_crosscorr, [self.weightage_vects_stack, self.batch_input_stack], tf.float32)
             #self.diff = tf.subtract(self.weightage_vects_stack, self.batch_input_stack)
             #bmu_indices = tf.argmin(tf.reduce_sum(tf.pow(self.diff, 2), 1))
@@ -197,17 +197,17 @@ class SOM(object):
             #Construct the op that will generate a vector with learning
             #rates for all neurons, based on iteration number and location wrt BMU.
             location_vect_stack = tf.stack([self.location_vects for i in range(batch_size)], axis = 1)
-            bmu_location_stack = tf.stack([self.bmu_locations for i in range(m*n)])
+            bmu_location_stack = tf.stack([self.bmu_locations for i in range(m*m)])
             bmu_distance_squares = tf.reduce_sum(tf.pow(tf.subtract(location_vect_stack, bmu_location_stack), 2), 2)
             self.neighborhood_funcs = tf.exp(tf.negative(tf.divide(tf.cast(bmu_distance_squares, "float32"), tf.multiply(tf.pow(sigma_op, 2), self.lambdas))))
             self.learning_rate_ops = tf.multiply(self.alpha_op, self.neighborhood_funcs)
 
             #Finally, the op that will use learning_rate_op to update
             #the weightage vectors of all neurons based on a particular input
-            self.neighborhood_multipliers = tf.stack([tf.tile(tf.slice(self.neighborhood_funcs, np.array([i, 0]), np.array([1, batch_size])), [dim, 1]) for i in range(m*n)])
-            learning_rate_multipliers = tf.stack([tf.tile(tf.slice(self.learning_rate_ops, np.array([i, 0]), np.array([1, batch_size])), [dim, 1]) for i in range(m*n)])
-            self.weightage_delta_numerator = tf.reduce_sum(tf.multiply(learning_rate_multipliers, tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])), 2)
-            self.denominator_mins = tf.convert_to_tensor(0.00001 * np.ones((m*n, dim)), dtype = "float32")
+            self.neighborhood_multipliers = tf.stack([tf.tile(tf.slice(self.neighborhood_funcs, np.array([i, 0]), np.array([1, batch_size])), [dim, 1]) for i in range(m*m)])
+            learning_rate_multipliers = tf.stack([tf.tile(tf.slice(self.learning_rate_ops, np.array([i, 0]), np.array([1, batch_size])), [dim, 1]) for i in range(m*m)])
+            self.weightage_delta_numerator = tf.reduce_sum(tf.multiply(learning_rate_multipliers, tf.stack([tf.transpose(self.batch_input) for i in range(m*m)])), 2)
+            self.denominator_mins = tf.convert_to_tensor(0.00001 * np.ones((m*m, dim)), dtype = "float32")
             self.weightage_delta_denominator = tf.maximum(tf.reduce_sum(self.neighborhood_multipliers, 2), self.denominator_mins)
             self.weightage_deltas = tf.divide(self.weightage_delta_numerator, self.weightage_delta_denominator)
             self.weightage_vects_alpha = tf.multiply(self.weightage_vects, tf.subtract(1.0, self.alpha_op))
@@ -249,7 +249,7 @@ class SOM(object):
         num_weight_crossings = []
         
         #Track count of regions mapping to each shape.
-        map_count = np.zeros((self.m,self.n))
+        map_count = np.zeros((self.m,self.m))
         
         #Train in mini-batches
         with self.sess:
