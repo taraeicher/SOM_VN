@@ -9,7 +9,7 @@ def main():
     percentile_cutoff_file = open(sys.argv[5], "w")
     
     # Percentile
-    wsu.get_intensity_percentile(percentile, wig_file, resolution)
+    percentile_cutoff = wsu.get_intensity_percentile(percentile, wig_file, resolution)
     percentile_cutoff_file.write(str(percentile_cutoff))
     percentile_cutoff_file.close()
     
