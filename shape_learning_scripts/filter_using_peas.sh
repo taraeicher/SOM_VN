@@ -6,9 +6,13 @@ CHROMHMM=""
 CHROMS_NUM="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
 WIG=""
 TRAINING_FILES=""
-while getopts c:t:w: option; do
+RESOLUTION=10
+REGION_SZ=1000
+while getopts b:c:r:t:w: option; do
    case "${option}" in
+       b) RESOLUTION=$OPTARG;;
        c) CHROMHMM=$(realpath $OPTARG);;
+       r) REGION_SZ=$OPTARG;;
        t) TRAINING_FILES=$(realpath $OPTARG);;
        w) WIG=$WIG;;
    esac
@@ -18,6 +22,9 @@ module load python/$PYTHON_VERSION
 
 if [[ ! -e $TRAINING_FILES/peas ]]; then
     mkdir $TRAINING_FILES/peas
+fi
+if [[ ! -e $TRAINING_FILES/peas/percentile_cutoffs ]]; then
+    mkdir $TRAINING_FILES/peas/percentile_cutoffs
 fi
 if [[ ! -e $WIG/peas ]]; then
     mkdir $WIG/peas
@@ -36,6 +43,9 @@ run_pipeline() {
     
     # Retain only WIG bins contained within an annotated ChromHMM region.
     python filter_wig.py $WIG/${c}.wig ${CHROMHMM}_onlypromoter.bed $WIG/peas/${c}.wig $c
+    
+    # Get the new intensity percentile of only the filtered wig.
+    python ../common_scripts/get_intensity_percentile_wig.py $WIG/peas/${c}.wig $RESOLUTION $REGION_SZ 0.95 $TRAINING_FILES/peas/percentile_cutoffs/${c}.txt
 }
 
 #Run the pipeline from split WIG files to final set of annotations.

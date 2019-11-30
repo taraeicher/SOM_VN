@@ -141,7 +141,9 @@ Perform the following steps to replicate our experiments:
 1. Follow the instructions for [downloading our data](#Downloading-Our-Data).
 2. Follow Steps 1-5 from [Learning Shapes](#Learning-Shapes) for each cell type.
 3. Run `filter_using_peas.sh` with the following parameters:
+   * **-b:** The bin size (default = 10)
    * **-c:** The annotations used as ground truth in the PEAS paper (formatted similarly to ChromHMM).
+   * **-r:** The region size (default = 1000)
    * **-t:** The training regions segmented in Step 2.
    * **-w:** The WIG file generated in Step 2.
 4. Run `learn_shapes_all_cells_and_chromosomes.sh` with the following parameters:
