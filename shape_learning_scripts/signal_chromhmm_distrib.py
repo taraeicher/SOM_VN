@@ -122,7 +122,7 @@ def get_all_percentage_pairs(anno, chrom_hmm_anno, start, end, chrom_hmm_len, be
     
     #Get the set of percentages.
     sum_totals = np.sum(sum_matrix, axis = 0)
-    sum_totals_rep = np.clip(np.tile(sum_totals, (4,1)), a_min = 0.0001, a_max = None)
+    sum_totals_rep = np.clip(np.tile(sum_totals, (5,1)), a_min = 0.0001, a_max = None)
     return sum_matrix / sum_totals_rep
     
 if __name__ == "__main__":
