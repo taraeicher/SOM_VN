@@ -55,8 +55,14 @@ do
         if [[ ! -e ${training_files[$i]}/shifted_split_training_$repeat ]]; then
             mkdir -p ${training_files[$i]}/shifted_split_training_$repeat
         fi
-        if [[ ! -e ${training_files[$i]}/shifted_split_training_$repeat ]]; then
-            mkdir -p ${training_files[$i]}/shifted_split_training_$repeat
+        if [[ ! -e ${training_files[$i]}/percentile_cutoffs_training_$repeat ]]; then
+            mkdir -p ${training_files[$i]}/percentile_cutoffs_training_$repeat
+        fi
+        if [[ ! -e ${training_files[$i]}/shifted_split_testing_$repeat ]]; then
+            mkdir -p ${training_files[$i]}/shifted_split_testing_$repeat
+        fi
+        if [[ ! -e ${training_files[$i]}/percentile_cutoffs_testing_$repeat ]]; then
+            mkdir -p ${training_files[$i]}/percentile_cutoffs_testing_$repeat
         fi
         if [[ ! -e ${wig}_split_training_$repeat ]]; then
             mkdir -p ${wig}_split_training_$repeat
@@ -64,37 +70,57 @@ do
         if [[ ! -e ${wig}_split_testing_$repeat ]]; then
             mkdir -p ${wig}_split_testing_$repeat
         fi
-        # if [[ ! -e ${perm_training_files[$i]}/shifted_split_training_$repeat ]]; then
-            # mkdir -p ${perm_training_files[$i]}/shifted_split_training_$repeat
-        # fi
-        # if [[ ! -e ${perm_training_files[$i]}/shifted_split_testing_$repeat ]]; then
-            # mkdir -p ${perm_training_files[$i]}/shifted_split_testing_$repeat
-        # fi
-        # if [[ ! -e ${training_files_peas[$i]}/shifted_split_training_$repeat ]]; then
-            # mkdir -p ${training_files_peas[$i]}/shifted_split_training_$repeat
-        # fi
-        # if [[ ! -e ${training_files_peas[$i]}/shifted_split_testing_$repeat ]]; then
-            # mkdir -p ${training_files_peas[$i]}/shifted_split_testing_$repeat
-        # fi
-        # if [[ ! -e ${wig_peas}_split_training_$repeat ]]; then
-            # mkdir -p ${wig_peas}_split_training_$repeat
-        # fi
-        # if [[ ! -e ${wig_peas}_split_testing_$repeat ]]; then
-            # mkdir -p ${wig_peas}_split_testing_$repeat
-        # fi
-        # if [[ ! -e ${perm_training_files_peas[$i]}/shifted_split_training_$repeat ]]; then
-            # mkdir -p ${perm_training_files_peas[$i]}/shifted_split_training_$repeat
-        # fi
-        # if [[ ! -e ${perm_training_files_peas[$i]}/shifted_split_testing_$repeat ]]; then
-            # mkdir -p ${perm_training_files_peas[$i]}/shifted_split_testing_$repeat
-        # fi
+        if [[ ! -e ${perm_training_files[$i]}/shifted_split_training_$repeat ]]; then
+            mkdir -p ${perm_training_files[$i]}/shifted_split_training_$repeat
+        fi
+        if [[ ! -e ${perm_training_files[$i]}/percentile_cutoffs_training_$repeat ]]; then
+            mkdir -p ${perm_training_files[$i]}/percentile_cutoffs_training_$repeat
+        fi
+        if [[ ! -e ${perm_training_files[$i]}/shifted_split_testing_$repeat ]]; then
+            mkdir -p ${perm_training_files[$i]}/shifted_split_testing_$repeat
+        fi
+        if [[ ! -e ${perm_training_files[$i]}/percentile_cutoffs_testing_$repeat ]]; then
+            mkdir -p ${perm_training_files[$i]}/percentile_cutoffs_testing_$repeat
+        fi
+        if [[ ! -e ${training_files_peas[$i]}/shifted_split_training_$repeat ]]; then
+            mkdir -p ${training_files_peas[$i]}/shifted_split_training_$repeat
+        fi
+        if [[ ! -e ${training_files_peas[$i]}/percentile_cutoffs_training_$repeat ]]; then
+            mkdir -p ${training_files_peas[$i]}/percentile_cutoffs_training_$repeat
+        fi
+        if [[ ! -e ${training_files_peas[$i]}/shifted_split_testing_$repeat ]]; then
+            mkdir -p ${training_files_peas[$i]}/shifted_split_testing_$repeat
+        fi
+        if [[ ! -e ${training_files_peas[$i]}/percentile_cutoffs_testing_$repeat ]]; then
+            mkdir -p ${training_files_peas[$i]}/percentile_cutoffs_testing_$repeat
+        fi
+        if [[ ! -e ${wig_peas}_split_training_$repeat ]]; then
+            mkdir -p ${wig_peas}_split_training_$repeat
+        fi
+        if [[ ! -e ${wig_peas}_split_testing_$repeat ]]; then
+            mkdir -p ${wig_peas}_split_testing_$repeat
+        fi
+        if [[ ! -e ${perm_training_files_peas[$i]}/shifted_split_training_$repeat ]]; then
+            mkdir -p ${perm_training_files_peas[$i]}/shifted_split_training_$repeat
+        fi
+        if [[ ! -e ${perm_training_files_peas[$i]}/percentile_cutoffs_training_$repeat ]]; then
+            mkdir -p ${perm_training_files_peas[$i]}/percentile_cutoffs_training_$repeat
+        fi
+        if [[ ! -e ${perm_training_files_peas[$i]}/shifted_split_testing_$repeat ]]; then
+            mkdir -p ${perm_training_files_peas[$i]}/shifted_split_testing_$repeat
+        fi
+        if [[ ! -e ${perm_training_files_peas[$i]}/percentile_cutoffs_testing_$repeat ]]; then
+            mkdir -p ${perm_training_files_peas[$i]}/percentile_cutoffs_testing_$repeat
+        fi
         
         # Run for each cell type.
         for (( i=1; i<${cell_type_count}+1; i++ ));
         do
-            
+            cutoff=0.95
             # Randomly choose half of the regions for training.
             python random_split.py ${training_files[$i]}/shifted/${chrom}.pkl ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl ${training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl
+            python get_intensity_percentile_regions.py .${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl $cutoff ${training_files[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt
+            python get_intensity_percentile_regions.py .${training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl $cutoff ${training_files[$i]}/percentile_cutoffs_testing_$repeat/${chrom}.txt
             
             python random_split.py ${perm_training_files[$i]}/shifted/${chrom}.pkl ${perm_training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl ${perm_training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl
             
