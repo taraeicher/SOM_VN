@@ -1,4 +1,6 @@
 import wig_and_signal_utils as wsu
+import numpy as np
+import math
 import sys
 def main():
     # Input
