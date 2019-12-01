@@ -39,7 +39,7 @@ run_pipeline() {
     awk '{ if ( $4 == "AP" || $4 == "OP" || $4 == "GE" || $4 == "TS") { print; } }' $CHROMHMM > ${CHROMHMM}_onlypromoter.bed
     
     #Retain only training regions contained within an annotated ChromHMM region.
-    python filter_training.py $TRAINING_FILES/${c}.pkl ${CHROMHMM}_onlypromoter.bed $TRAINING_FILES/peas/${c}.pkl
+    python filter_regions.py $TRAINING_FILES/${c}.pkl ${CHROMHMM}_onlypromoter.bed $TRAINING_FILES/peas/${c}.pkl
     
     # Retain only WIG bins contained within an annotated ChromHMM region.
     python filter_wig.py $WIG/${c}.wig ${CHROMHMM}_onlypromoter.bed $WIG/peas/${c}.wig $c
