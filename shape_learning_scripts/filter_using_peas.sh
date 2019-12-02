@@ -14,7 +14,7 @@ while getopts b:c:r:t:w: option; do
        c) CHROMHMM=$(realpath $OPTARG);;
        r) REGION_SZ=$OPTARG;;
        t) TRAINING_FILES=$(realpath $OPTARG);;
-       w) WIG=$WIG;;
+       w) WIG=$(realpath $OPTARG);;
    esac
 done
 PYTHON_VERSION=3.6	
