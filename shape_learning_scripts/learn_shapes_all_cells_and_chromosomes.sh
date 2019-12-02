@@ -123,10 +123,16 @@ do
             python get_intensity_percentile_regions.py .${training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl $cutoff ${training_files[$i]}/percentile_cutoffs_testing_$repeat/${chrom}.txt
             
             python random_split.py ${perm_training_files[$i]}/shifted/${chrom}.pkl ${perm_training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl ${perm_training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl
+            python get_intensity_percentile_regions.py .${perm_training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl $cutoff ${perm_training_files[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt
+            python get_intensity_percentile_regions.py .${perm_training_files[$i]}/shifted_split_testing_$repeat/${chrom}.pkl $cutoff ${perm_training_files[$i]}/percentile_cutoffs_testing_$repeat/${chrom}.txt
             
             python random_split.py ${training_files_peas[$i]}/shifted/${chrom}.pkl ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl ${training_files_peas[$i]}/shifted_split_testing_$repeat/${chrom}.pkl
+            python get_intensity_percentile_regions.py .${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl $cutoff ${training_files_peas[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt
+            python get_intensity_percentile_regions.py .${training_files_peas[$i]}/shifted_split_testing_$repeat/${chrom}.pkl $cutoff ${training_files_peas[$i]}/percentile_cutoffs_testing_$repeat/${chrom}.txt
             
             python random_split.py ${perm_training_files_peas[$i]}/shifted/${chrom}.pkl ${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl ${perm_training_files_peas[$i]}/shifted_split_testing_$repeat/${chrom}.pkl
+            python get_intensity_percentile_regions.py .${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl $cutoff ${perm_training_files_peas[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt
+            python get_intensity_percentile_regions.py .${perm_training_files_peas[$i]}/shifted_split_testing_$repeat/${chrom}.pkl $cutoff ${perm_training_files_peas[$i]}/percentile_cutoffs_testing_$repeat/${chrom}.txt
             
             python random_split_wig.py ${wig}/$chrom.wig ${wig}_split_testing_$repeat/$chrom.wig ${wig}_split_training_$repeat/$chrom.wig
             

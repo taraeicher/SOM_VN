@@ -55,7 +55,7 @@ The code you will need for this task is in the folder `shape_learning_scripts` a
    * **-s:** The path to the helper scripts (i.e. the `common_scripts` directory
    * **-w:** The directory containing the WIG file
    
-6. Run `shape_learning_scripts/learn_shapes_for_chrom_som_vn.sh` to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions *_cagt*, *_chromhmmperm*, *_signal*, and *_som*. This requires the following parameters to be specified:
+6. Run `shape_learning_scripts/learn_shapes_for_chrom_som_vn.sh` to learn shapes on one chromosome using our method. To learn shapes using other methods, similar scripts are available, with the extensions *_cagt*, *_signal*, and *_som*. This requires the following parameters to be specified:
 
    * **-a:** Directory containing training regions (not needed for *_signal*)
    * **-b:** The bin size used to generate the WIG file (default: 10 bp)
@@ -146,25 +146,29 @@ Perform the following steps to replicate our experiments:
    * **-r:** The region size (default = 1000)
    * **-t:** The training regions segmented in Step 2.
    * **-w:** The WIG file generated in Step 2.
-4. Run `learn_shapes_all_cells_and_chromosomes.sh` with the following parameters:
+4. Run `common_scripts/permute_chromhmm.py` with the following parameters, in order:
+   * The name of the ChromHMM BED file.
+   * The name of the permuted ChromHMM BED file you wish to create
+   Do this for the ChromHMM files for each cell type, including the PEAS ChromHMM file for GM12878.
+5. Run `learn_shapes_all_cells_and_chromosomes.sh` with the following parameters:
    * **-c:** The path to the CAGT MATLAB file.
    * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
    * **-f:** A comma-delimited file with the following format: Cell line name, Training file directory, Permuted training file directory, ChromHMM annotations, Permuted ChromHMM annotations, WIG directory, Training file directory (PEAS), Ground truth  annotations (PEAS), WIG directory (PEAS).
    * **-p:** The project to which you want to charge resources.
    * **-s:** The directory containing the scripts.
-5. Run `evaluate_same_chromosome.sh` with the following parameters:
+6. Run `evaluate_same_chromosome.sh` with the following parameters:
    * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
    * **-f:** A file listing the inputs for each cell type, which should be in the following format:
         Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
    * **-p:** The project to which you want to charge resources
    * **-s:** The directory containing the scripts
-6. Run `evaluate_cross_chromosome.sh` with the following parameters:
+7. Run `evaluate_cross_chromosome.sh` with the following parameters:
    * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
    * **-f:** A file listing the inputs for each cell type, which should be in the following format:
         Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
    * **-p** The project to which you want to charge resources
    * **-s** The directory containing the scripts
-7. Run `evaluate_cross_cell_type.sh` with the following parameters:
+8. Run `evaluate_cross_cell_type.sh` with the following parameters:
    * **-d:** The base filename where the input and output files will be stored (e.g. '/root/annoshaperun/').
    * **-f:** A file listing the inputs for each cell type, which should be in the following format:
         Cell Type, Training Directory, Training Directory (PEAS), ChromHMM Annotations, Ground Truth Annotations from PEAS, Peak File
