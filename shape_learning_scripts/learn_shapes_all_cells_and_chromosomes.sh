@@ -4,25 +4,25 @@ USAGE="This script is used for annotating each cell type's regions with the regi
     <-f> A comma-delimited file containing the following:\n
     \tCell line name,Training file directory,Permuted training file directory,ChromHMM annotations,Permuted ChromHMM annotations,WIG directory,Training file directory (PEAS),Ground truth annotations (PEAS),WIG directory (PEAS)\n
     <-p> The project to which you want to charge resources\n
-    <-s> The directory containing the scripts\n\n"
+    <-s> The directory containing the SCRIPTS_DIR\n\n"
     
 echo -e $USAGE
 BASE_PATH=""
 CHROMHMM=""
-BIN_SIZE=10
-REGION_SIZE=1000
+BIN_SZ=10
+REGION_SZ=1000
 TRAINING=""
-CCCUTOFF=0.75
-SCRIPTS=""
+CUTOFF=0.75
+SCRIPTS_DIR=""
 PARAM_FILE=""
-CAGT_PATH=""
+CAGT_P=""
 while getopts c:d:f:p:s: option; do
     case "${option}" in
-        c) CAGT_PATH=$(realpath $OPTARG);;
+        c) CAGT_P=$(realpath $OPTARG);;
         d) BASE_PATH=$(realpath $OPTARG);;
         f) PARAM_FILE=$(realpath $OPTARG);;
         p) PROJECT=$(realpath $OPTARG);;
-        s) SCRIPTS=$(realpath $OPTARG);;
+        s) SCRIPTS_DIR=$(realpath $OPTARG);;
     esac
 done
 
@@ -170,24 +170,24 @@ do
                     fi
                     
                     # Normal SOM-VN
-                    qsub -A $PROJECT -v a=${training_files[$i]}/shifted/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh
-
-                    qsub -A $PROJECT -v a=${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh                                         
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh
+  
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh                    
 
                     # Permuted WIG SOM-VN
-                    qsub -A $PROJECT -v a=${perm_training_files[$i]}/shifted/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${perm_training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${perm_training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${perm_training_files[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh
                     
-                    qsub -A $PROJECT -v a=${perm_training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn_signalperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${perm_training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${perm_training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_signalperm_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${perm_training_files[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh
                     
                     # Permuted annotation SOM-VN
-                    qsub -A $PROJECT -v a=${training_files[$i]}/shifted/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${perm_chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh
-                    
-                    qsub -A $PROJECT -v a=${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -v b=$BIN_SIZE -v c=$chrom -v d=${cell_types[$i]}_somvn_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -v g=$grid_size -v h=${perm_chromhmm_anno[$i]} -v i=$epochs -v l=$alpha_0 -v n=$sigma_0 -v r=$REGION_SIZE -v s=$SCRIPTS -v t=$CCCUTOFF -v u=${training_files[$i]}/percentile_cutoffs/${chrom}.txt -v z=False learn_shapes_for_chrom_som_vn.sh
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${perm_chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh
+
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${perm_chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=False learn_shapes_for_chrom_som_vn_nogetopts.sh
                     
                     # Normal SOM
-                    qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${chromhmm_anno[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z False
+                    qsub -A PAS0272 -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_som/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_som_nogetopts.sh
                     
-                    qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${chromhmm_anno[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z False
+                    qsub -A PAS0272 -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_som_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_som_nogetopts.sh
                     
                     # Do the same for PEAS ground truth for GM12878.
                     if [ ${cell_types[$i]} = "GM12878"]
@@ -218,24 +218,24 @@ do
                             mkdir -p ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0
                         fi
                         # Normal SOM-VN with PEAS ground truth
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
                         
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files_peas[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
                         
                         # Permuted WIG SOM-VN with PEAS ground truth
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${perm_training_files_peas[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
 
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_signalperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${perm_training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${perm_training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas_signalperm/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${perm_training_files_peas[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
                         
                         # Permuted annotation SOM-VN with PEAS ground truth
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas_chromhmmperm/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${perm_ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
                         
-                        qsub -A $PROJECT learn_shapes_for_chrom_som_vn.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_somvn_peas_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${perm_ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -u ${training_files_peas[$i]}/percentile_cutoffs/${chrom}.txt -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_somvn_peas_chromhmmperm_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${perm_ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,CUTOFFS=$(realpath ${training_files_peas[$i]}/percentile_cutoffs_training_$repeat/${chrom}.txt),IS_PEAS=True learn_shapes_for_chrom_som_vn_nogetopts.sh
                         
                         # Normal SOM with PEAS ground truth
-                        qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
-                        
-                        qsub -A $PROJECT learn_shapes_for_chrom_som.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/ -g $grid_size -h ${ground_truth_peas[$i]} -i $epochs -l $alpha_0 -n $sigma_0 -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                        qsub -A PAS0272 -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_som_peas/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_som_nogetopts.sh
+
+                        qsub -A PAS0272 -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_som_peas_training/$chrom/$repeat/$alpha_0/$sigma_0/),GRID=$grid_size,CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs,LEARNING_RATE=$alpha_0,NEIGHBORHOOD=$sigma_0,REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_som_nogetopts.sh
                     fi
                 done
             done
@@ -254,9 +254,9 @@ do
                     fi
                     
                     # CAGT
-                    qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist/ -h ${chromhmm_anno[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z False
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
                     
-                    qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist/ -h ${chromhmm_anno[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z False
+                    qsub -A $PROJECT -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
                     
                     # Do the same for PEAS ground truth for GM12878.
                     if [ ${cell_types[$i]} = "GM12878"]
@@ -270,9 +270,9 @@ do
                         fi
                     
                         # CAGT with PEAS ground truth
-                        qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
-                        
-                        qsub -A $PROJECT learn_shapes_for_chrom_cagt.sh -a ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/ -h ${training_files_peas[$i]} -i $epochs_cagt -k $k -m $max_dist -p $CAGT_PATH -r $REGION_SIZE -s $SCRIPTS -t $CCCUTOFF -z True
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
+
+                        qsub -A $PROJECT -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
                     fi
                 done
             done
@@ -286,9 +286,9 @@ do
                     mkdir -p ${cell_types[$i]}_signal_training/$chrom/$repeat
             fi
             
-            qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_signal/$chrom/$repeat/ -h ${chromhmm_anno[$i]} -s $SCRIPTS -w $wig/$chrom.wig -z False
+            qsub -A $PROJECT -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
             
-            qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_signal_training/$chrom/$repeat/ -h ${chromhmm_anno[$i]} -s $SCRIPTS -w ${wig}_split_training_$repeat/$chrom.wig -z False
+            qsub -A $PROJECT -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
             
             Submit all intensity-only jobs with PEAS ground truth.
             if [ ${cell_types[$i]} = "GM12878"]
@@ -301,9 +301,9 @@ do
                         mkdir -p ${cell_types[$i]}_peas_signal_training/$chrom/$repeat
                 fi
             
-                qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w $wig_peas/$chrom.wig -z True
+                qsub -A $PROJECT -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_peas_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig_peas/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
                 
-                qsub -A $PROJECT learn_shapes_for_chrom_signal.sh -b $BIN_SIZE -c $chrom -d ${cell_types[$i]}_peas_signal_training/$chrom/$repeat/ -h ${ground_truth_peas[$i]} -s $SCRIPTS -w ${wig_peas}_split_training_$repeat/$chrom.wig -z True
+                qsub -A $PROJECT -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath ${cell_types[$i]}_peas_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig_peas}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
             fi
             
         done
