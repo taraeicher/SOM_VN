@@ -3,6 +3,7 @@
 #!/bin/bash   
 
 #Variables
+    source activate tensorflow_gpu
     USAGE="\n\nThis script is used for learning a set of representative shapes from the training regions output by create_regions.sh and annotating them with an RE. Shapes are learned for each chromosome using an SOM, then merged to correct for signal shift. Finally, the shapes are associated with RE by annotating the training set and associating the shapes with ChromHMM elements.\n\n
     <-a> Directory containing training regions\n
     <-b> The bin size used to generate the WIG file (default: 10 bp)\n
