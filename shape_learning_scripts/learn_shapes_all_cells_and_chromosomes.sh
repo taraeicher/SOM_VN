@@ -253,7 +253,7 @@ do
             # Submit all CAGT jobs.
             for k in 20 40 80 160
             do
-                for max_dist in 0.3 0.5 0.7 0.9 #0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+                for max_dist in 0.3 0.5 0.7 0.9
                 do
                     
                     if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist ]]; then
