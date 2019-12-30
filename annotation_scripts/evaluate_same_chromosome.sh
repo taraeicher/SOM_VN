@@ -35,7 +35,7 @@ weak_cutoff=0.9
 cell_type_count=${#cell_types[@]}
 for chrom in 1 8 15 22
 do
-    for (( i=0; i<${cell_type_count}+1; i++ ));
+    for (( i=0; i<${cell_type_count}; i++ ));
     do
         for repeat in 1 2 3 4 5
         do

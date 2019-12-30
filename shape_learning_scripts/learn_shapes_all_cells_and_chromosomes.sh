@@ -250,71 +250,71 @@ do
                 done
             done
             
-            # Submit all CAGT jobs.
-            for k in 20 40 80 160
-            do
-                for max_dist in 0.3 0.5 0.7 0.9
-                do
+            # # Submit all CAGT jobs.
+            # for k in 20 40 80 160
+            # do
+                # for max_dist in 0.3 0.5 0.7 0.9
+                # do
                     
-                    if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist ]]; then
-                            mkdir -p $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist
-                    fi
-                    if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist ]]; then
-                            mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist
-                    fi
+                    # if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist ]]; then
+                            # mkdir -p $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist
+                    # fi
+                    # if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist ]]; then
+                            # mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist
+                    # fi
                     
-                    # CAGT
-                    qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
+                    # # CAGT
+                    # qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files[$i]}/shifted/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
                     
-                    qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
+                    # qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=False learn_shapes_for_chrom_cagt_nogetopts.sh
                     
-                    # Do the same for PEAS ground truth for GM12878.
-                    if [ ${cell_types[$i]} == "GM12878" ]
-                    then
+                    # # Do the same for PEAS ground truth for GM12878.
+                    # if [ ${cell_types[$i]} == "GM12878" ]
+                    # then
                     
-                        if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist ]]; then
-                            mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist
-                        fi
-                        if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist ]]; then
-                                mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist
-                        fi
+                        # if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist ]]; then
+                            # mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist
+                        # fi
+                        # if [[ ! -e $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist ]]; then
+                                # mkdir -p $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist
+                        # fi
                     
-                        # CAGT with PEAS ground truth
-                        qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files_peas[$i]}/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
+                        # # CAGT with PEAS ground truth
+                        # qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files_peas[$i]}/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_peas/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
 
-                        qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
-                    fi
-                done
-            done
+                        # qsub -A $PROJECT -m n -v TRAINING=$(realpath ${training_files_peas[$i]}/shifted_split_training_$repeat/${chrom}.pkl),BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_cagt_peas_training/$chrom/$repeat/$k/$max_dist/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),ITERATIONS=$epochs_cagt,K=$k,MERGE_DIST=$max_dist,CAGT_PATH=$(realpath $CAGT_P),REGION_SIZE=$REGION_SZ,SCRIPTS=$(realpath $SCRIPTS_DIR),CCCUTOFF=$CUTOFF,IS_PEAS=True learn_shapes_for_chrom_cagt_nogetopts.sh
+                    # fi
+                # done
+            # done
             
-            # Submit all intensity-only jobs.
+            # # Submit all intensity-only jobs.
             
-            if [[ ! -e $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat ]]; then
-                    mkdir -p $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat
-            fi
-            if [[ ! -e $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat ]]; then
-                    mkdir -p $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat
-            fi
+            # if [[ ! -e $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat ]]; then
+                    # mkdir -p $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat
+            # fi
+            # if [[ ! -e $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat ]]; then
+                    # mkdir -p $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat
+            # fi
             
-            qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
+            # qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
             
-            qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
+            # qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${chromhmm_anno[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
             
-            # Submit all intensity-only jobs with PEAS ground truth.
-            if [ ${cell_types[$i]} == "GM12878" ]
-            then
+            # # Submit all intensity-only jobs with PEAS ground truth.
+            # if [ ${cell_types[$i]} == "GM12878" ]
+            # then
             
-                if [[ ! -e $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat ]]; then
-                    mkdir -p $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat
-                fi
-                if [[ ! -e $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat ]]; then
-                        mkdir -p $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat
-                fi
+                # if [[ ! -e $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat ]]; then
+                    # mkdir -p $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat
+                # fi
+                # if [[ ! -e $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat ]]; then
+                        # mkdir -p $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat
+                # fi
             
-                qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig_peas/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
+                # qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_peas_signal/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath $wig_peas/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
                 
-                qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig_peas}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
-            fi
+                # qsub -A $PROJECT -m n -v BIN_SIZE=$BIN_SZ,CHROM=$chrom,BASE_PATH=$(realpath $BASE_PATH/${cell_types[$i]}_peas_signal_training/$chrom/$repeat/),CHROMHMM=$(realpath ${ground_truth_peas[$i]}),SCRIPTS=$(realpath $SCRIPTS_DIR),WIG=$(realpath ${wig_peas}_split_training_$repeat/$chrom.wig),IS_PEAS=False learn_shapes_for_chrom_signal_nogetopts.sh
+            # fi
             
         done
     done

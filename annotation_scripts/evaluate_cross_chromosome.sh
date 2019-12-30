@@ -27,61 +27,138 @@ chromhmm_anno=$(awk -F "\"*,\"*" '{print $4;}' $PARAM_FILE | tr '\r\n' ' ')
 chromhmm_anno_peas=$(awk -F "\"*,\"*" '{print $5;}' $PARAM_FILE | tr '\r\n' ' ')
 peaks=$(awk -F "\"*,\"*" '{print $6;}' $PARAM_FILE | tr '\r\n' ' ')
 
+promoter_cutoff=0.05
+enhancer_cutoff=0.05
+repressor_cutoff=0.9
+weak_cutoff=0.9
+
 cell_type_count=${#cell_types[@]}
-for chrom_i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+for chrom_i in 1 8 15 22
 do
-    for chrom_j in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+    for chrom_j in 1 8 15 22
     do
-        for (( i=1; i<${cell_type_count}+1; i++ ));
+        for (( i=0; i<${cell_type_count}; i++ ));
         do
             for repeat in 1 2 3 4 5
             do
-                for alpha_0 in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+                for alpha_0 in 0.2 0.4 0.6 0.8
                 do
-                    for sigma_0 in 1 2 3 4 5 6 7 8 9
+                    for sigma_0 in 2 4 6 8
                     do
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
-
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
-                       
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
-                       
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        som_vn_basepath=$BASE_PATH/som_vn_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                        som_vn_perm_basepath=$BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                        som_vn_chromhmmperm_basepath=$BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                        som_basepath=$BASE_PATH/som_${chrom_i}_${chrom_j}/${cell_types[$i]}/
+                        
+                        if [[ ! -e $som_vn_basepath ]]; then
+                            mkdir -p $som_vn_basepath
+                        fi
+                        if [[ ! -e $som_vn_perm_basepath ]]; then
+                            mkdir -p $som_vn_perm_basepath
+                        fi
+                        if [[ ! -e $som_vn_chromhmmperm_basepath ]]; then
+                            mkdir -p $som_vn_chromhmmperm_basepath
+                        fi
+                        if [[ ! -e $som_basepath ]]; then
+                            mkdir -p $som_basepath
+                        fi
+                        
+                        #SOM-VN Normal
+                        qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
+                        
+                        #SOM-VN Signal Perm
+                        qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_perm_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn_signalperm/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
+                        
+                        #SOM-VN ChromHMM Perm
+                        qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_chromhmmperm_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn_chromhmmperm/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
+                        
+                        #SOM
+                        qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
                        
                        if [ ${cell_types[$i]} = "GM12878"]
                         then
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
-
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_signalperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
-                       
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_vn_chromhmmperm_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
-                       
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/som_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/som_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                            som_vn_basepath=$BASE_PATH/som_vn_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                            som_vn_perm_basepath=$BASE_PATH/som_vn_signalperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                            som_vn_chromhmmperm_basepath=$BASE_PATH/som_vn_chromhmmperm_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/
+                            som_basepath=$BASE_PATH/som_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/
+                            
+                            if [[ ! -e $som_vn_basepath ]]; then
+                                mkdir -p $som_vn_basepath
+                            fi
+                            if [[ ! -e $som_vn_perm_basepath ]]; then
+                                mkdir -p $som_vn_perm_basepath
+                            fi
+                            if [[ ! -e $som_vn_chromhmmperm_basepath ]]; then
+                                mkdir -p $som_vn_chromhmmperm_basepath
+                            fi
+                            if [[ ! -e $som_basepath ]]; then
+                                mkdir -p $som_basepath
+                            fi
+                            
+                            #SOM-VN PEAS Normal
+                            qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn_peas/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
+                            
+                            #SOM-VN Signal Perm PEAS
+                            qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_perm_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn_signalperm_peas/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
+                            
+                            #SOM-VN ChromHMM Perm PEAS
+                            qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_vn_chromhmmperm_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_vn_chromhmmperm_peas/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
+                            
+                            #SOM PEAS
+                            qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $som_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/som_peas/${cell_types[$i]}$chrom_i/$repeat/$alpha_0/$sigma_0/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
                        fi
                     done
                 done
                 # Submit all CAGT jobs.
                 for k in 20 40 80 160
                 do
-                    for max_dist in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+                    for max_dist in 0.3 0.5 0.7 0.9
                     do
-                        # CAGT
-                        qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                        cagt_basepath=$BASE_PATH/cagt/${cell_types[$i]}/$chrom_i/$repeat/$k/$max_dist/
+                    
+                        if [[ ! -e $cagt_basepath ]]; then
+                            mkdir -p $cagt_basepath
+                        fi
+                    
+                        # CAGT                      
+                        qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $cagt_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/cagt/${cell_types[$i]}$chrom_i/$repeat/$k/$max_dist/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
 
                         # Do the same for PEAS ground truth for GM12878.
                         if [ ${cell_types[$i]} = "GM12878"]
                         then
-                            # CAGT with PEAS ground truth
-                            qsub -A $PROJECT annotate_and_get_pr.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/cagt_peas/${cell_types[$i]}/$chrom_i/$repeat/$alpha_0/$sigma_0/ -d $BASE_PATH/cagt_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/$repeat/$alpha_0/$sigma_0/ -c $chrom_j -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                        
+                            cagt_basepath=$BASE_PATH/cagt_peas/${cell_types[$i]}/$chrom_i/$repeat/$k/$max_dist/
+                    
+                            if [[ ! -e $cagt_basepath ]]; then
+                                mkdir -p $cagt_basepath
+                            fi
+                            
+                            # CAGT with PEAS ground truth                          
+                            qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $cagt_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/cagt_peas/${cell_types[$i]}$chrom_i/$repeat/$k/$max_dist/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
                         fi
                     done
                 done
                 
-                qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z False
+                signal_basepath=$BASE_PATH/signal_${chrom_i}_${chrom_j}/${cell_types[$i]}/
+                    
+                if [[ ! -e $signal_basepath ]]; then
+                    mkdir -p $signal_basepath
+                fi
+                
+                #Signal
+                qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $signal_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/signal/${cell_types[$i]}/$chrom_i/) REGIONS=$(realpath ${training_files[$i]}/shifted/$chrom_j.pkl) IS_PEAS=False
                 
                 if [ ${cell_types[$i]} = "GM12878"]
                 then
-                    qsub -A $PROJECT annotate_and_get_pr_signal.sh -a ${peaks[$i]} -t ${training_files_peas[$i]}/shifted/$chrom.pkl -s $BASE_PATH/signal_peas/${cell_types[$i]}/$chrom_i/ -d $BASE_PATH/signal_${chrom_i}_${chrom_j}_peas/${cell_types[$i]}/ -c $chrom -h ${chromhmm_anno_peas[$i]} -p 0.05 -e 0.05 -r 0.9 -w 0.9 -i $SCRIPTS -z True
+                    signal_basepath=$BASE_PATH/signal_${chrom_i}_${chrom_j}/${cell_types[$i]}/
+                    
+                    if [[ ! -e $signal_basepath ]]; then
+                        mkdir -p $signal_basepath
+                    fi
+                
+                    # Signal PEAS
+                    qsub -A $PROJECT annotate_and_get_pr.sh PEAKS=$(realpath ${peaks[$i]}) CHROM=$chrom_j BASE_PATH=$(realpath $signal_basepath) PROMOTER_CUTOFF=$promoter_cutoff ENHANCER_CUTOFF=$enhancer_cutoff REPRESSOR_CUTOFF=$repressor_cutoff WEAK_CUTOFF=$weak_cutoff CHROMHMM=$(realpath ${chromhmm_anno_peas[$i]}) SCRIPTS=$(realpath $SCRIPTS) SHAPES=$(realpath $BASE_PATH/signal/${cell_types[$i]}/$chrom_i/) REGIONS=$(realpath ${training_files_peas[$i]}/shifted/$chrom_j.pkl) IS_PEAS=True
+
                 fi
             done
         done
