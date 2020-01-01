@@ -39,7 +39,7 @@ def main():
     shape_file = pkl.load(open(shape, 'rb'))
 
     #Match the inputs to shapes.
-    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor, p_weak, is_peas)
+    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor, is_peas)
 
 """
 Match each input to the nearest shape.
@@ -83,7 +83,7 @@ def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, is_peas):
     
     #For each shape, determine the region's distance from it.
     for i in range(len(shapes)):
-        shape_assoc = shapes[i].shape.signals
+        shape_assoc = shapes[i].signals
         crosscorr, d = get_max_crosscorr(region, shape_assoc)
         crosscorr_list.append(crosscorr)
         if crosscorr_list[len(crosscorr_list) - 1] > max_crosscorr:
