@@ -39,13 +39,13 @@ def main():
     shape_file = pkl.load(open(shape, 'rb'))
 
     #Match the inputs to shapes.
-    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor, is_peas)
+    match_shapes(in_file, shape_file, output_file, p_promoter, p_enhancer, p_repressor, p_weak, is_peas)
 
 """
 Match each input to the nearest shape.
 Print out the region with its corresponding shape to a BED file.
 """
-def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repressor, is_peas):
+def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repressor, p_weak, is_peas):
         
     #Open output files.
     out_file = open(out_file_name, "w")
@@ -55,7 +55,7 @@ def match_shapes(regions, shapes, out_file_name, p_promoter, p_enhancer, p_repre
         for region in tqdm(regions):
                    
             #Match the data to the nearest shape and obtain the match and the ambiguity metric.
-            [match_label, score] = match_region(region.signals, shapes, p_promoter, p_enhancer, p_repressor, is_peas)
+            [match_label, score] = match_region(region.signals, shapes, p_promoter, p_enhancer, p_repressor, p_weak, is_peas)
 
             #Print match to BED file. Format is:
             #chrom  start   end shape_num 1 - ambiguity
@@ -73,7 +73,7 @@ Find the closest match for the input in the list of shapes.
 Return an ambiguity metric which measures how close the input
 is to its nearest shape as opposed to other shapes.
 """
-def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, is_peas):
+def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, p_weak, is_peas):
 
     #Create array to hold distances between region and shapes.
     max_crosscorr = 0
@@ -83,7 +83,7 @@ def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, is_peas):
     
     #For each shape, determine the region's distance from it.
     for i in range(len(shapes)):
-        shape_assoc = shapes[i].signals
+        shape_assoc = shapes[i].shape.signals
         crosscorr, d = get_max_crosscorr(region, shape_assoc)
         crosscorr_list.append(crosscorr)
         if crosscorr_list[len(crosscorr_list) - 1] > max_crosscorr:
@@ -99,14 +99,14 @@ def match_region(region, shapes, p_promoter, p_enhancer, p_repressor, is_peas):
     if label == "Promoter":
         percent_label = shapes[match].promoter_percentage
     elif label == "Enhancer":
-        label = shapes[match].enhancer_percentage
+        percent_label = shapes[match].enhancer_percentage
     elif label == "Repressor":
         percent_label = shapes[match].repressed_percentage
     elif label == "Weak":
         percent_label = shapes[match].weak_percentage
     elif label == "Other":
         percent_label = shapes[match].other_percentage
-        
+
     # Get the confidence of this annotation.
     return [label, percent_label * ((max_crosscorr + 1) / 2)]
 
