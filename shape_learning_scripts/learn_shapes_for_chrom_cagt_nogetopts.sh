@@ -62,7 +62,7 @@
     #Extract the signal and run CAGT.
     python extract_signal.py $TRAINING $TRAINING_CSV/$CHROM.csv
     module load matlab
-    matlab -nodisplay -nodesktop -r "run_cagt('$TRAINING_CSV/$CHROM.csv','$MATLAB_MATRIX/$CHROM.mat','$CAGT_OUT_CSV/$CHROM.csv','$CAGT_PATH', '$MERGE_DIST', '$ITERATIONS', '$K')"
+    matlab -nodisplay -nodesktop -r "run_cagt('$TRAINING_CSV/$CHROM.csv','$MATLAB_MATRIX','$CHROM','$CAGT_OUT_CSV/$CHROM.csv','$CAGT_PATH', '$MERGE_DIST', '$ITERATIONS', '$K')"
     python convert_to_pickle.py $CAGT_OUT_CSV/$CHROM.csv $CAGT_OUT/$CHROM.pkl
     echo -e "CAGT model is ready for chrom $CHROM.\n"
     

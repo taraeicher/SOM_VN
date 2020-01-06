@@ -1,4 +1,4 @@
-function X=run_cagt(in_file, mat_loc, csv_file, cagt_path, merge_dist, iterations, k_val)
+function X=run_cagt(in_file, mat_loc, chrom, csv_file, cagt_path, merge_dist, iterations, k_val)
     
     % Read the table of input training regions. Retain only the signals, not the labels.
     M_head=readtable(in_file);
@@ -19,13 +19,14 @@ function X=run_cagt(in_file, mat_loc, csv_file, cagt_path, merge_dist, iteration
     intervalData.Properties.VarNames = ["chr", "start", "stop", "strand"];
     
     % Read the CAGT file, run CAGT, and save the shapes found in a CSV file.
-    save('mat_loc','intervalData', 'signal')
+    mat_loc_file = strcat(mat_loc, "/", chrom, ".mat")
+    save(mat_loc_file,'intervalData', 'signal')
     addpath(cagt_path)
-    cagt('mat_loc', 'od', '../data/test', 'op', 'nucleo_around_ctcf_', 'tt', 'CTCF', 'st', 'NUCLEOSOME', ...
+    cagt(char(mat_loc_file), 'od', strcat(mat_loc, '/data/test'), 'op', '/nucleo_around_ctcf_', 'tt', 'CTCF', 'st', 'NUCLEOSOME', ...
       'merge', true, 'bed', true, 'txt', true, 'maxiter', str2num(iterations), 'replicates', 1, 'k', str2num(k_val), 'start', 'plus', ...
       'overwrite', true, 'flip', true, 'mergeDist', str2num(merge_dist), 'mergeK', 1, 'lowvarcut', 0.01, 'distance', 'correlation', 'maxlag', 20, ...
       'emptyaction', 'drop', 'avgFun', 'median')
-    res = load("../data/test/nucleo_around_ctcf_results.mat")
+    res = load(strcat(mat_loc, "/data/test/nucleo_around_ctcf_results.mat"))
     csvwrite(csv_file,res.kmeansResults.centroids)
     quit()
 end
