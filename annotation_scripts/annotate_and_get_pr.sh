@@ -22,8 +22,14 @@
         mkdir $PRECISION_RECALL
     fi
     
+    echo $REGIONS
+    echo $SHAPES
+    echo $ANNOTATED_BED
+    echo $CHROM
+    
     # Make the annotated BED file.
-    python make_annotated_bed.py $REGIONS $SHAPES $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF $WEAK_CUTOFF $IS_PEAS
+    python make_annotated_bed.py $REGIONS $SHAPES $ANNOTATED_BED/$CHROM.bed $IS_PEAS
+    python ../common_scripts/make_shape_bed.py $REGIONS $SOM_SHIFTED/$CHROM.pkl $ANNOTATED_BED/$CHROM.bed
     
     # Compute the intersect of the annotated regions and the peaks.
     bedtools intersect -a $ANNOTATED_BED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed

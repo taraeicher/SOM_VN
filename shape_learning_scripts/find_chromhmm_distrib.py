@@ -51,12 +51,15 @@ def main():
     #Get distribution of ChromHMM classes per shape.
     shape_names = get_names_of_shapes(shapes)
     total_percent_all = get_all_percentage_pairs(shape_col, bio_col, shape_start, shape_end, bio_start, bio_end,  bio_len, bed, promoter, enhancer, repressed, weak, shape_names, is_peas)
+    class_means = np.transpose(np.vstack([np.mean(total_percent_all, axis = 1)]*total_percent_all.shape[1]))
+    class_stddev = np.transpose(np.vstack([np.std(total_percent_all, axis = 1)]*total_percent_all.shape[1]))
+    total_percent_z = (total_percent_all - class_means) / class_stddev
 
     #Build the list of shapes.
     assoc_shapes = []
     for i in range(len(shapes)):
         shape = shapes[i]
-        assoc_shapes.append(region_defs.Shape_Association(shape, total_percent_all[0,i], total_percent_all[1,i], total_percent_all[2,i], total_percent_all[3,i], total_percent_all[4,i]))
+        assoc_shapes.append(region_defs.Shape_Association(shape, total_percent_z[0,i], total_percent_z[1,i], total_percent_z[2,i], total_percent_z[3,i], total_percent_z[4,i]))
     
     #Print all shapes with significant annotations, along with their annotations.
     pkl.dump(assoc_shapes, open(output, "wb"))

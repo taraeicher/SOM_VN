@@ -8,24 +8,19 @@ in a matched shape or signal, use the criteria
 to determine the RE annotation of that shape
 or signal.
 """ 
-def get_annotation(distribution, promoter, enhancer, repressor, weak, is_peas):
+def get_annotation(distribution, is_peas):
     label = None
-    if distribution.promoter_percentage >= promoter and distribution.enhancer_percentage < enhancer:
+    max = np.argmax(np.nan_to_num([distribution.promoter_percentage, distribution.enhancer_percentage, distribution.repressor_percentage, distribution.weak_percentage, distribution.other_percentage]))
+    if max == 0:
         label = "Promoter"
-    elif distribution.enhancer_percentage >= enhancer and distribution.promoter_percentage < promoter:
+    elif max == 1:
         label = "Enhancer"
-    elif distribution.enhancer_percentage >= enhancer and distribution.promoter_percentage >= promoter:
-        if distribution.enhancer_percentage >= distribution.promoter_percentage:
-            label = "Enhancer"
-        else:
-            label = "Promoter"
     elif is_peas:
         label = "Other"
-    elif distribution.repressor_percentage >= distribution.weak_percentage:
+    elif max == 2:
         label = "Repressor"
-    else:
+    elif max == 3:
         label = "Weak"
-        
     return label
 
 """

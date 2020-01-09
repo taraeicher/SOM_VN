@@ -1,0 +1,4 @@
+A549,../../A549_training,None,../../chromhmm/A549_mnemonics.bed,None,../../peaks/A549_peaks.bed
+Brain,../../Brain_training,None,../../chromhmm/Brain_mnemonics.bed,None,../../peaks/Brain_peaks.bed
+H1,../../H1_training,None,../../chromhmm/H1_mnemonics.bed,None,../../peaks/H1_peaks.bed
+GM12878,../../GM12878_training,../../GM12878_training_peas,../../chromhmm/GM12878_mnemonics.bed,../../chromhmm/GM12878_colored.bed,../../peaks/GM12878_peaks.bed

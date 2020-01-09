@@ -12,11 +12,12 @@ Required parameters:
 import sys
 import numpy as np
 import pandas as pd
+import pickle as pkl
 from tqdm import tqdm
 import glob, os
 sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
-from sklearn.metrics import precision_score
+from sklearn.metrics import average_precision_score
 from sklearn.metrics import recall_score
 
 """
@@ -27,45 +28,42 @@ def main():
 
     #Read in the chromHMM and annotated files.
     our_bed = pd.read_csv(sys.argv[1], sep = "\t")
-    pr_path = sys.argv[2]
-    is_peas = sys.argv[3] == "True"
-    
-    #Get all precision and recall values.
-    get_all_precision_and_recall(our_bed, is_peas).to_csv(open(pr_path, "w"))
-    
-"""
-Get the precision and recall for each RE.
-"""
-def get_all_precision_and_recall(bed, is_peas):
+    shapes = pkl.load(open(sys.argv[2], "rb"))
+    pr_path = sys.argv[3]
+    is_peas = sys.argv[4] == "True"
 
-    annotations = ["Promoter", "Enhancer", "Repressor", "Weak"]
-    length = len(annotations)
+    #Get all precision and recall values.
+    get_all_precision_and_recall(our_bed, shapes, is_peas).to_csv(open(pr_path, "w"))
+    
+"""
+Get the precision and recall.
+"""
+def get_all_precision_and_recall(bed, shapes, is_peas):
 
     #Get precision and recall for each type.
-    [pred, gt] = get_labels_and_ground_truth(bed, annotations, is_peas)
-    promoter_pr = [precision_score(gt[:,0], pred[:,0]), recall_score(gt[:,0], pred[:,0])]
-    enhancer_pr = [precision_score(gt[:,1], pred[:,1]), recall_score(gt[:,1], pred[:,1])]
-    repressor_pr = [precision_score(gt[:,2], pred[:,2]), recall_score(gt[:,2], pred[:,2])]
-    weak_pr = [precision_score(gt[:,3], pred[:,3]), recall_score(gt[:,3], pred[:,3])]
-    pr_all = pd.DataFrame({"Promoter": promoter_pr,
-        "Enhancer": enhancer_pr,
-        "Repressor": repressor_pr,
-        "Weak": weak_pr},
-        index = ["Precision", "Recall"],
-        columns = annotations)
+    [gt, pred] = get_labels_and_ground_truth(bed, shapes, is_peas)
+    pr = [average_precision_score(gt[:,0], pred), recall_score(gt[:,0], pred)]
+    print(pr)
+    #enhancer_pr = [precision_score(gt[:,1], pred[:,1]), recall_score(gt[:,1], pred[:,1])]
+    #repressor_pr = [precision_score(gt[:,2], pred[:,2]), recall_score(gt[:,2], pred[:,2])]
+    #weak_pr = [precision_score(gt[:,3], pred[:,3]), recall_score(gt[:,3], pred[:,3])]
+    #pr_all = pd.DataFrame({"Promoter": promoter_pr,
+    #    "Enhancer": enhancer_pr,
+    #    "Repressor": repressor_pr,
+    #    "Weak": weak_pr},
+    #    index = ["Precision", "Recall"],
+    #    columns = annotations)
         
     return pr_all
     
 """
-Get the percentage of the chromosome belonging to each ChromHMM annotation.
+Get the estimated distribution and the true label.
 """
-def get_labels_and_ground_truth(bed, annotations, is_peas):
+def get_labels_and_ground_truth(bed, shapes, is_peas):
     
     #Set up percentage matrix.
     vec_pred = list()
     vec_gt = list()
-    final_stack_pred = np.empty((0, 0))
-    final_stack_gt = np.empty((0, 0))
 
     #Loop through bed file to compute percentage for each region.
     current_start = -1
@@ -105,7 +103,7 @@ def get_labels_and_ground_truth(bed, annotations, is_peas):
         if next_start != current_start and not_annotated_count != count_in_region:
 
             #Add another element to the ground truth and prediction vectors.
-            [vec_gt, vec_pred] = add_another_gt_pred(vec_gt, vec_pred, sum_vec, annotations, our_anno)
+            add_another_gt_pred(vec_gt, vec_pred, sum_vec, shapes, our_anno)
 
             #Set count and unannotated count to 0. Do the same for summation vec.
             not_annotated_count = 0
@@ -114,13 +112,9 @@ def get_labels_and_ground_truth(bed, annotations, is_peas):
         #Get the previous data, if applicable.
         prev_start = current_start
         prev_end = current_end
-            
-    #Stack all values.
-    final_stack_pred = np.stack(vec_pred)
-    final_stack_gt = np.stack(vec_gt)
         
     #Return value.
-    return [final_stack_pred, final_stack_gt]
+    return [np.asarray(vec_gt), vec_pred]
     
 """
 Using the next known overlap between peak and ChromHMM, add to the summation vector of bp with
@@ -154,22 +148,36 @@ annotation that is most prominent inside the peak.
 Add the annotation predicted using our method to the
 vector of predictions.
 """
-def add_another_gt_pred(vec_gt, vec_pred, sum_vec, annotations, our_anno):
-    vec_gt.append(np.zeros(len(sum_vec)))
-    vec_pred.append(np.zeros(len(sum_vec)))
+def add_another_gt_pred(vec_gt, vec_pred, sum_vec, shapes, our_anno):
+    # Find the ground truth.
     max = np.argmax(sum_vec)
-    for sum in range(0, len(sum_vec)):
-        #Add ground truth.
-        if sum == max:
-            vec_gt[len(vec_gt) - 1][sum] = 1
-        else:
-            vec_gt[len(vec_gt) - 1][sum] = 0 
-        #Add predictions.
-        if annotations[sum] == our_anno:
-            vec_pred[len(vec_pred) - 1][sum] = 1
-        else:
-            vec_pred[len(vec_pred) - 1][sum] = 0 
-    return [vec_gt, vec_pred]
+    gt = [0,0,0,0,0]
+    gt[max]=1
+    pred = 0
+    
+    # Match the shape and get the probability
+    # associated with the ground truth.
+    shape_found = False
+    i = 0
+    while i < len(shapes) and not shape_found:
+        s = shapes[i]
+        if s.shape.name == our_anno:
+            shape_found = True
+            if max == 0:
+                pred = s.promoter_percentage
+            elif max == 1:
+                pred = s.enhancer_percentage
+            elif max == 2:
+                pred = s.repressor_percentage
+            elif max == 3:
+                pred = s.weak_percentage
+            else:
+                pred = s.other_percentage
+        i = i + 1
+
+    # Append to the vectors.
+    vec_gt.append(gt)
+    vec_pred.append(pred)
     
 if __name__ == "__main__":
     main()

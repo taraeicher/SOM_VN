@@ -46,6 +46,10 @@
     if [[ ! -e $ANNOTATED ]]; then
         mkdir $ANNOTATED
     fi
+    PEAK_INTERSECT_BED="$BASE_PATH/cagt_peak_intersects"
+    if [[ ! -e $PEAK_INTERSECT_BED ]]; then
+        mkdir $PEAK_INTERSECT_BED
+    fi
     INTERSECTS="$BASE_PATH/cagt_intersects"
     if [[ ! -e $INTERSECTS ]]; then
         mkdir $INTERSECTS
@@ -75,7 +79,8 @@
     echo -e "Initial annotations complete for chrom $CHROM.\n"
     
     #Intersect regions with ChromHMM.
-    bedtools intersect -wao -a $ANNOTATED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
+    bedtools intersect -a $ANNOTATED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed
+    bedtools intersect -wao -a $PEAK_INTERSECT_BED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
     python find_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CAGT_SHIFTED/$CHROM.pkl $CHROMHMM_DISTRIB/$CHROM.pkl $IS_PEAS
         

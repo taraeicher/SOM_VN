@@ -133,6 +133,7 @@ class SOM(object):
             def get_num_weight_crossings(weights):
                     
                 num_weight_crossings = np.apply_along_axis(wsu.find_crossing_count, 1, weights, intensity_threshold)
+                #num_weight_crossings = np.amax(weights, axis = 1)
                 return num_weight_crossings.astype(float)
             """
             Get the cross-correlation distance between each region-weight pair.

@@ -20,6 +20,10 @@
     if [[ ! -e $WIGBED ]]; then
         mkdir $WIGBED
     fi
+    PEAK_INTERSECT_BED="$BASE_PATH/peak_signal_intersects"
+    if [[ ! -e $PEAK_INTERSECT_BED ]]; then
+        mkdir $PEAK_INTERSECT_BED
+    fi
     INTERSECTS="$BASE_PATH/signal_intersects"
     if [[ ! -e $INTERSECTS ]]; then
         mkdir $INTERSECTS
@@ -37,7 +41,8 @@
     wig2bed --zero-indexed < $WIG > $WIGBED/$CHROM.bed
     
     # Intersect signal BED file with ChromHMM.
-    bedtools intersect -wao -a $WIGBED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
+    bedtools intersect -a $WIGBED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed
+    bedtools intersect -wao -a $PEAK_INTERSECT_BED/$CHROM.bed -b $CHROMHMM > $INTERSECTS/$CHROM.bed
     bedtools sort -i $INTERSECTS/$CHROM.bed > $INTERSECTS_SORTED/$CHROM.bed
     python signal_chromhmm_distrib.py $INTERSECTS_SORTED/$CHROM.bed $CHROMHMM_DISTRIB/$CHROM.pkl $IS_PEAS
         

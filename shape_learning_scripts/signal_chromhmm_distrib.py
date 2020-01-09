@@ -17,7 +17,7 @@ from scipy import stats
 sys.path.append(os.path.abspath("../common_scripts"))
 import pickle as pkl
 from tqdm import tqdm
-
+BIN_SZ = 10
 def main():
 
     signal_col = 4 # Signal intensity annotation
@@ -28,7 +28,7 @@ def main():
     
     #Read in the bed file and shape data.
     bed = np.genfromtxt(sys.argv[1], delimiter='\t', dtype = str)
-    signal_bins = get_all_bins(bed, signal_col)
+    signal_bins = get_all_bins(bed, signal_col, bio_len)
     output = sys.argv[2]
     is_peas = sys.argv[3] == "True"
     
@@ -46,17 +46,21 @@ def main():
 
     #Get distribution of ChromHMM classes per signal bin.
     total_percent_all = get_all_percentage_pairs(signal_col, bio_col, bin_start, bin_end, bio_len, bed, promoter, enhancer, repressed, weak, signal_bins, is_peas)
-    pkl.dump(total_percent_all, open(output, "wb"))
+    class_means = np.transpose(np.vstack([np.mean(total_percent_all, axis = 1)]*total_percent_all.shape[1]))
+    class_stddev = np.transpose(np.vstack([np.std(total_percent_all, axis = 1)]*total_percent_all.shape[1]))
+    total_percent_z = (total_percent_all - class_means) / class_stddev
+    print(total_percent_z)
+    pkl.dump(total_percent_z, open(output, "wb"))
     
 """
 Extract all bins (at a resolution of 1 RPKM) from the BED file.   
 Start with a large number of bins, then remove the unneeded bins. 
 """
-def get_all_bins(bed, sig_c):
+def get_all_bins(bed, sig_c, length):
 
     max_threshold = 1000000
     bins = np.zeros(max_threshold)        
-    bin_sz = 50
+
     #Use each entry in the file to calculate running metadata.
     print("Creating signal bins")
     for i in tqdm(range(bed.shape[0])):
@@ -65,7 +69,7 @@ def get_all_bins(bed, sig_c):
         
         #Increment the appropriate location by the number of bins.
         bin = int(math.ceil(val))
-        bins[bin] = bins[bin] + 1
+        bins[bin] = bins[bin] + int(math.floor(length / BIN_SZ))
 
     highest_bin = max_threshold - 1
     highest_bin_found = False

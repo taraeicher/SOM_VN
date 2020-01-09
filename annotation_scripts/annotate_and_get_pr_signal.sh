@@ -1,5 +1,5 @@
 #PBS -l nodes=1:ppn=4
-#PBS -l walltime=3:00:00
+#PBS -l walltime=1:00:00
 #!/bin/bash   
 
     #Move to the directory containing the scripts.
@@ -24,7 +24,7 @@
     fi
     
     # Make the annotated BED file.
-    python signal_chromhmm_match.py $REGIONS $SIGNALS $ANNOTATED_BED/$CHROM.bed $PROMOTER_CUTOFF $ENHANCER_CUTOFF $REPRESSOR_CUTOFF $WEAK_CUTOFF $IS_PEAS
+    python signal_chromhmm_match.py $REGIONS $SIGNALS $ANNOTATED_BED/$CHROM.bed $IS_PEAS
     
     # Compute the intersect of the annotated regions and the peaks.
     bedtools intersect -a $ANNOTATED_BED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed
