@@ -36,7 +36,7 @@
     if [[ ! -e $ANNOTATED ]]; then
         mkdir $ANNOTATED
     fi
-    INTERSECTS="$PEAK_INTERSECT_BED/som_peak_intersects"
+    INTERSECTS="$BASE_PATH/som_peak_intersects"
     if [[ ! -e $PEAK_INTERSECT_BED ]]; then
         mkdir $PEAK_INTERSECT_BED
     fi
