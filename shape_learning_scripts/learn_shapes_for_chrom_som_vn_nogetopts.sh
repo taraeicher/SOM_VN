@@ -1,5 +1,5 @@
-#PBS -l nodes=1:ppn=4
-#PBS -l walltime=5:00:00 
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=00:10:00 
 #!/bin/bash   
 
 #Variables
@@ -55,16 +55,16 @@
     fi
 
     # Run the SOM.
-    python som_vn.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $LEARNING_RATE $NEIGHBORHOOD $GRID $ITERATIONS $BIN_SIZE
-    echo -e "SOM model is ready for chrom $CHROM.\n"
+    #python som_vn.py $TRAINING $SOM_OUT/$CHROM.pkl $CUTOFFS $REGION_SIZE $LEARNING_RATE $NEIGHBORHOOD $GRID $ITERATIONS $BIN_SIZE
+    #echo -e "SOM model is ready for chrom $CHROM.\n"
     
     # Merge shifted regions.
-    python merge_shifted.py $SOM_OUT/$CHROM.pkl $SOM_SHIFTED/$CHROM.pkl $CCCUTOFF
-    echo -e "Merging complete for chrom $CHROM.\n"
+    #python merge_shifted.py $SOM_OUT/$CHROM.pkl $SOM_SHIFTED/$CHROM.pkl $CCCUTOFF
+    #echo -e "Merging complete for chrom $CHROM.\n"
     
     # Annotate regions with shape.
-    python make_shape_bed.py $TRAINING $SOM_SHIFTED/$CHROM.pkl $ANNOTATED/$CHROM.bed
-    echo -e "Initial annotations complete for chrom $CHROM.\n"
+    #python make_shape_bed.py $TRAINING $SOM_SHIFTED/$CHROM.pkl $ANNOTATED/$CHROM.bed
+    #echo -e "Initial annotations complete for chrom $CHROM.\n"
     
     # Intersect regions with ChromHMM.
     bedtools intersect -a $ANNOTATED/$CHROM.bed -b $PEAKS > $PEAK_INTERSECT_BED/$CHROM.bed

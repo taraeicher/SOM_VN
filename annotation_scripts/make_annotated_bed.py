@@ -45,7 +45,7 @@ def match_shapes(regions, shapes, out_file_name, is_peas):
         
     #Open output files.
     out_file = open(out_file_name, "w")
-    
+
     #Read in each line in the file and map it.
     if(len(shapes) > 1):
         for region in tqdm(regions):
@@ -55,7 +55,8 @@ def match_shapes(regions, shapes, out_file_name, is_peas):
             #Print match to BED file. Format is:
             #chrom  start   end shape_num 1 - ambiguity
             #Score is the opposite of the ambiguity metric.
-            out_file.write("chr" + region.chromosome + "\t" + str(int(region.start)) + "\t" + str(int(region.end)) + "\t" + match_label + "\t" + str(score) + "\n")
+            if match_label != None:
+                out_file.write("chr" + region.chromosome + "\t" + str(int(region.start)) + "\t" + str(int(region.end)) + "\t" + match_label + "\t" + str(score) + "\n")
             
         #Print a message to the user.
         print("Files done")
@@ -85,6 +86,7 @@ def match_region(region, shapes, is_peas):
             max_crosscorr = crosscorr_list[len(crosscorr_list) - 1]
             match = i
             opt_delay = d
+
     # Get the annotation type comprising the maximum of regions
     # with this shape.
     label = None
