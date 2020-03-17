@@ -1,8 +1,8 @@
 <h1>Getting Started</h1>
-<p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface. 
+<p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface.
  <h2>Dependencies</h2>
-<ul><li>Python 2. Our script generates a WIG file using the tool <b>gosr binbam</b>, for which we have included a modified version. This tool is only compatible with Python 2.</li>
-<li>wig_split.py. This can be obtained via the following repository: https://github.com/taoliu/taolib</li>
+<ul><li>Python 2. Our script generates a WIG file using the tool <b>gosr binbam</b>, for which we have included a modified version. This tool is only compatible with Python 2. <b>Note: We plan to release a future version that removes the dependency on gosr binbam, thus eliminating the need to use Python 2.</b></li>
+<li>wig_split.py. This can be obtained via the following repository: https://github.com/taoliu/taolib<b> Note: We plan to release a future version without this dependency.</b></li>
 <li>The GCC compiler. Some our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.</li>
  <li>bedtools. This can be installed here: https://github.com/arq5x/bedtools2/releases</li>
   <li>The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.</li>
@@ -95,20 +95,19 @@ This code requires the Tensorflow framework, which can be installed here: https:
 <p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
 <h3>Replicating Baseline Results</h3>
 <ul><li>To replicate the permuted ChromHMM experiment, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</li>
-<li>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</li> 
-<li>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</li> 
-<li>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</li> 
-<li>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</li> 
-<li>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</li></ul> 
+<li>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</li>
+<li>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</li>
+<li>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</li>
+<li>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</li>
+<li>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</li></ul>
 <h3>Replicating Figures</h3>
-<ul><li><b>Fig. 3: </b> Run <b>plot_precision_recall.py</b> followed by <b>plot_precision_recall_all.py</b> (for part A) and <b>plot_true_distribs_all.py</b> (for part B).</li>
-<li><b>Fig. 4: </b> Run <b>run_all_chromosome_iterations.sh</b> on each cell type to generate the density plot followed by <b>save_precision_recall.py</b> and <b>plot_precision_recall_densities.py</b>.</li>
+<p>Fig. 1 and Supplementary Fig. 1 are illustrations. All other figures can be generated as follows:</p>
+<ul>
+<li><b>Fig. 2: </b> Run <b>run_all_chromosome_iterations.sh</b> on each cell type to generate the density plot followed by <b>save_precision_recall.py</b> and <b>plot_precision_recall_densities.py</b>.</li>
+<li><b>Fig. 3: </b> Run <b>plot_precision_recall.py</b>.</li>
+<li><b>Fig. 4: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
 <li><b>Fig. 5: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li>
 <li><b>Fig. 6: </b> Run <b>plot_precision_recall_nopromoter_abovethreshonly.py</b>.</li>
-<li><b>Supplementary Fig. 1: </b> Run <b>plot_wig_distribs_violin.py</b>.</li>
-<li><b>Supplementary Fig. 4: </b> Run <b>plot_chromhmm_distribs_violin.py</b>.</li>
-<li><b>Supplementary Fig. 5: </b> Run <b>annotation_similarity_heatmap.py</b>.</li>
-<li><b>Supplementary Fig. 6: </b> Run <b>print_annotated_shapes.py</b>.</li>
-<li><b>Supplementary Fig. 7, 8, and 9: </b> Run <b>plot_precision_recall.py</b>.</li>
-<li><b>Supplementary Fig. 10: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
-<li><b>Supplementary Fig. 11: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li></ul>
+<li><b>Fig. 7: </b> Run <b>print_annotated_shapes.py</b>.</li>
+<li><b>Supplementary Fig. 2: </b> Run <b>learn_shapes.sh</b> for each bin sizes 2, 4, 8, 16, and 32 kb, followed by <b>compute_validity.py</b>.</li>
+</ul>
