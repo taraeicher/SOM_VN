@@ -46,7 +46,9 @@ def main():
         for i in range(0,3):
             precision_all[i,c] = precision[i]
             recall_all[i,c] = recall[i]
-
+            print(chrom + " " + str(i) + ":")
+            print(precision[i])
+            print(recall[i])
         c += 1
         
         #Save a scatterplot.
@@ -57,7 +59,7 @@ def main():
 def get_all_precision_and_recall(bed, sig, wig, chrom):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
-    threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), 0)
+    threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), BIN_SIZE)
     annotations = ["Promoter", "Enhancer", "Weak"]
     length = len(annotations)
     ground_truth_list = []
@@ -81,14 +83,14 @@ def get_all_precision_and_recall(bed, sig, wig, chrom):
 def save_scatterplot(our_precision, our_recall, out, title, indices_to_highlight):
 
     #Set colors and symbols for plotting.
-    enhancer_color = "gray"
-    promoter_color = "black"
-    weak_color = "white"
-    weak_outline_color = "silver"
+    enhancer_color = "blue"
+    promoter_color = "green"
+    weak_color = "red"
+    #weak_outline_color = "silver"
     edge_weak = "black"
-    our_symbol = "*"
+    our_symbol = "o"
     our_size = 10
-    factor = 40
+    factor = 15
     plt.gcf().subplots_adjust(bottom=0.20)
     plt.gcf().subplots_adjust(left=0.20)
     
@@ -96,27 +98,27 @@ def save_scatterplot(our_precision, our_recall, out, title, indices_to_highlight
     plt.ylim(-0.05,1.05)
     plt.xlim(-0.05,1.05)
     plt.title(title)
-    plt.xlabel("Precision")
-    plt.ylabel("Recall")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
     
     #Plot our data.
-    plt.scatter(our_precision[0,:], our_recall[0,:], c = promoter_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
-    plt.scatter(our_precision[1,:], our_recall[1,:], c = enhancer_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
-    plt.scatter(our_precision[2,:], our_recall[2,:], c = weak_color, marker = our_symbol, edgecolor = "black", s = our_size * factor)
+    plt.scatter(our_recall[0,:], our_precision[0,:], c = promoter_color, marker = our_symbol, s = our_size * factor)
+    if "A549" in title:
+        plt.scatter(our_recall[1,:], our_precision[1,:], c = enhancer_color, marker = our_symbol, s = our_size * factor)
+    plt.scatter(our_recall[2,:], our_precision[2,:], c = weak_color, marker = our_symbol, s = our_size * factor)
 
     #Save
-    plt.savefig(out + "precision_recall_nolegend" + title + ".png")
+    plt.savefig(out + "precision_recall_nolegend" + title + ".png", dpi = 300)
     plt.close()
     
     #Add the legend.
-    legend_elements = [Patch(facecolor=enhancer_color, label='Enhancer'),
-                        Patch(facecolor=promoter_color, label='Promoter'),
-                        Patch(facecolor=weak_color, edgecolor = edge_weak, label='Weak')
-                       ]
+    legend_elements = [Line2D([0], [0], marker=our_symbol, markerfacecolor=promoter_color, label='Promoter', markersize=our_size*1.5, color = "white"), 
+        Line2D([0], [0], marker=our_symbol, markerfacecolor=enhancer_color, label='Enhancer', markersize=our_size*1.5, color = "white"), 
+        Line2D([0], [0], marker=our_symbol, markerfacecolor=weak_color, label='Weak', markersize=our_size*1.5, color = "white")]
     plt.legend(handles=legend_elements, loc="lower right")
     
     #Save the plot.
-    plt.savefig(out + "legend.png")
+    plt.savefig(out + "legend.png", dpi = 300)
     plt.close()
     
 #Get the percentage of the chromosome belonging to each ChromHMM annotation.
@@ -147,6 +149,7 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
         #These regions will not be used in the analysis.
         not_annotated_count = 0
         count_in_region = 0
+        
         for i in range(0, bed.shape[0]):            
             
             #Get the next element data.
@@ -226,7 +229,7 @@ def get_labels_and_ground_truth(bed_file, sig_file, wig, annotations, threshold)
                 #Set count and unannotated count to 0. Do the same for summation vec.
                 not_annotated_count = 0
                 count_in_region = 0
-                
+               
             #Get the previous data, if applicable.
             prev_start = current_start
             prev_end = current_end

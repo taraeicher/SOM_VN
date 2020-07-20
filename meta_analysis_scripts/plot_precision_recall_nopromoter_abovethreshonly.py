@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import auc
 import seaborn as sns
 import traceback
 matplotlib.rcParams.update({'font.size': 24})
@@ -34,7 +34,7 @@ def main():
     recall_all = np.zeros((2, len(all_chroms)))
     predictions_all = []
     ground_truth_all = []
-    
+   
     #Plot ROC curve for each chromosome. Plot curve for each annotation separately.
     c = 0
     for chrom in all_chroms:
@@ -47,7 +47,6 @@ def main():
         [precision, recall, total, threshold, predictions, ground_truth, fpr] = get_all_precision_and_recall(our_bed, our_sig, wig, chrom, threshold)
         predictions_all.append(predictions)
         ground_truth_all.append(np.asarray(ground_truth))
-        
         for i in range(0,2):
             precision_all[i,c] = precision[i]
             recall_all[i,c] = recall[i]
@@ -78,8 +77,7 @@ def get_all_precision_and_recall(bed, sig, wig, chrom, threshold):
     fpr = dict()
     for i in range(length):
         precision[i] = precision_score(gt[:, i], pred[:, i])
-        recall[i] = recall_score(gt[:, i], pred[:, i])        
-        
+        recall[i] = recall_score(gt[:, i], pred[:, i])          
     return [precision, recall, pred.shape[0], threshold, pred, gt, fpr]
     
     
@@ -202,7 +200,7 @@ def save_scatterplot(our_precision, our_recall, out, threshold, enhancers):
     #Set colors and symbols for plotting.
     enhancer_color = "gray"
     our_symbol = "o"
-    peas_symbol = "s"
+    #peas_symbol = "s"
     our_size = 200
     plt.gcf().subplots_adjust(bottom=0.20)
     plt.gcf().subplots_adjust(left=0.20)
@@ -210,35 +208,42 @@ def save_scatterplot(our_precision, our_recall, out, threshold, enhancers):
     #Set the axes, title, and maximum.
     plt.ylim(-0.05,1.05)
     plt.xlim(-0.05,1.05)
-    plt.xlabel("Precision")
-    plt.ylabel("Recall")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
         
     #Plot our data.
-    plt.scatter(our_precision[0,:], our_recall[0,:], c = enhancer_color, marker = our_symbol, s = our_size)
+    plt.scatter(our_recall[0,:], our_precision[0,:], c = enhancer_color, marker = our_symbol, s = our_size)
+    mean_precision = np.mean(our_precision[0,:])
+    mean_recall = np.mean(our_recall[0,:])
+    print(auc(x = [0, mean_recall, 1], y = [1, mean_precision, 0]))
+    plt.scatter(mean_recall, mean_precision, c = "black", marker = our_symbol, s = our_size)
+    plt.plot([0,mean_recall,1], [1, mean_precision, 0], c = "black")
     
     #Overlay the PEAS results.
-    plt.scatter(0.7, 0.7, c = "white", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
-    plt.scatter(0.8, 0.8, c = "black", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
+    #plt.scatter(0.7, 0.7, c = "white", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
+    #plt.scatter(0.8, 0.8, c = "black", marker = peas_symbol, edgecolor = "black", s = our_size * 2)
     
     #Annotate number of enhancers.
-    plt.text(0, 0.40, "True Enhancers: " + str(enhancers))
+    #plt.text(0, 0.40, "True Enhancers: " + str(enhancers))
     
     #Add title.
     plt.title(str(threshold) + " RPKM")
     
     #Save.
-    plt.savefig(out + "precision_recall_" + str(threshold) + ".png")
+    plt.savefig(out + "precision_recall_" + str(threshold) + ".png", dpi = 300)
+    plt.clf()
     
     #Save legend.
     legend_elements = [Line2D([0], [0], marker=our_symbol, markerfacecolor='gray', label='SOM-VN (Single Chromosome)', color = 'white',
-                           markersize=our_size / 10),
-                        Line2D([0], [0], marker=peas_symbol, markerfacecolor='white', markeredgecolor = "black", label='PEAS (Peak Features Only)', color = 'white',
-                           markersize=our_size / 10),
-                        Line2D([0], [0], marker=peas_symbol, markerfacecolor='black', label='PEAS (All Features)', color = 'white',
-                           markersize=our_size / 10)
-                       ]
+                           markersize=our_size / 15),
+                       Line2D([0], [0], marker=our_symbol, markerfacecolor="black", label="SOM-VN (Average)", color="white", markersize = our_size/15)]
+                        #Line2D([0], [0], marker=peas_symbol, markerfacecolor='white', markeredgecolor = "black", label='PEAS (Peak Features Only)', color = 'white',
+                        #   markersize=our_size / 10),
+                       # Line2D([0], [0], marker=peas_symbol, markerfacecolor='black', label='PEAS (All Features)', color = 'white',
+                        #   markersize=our_size / 10)
+                       #]
     plt.legend(handles=legend_elements, loc="lower left",fontsize=16)
-    plt.savefig(out + "legend.png")
+    plt.savefig(out + "legend.png", dpi = 300)
     plt.close()
     
 if __name__ == "__main__":
