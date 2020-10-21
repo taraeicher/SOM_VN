@@ -1,38 +1,11 @@
 """
 Requires gap statistic. Need to import from https://github.com/minddrummer/gap/blob/master/gap/gap.py
 """
-"""
-from urllib import request
-
-def download(url):
-    filename = url.split('/')[-1]
-    print("Downloading" + str(filename))
-    with request.urlopen('http://python.org/') as f:
-        data = f.read()
-        f.close()
-    with open(filename, 'wb') as myfile:
-        myfile.write(data)
-
-# get repository
-download('https://github.com/minddrummer/gap/blob/master/gap/gap.py')
-"""
 from sklearn.cluster import KMeans
 import numpy as np
 import sys
 import os
-import imp
-
-gap = imp.load_source('gap', '/users/PAS0272/osu5316/miniconda3/lib/python3.5/site-packages/gap/gap.py')
-#gap_src.gap()
-"""
-from setuptools import setup
-
-setup(name='kmeans_centroids.py',
-      version='0.1',
-      author='Tara Eicher',
-      dependency_links=['https://github.com/minddrummer/gap/blob/master/gap/gap.py'])
-"""
-#from gap import gap
+from gap import gap
 
 """
 Cluster the SOM using hierarchical clustering.
