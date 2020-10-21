@@ -69,7 +69,6 @@ def match_shapes_cutoff(in_file_name, shape_file_name, out_dir, wig_name, cutoff
     
     #Open output files.
     out_file = open(out_dir, "w")
-    out_clust = open(out_dir + "clust", "w")
     
     #Read in shape data.
     shapes = []
