@@ -59,12 +59,12 @@ def main():
 """
 Method to create train SOM model for a given window size and print stats.
 """
-def train_som(file, som_centroids, som_centroid_counts, out_dir, intensity_threshold, window, bin, lowest):
+def train_som(file, som_centroids, som_centroid_counts, out_dir, intensity_threshold, window, bin_sz, lowest):
     
     #If file is not empty, learn SOM.
     if os.stat(file.name).st_size != 0:
         #Create new SOM
-        region_size = window / bin
+        region_size = int(window / bin_sz)
         som = SOM(region_size, file, intensity_threshold, lowest)
         
         #Train new SOM
@@ -133,13 +133,13 @@ class SOM(object):
         [fdi, dist, dist_q, line_count] = self.get_file_metadata(file, dim)
         
         #Set batch size to be at most half of the data. Ideally we want a large batch.
-        batch_size = min(line_count / 2, 30000)
+        batch_size = min(int(line_count / 2), 5000)
         self.batch_size = batch_size
         self.lowest = lowest
 
         #Set grid size based on variability between regions. Note: Grid should not be larger than
         #number of lines in file. This will result in not enough training data.
-        grid_size = min(max(0.20 * math.pow(dist, 2), 4), batch_size)
+        grid_size = min(max(0.20 * math.pow(dist, 2), 4), 196)
         m = int(math.sqrt(grid_size))
         n = int(math.sqrt(grid_size))
         self.m = m
@@ -165,17 +165,17 @@ class SOM(object):
             ##VARIABLES AND CONSTANT OPS FOR DATA STORAGE
             #Randomly initialized weightage vectors for all neurons,
             #stored together as a matrix Variable of size [m*n, dim]
-            self.weightage_vects = tf.Variable(tf.random_uniform(shape = [m*n, dim], minval = 1, maxval = 100, dtype = tf.float32)) 
+            self.weightage_vects = tf.Variable(tf.random.uniform(shape = [m*n, dim], minval = 1, maxval = 100, dtype = tf.float32)) 
 
             #Matrix of size [m*n, 2] for SOM grid locations
             #of neurons
             self.location_vects = tf.constant(np.array(list(self.neuron_locations(m, n))))
             
             ##PLACEHOLDERS FOR TRAINING INPUTS
-            self.batch_input = tf.placeholder(tf.float32, shape = [batch_size, dim])
-            self.input_num_crossings = tf.placeholder(tf.float32, shape = [batch_size, 1])
-            self.label = tf.placeholder(tf.string, shape = [batch_size, 3])
-            self.iteration_input = tf.placeholder("float")
+            self.batch_input = tf.compat.v1.placeholder(tf.float32, shape = [batch_size, dim])
+            self.input_num_crossings = tf.compat.v1.placeholder(tf.float32, shape = [batch_size, 1])
+            self.label = tf.compat.v1.placeholder(tf.string, shape = [batch_size, 3])
+            self.iteration_input = tf.compat.v1.placeholder("float")
             
             """
             Get the number of crossings over the threshold in each node in the grid.
@@ -186,7 +186,7 @@ class SOM(object):
                 return num_crossings.astype(float)
                 
             #Calculate peak counts for all weightage vects.
-            num_crossings_64 = tf.py_func(get_num_crossings, [self.weightage_vects, self.lowest], tf.float64)
+            num_crossings_64 = tf.py_function(get_num_crossings, [self.weightage_vects, self.lowest], tf.float64)
             self.num_crossings = tf.cast(num_crossings_64, tf.float32)
             
             #To compute the Best Matching Unit given a vector
@@ -196,7 +196,7 @@ class SOM(object):
             weightage_vects_stack = tf.stack([self.weightage_vects for i in range(batch_size)], axis = 2)
             num_crossings_stack = tf.stack([self.num_crossings for i in range(batch_size)], axis = 1)
             batch_input_stack = tf.stack([tf.transpose(self.batch_input) for i in range(m*n)])
-            input_num_crossings_stack = tf.transpose(tf.contrib.layers.flatten(tf.stack([self.input_num_crossings for i in range(m*n)], axis = 1)))
+            input_num_crossings_stack = tf.transpose(tf.compat.v1.layers.flatten(tf.stack([self.input_num_crossings for i in range(m*n)], axis = 1)))
             diff = tf.subtract(weightage_vects_stack, batch_input_stack)
             total_max = tf.maximum(tf.reduce_max(weightage_vects_stack, axis = 1), tf.reduce_max(batch_input_stack, axis = 1))
             num_crossings_max = tf.maximum(input_num_crossings_stack, num_crossings_stack)
@@ -231,15 +231,15 @@ class SOM(object):
             self.weightage_delta_denominator = tf.maximum(tf.reduce_sum(self.neighborhood_multipliers, 2), self.denominator_mins)
             self.weightage_deltas = tf.divide(self.weightage_delta_numerator, self.weightage_delta_denominator)
             self.weightage_vects_alpha = tf.multiply(self.weightage_vects, tf.subtract(1.0, self.alpha_op))
-            self.shrink_weightage = tf.assign(self.weightage_vects, self.weightage_vects_alpha, use_locking = True)
-            self.add_delta = tf.assign_add(self.weightage_vects, self.weightage_deltas, use_locking = True)
+            self.shrink_weightage = tf.compat.v1.assign(self.weightage_vects, self.weightage_vects_alpha, use_locking = True)
+            self.add_delta = tf.compat.v1.assign_add(self.weightage_vects, self.weightage_deltas, use_locking = True)
             
             ##INITIALIZE SESSION
-            self.sess = tf.Session()
+            self.sess = tf.compat.v1.Session()
             
             ##INITIALIZE VARIABLES
     
-            init_op = tf.global_variables_initializer()
+            init_op = tf.compat.v1.global_variables_initializer()
             self.sess.run(init_op)
 
     """
@@ -437,7 +437,7 @@ class SOM(object):
         
         #Find percentile of FDIs.
         target_count = int(file_line_count * 0.95)
-        while i < range(len(jag_counts) - 1) and not percentile_found:
+        while i < (len(jag_counts) - 1) and not percentile_found:
             running_sum += jag_counts[i]
             if running_sum >= target_count:
                 fdi_percentile = i
@@ -448,7 +448,7 @@ class SOM(object):
         running_sum = 0
             
         #Find percentile of distances.
-        while i < range(len(dist_counts) - 1) and not percentile_found:
+        while i < (len(dist_counts) - 1) and not percentile_found:
             running_sum += dist_counts[i]
             if running_sum >= target_count:
                 dist_percentile = i
@@ -460,7 +460,7 @@ class SOM(object):
         
         #Find percentile of distances.
         tar = int(file_line_count * 0.25)
-        while i < range(len(dist_counts) - 1) and not percentile_found:
+        while i < (len(dist_counts) - 1) and not percentile_found:
             running_sum += dist_counts[i]
             if running_sum >= tar:
                 dist_percentile_1 = i
