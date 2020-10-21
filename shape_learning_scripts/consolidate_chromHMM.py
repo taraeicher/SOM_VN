@@ -217,9 +217,8 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
     
     #Get threshold to use in printing.
     wig = open(wig_name, 'r')
-    out = open(out_name, 'a')
-    perc_out = open(out_name + "_percents", 'a')
-    percentage_out = open(out_name + "_" + cell + "/" + chrom + "percentages", 'w')
+    out = open(out_name + "/" + chrom + "_consolidated", 'a')
+    perc_out = open(out_name + "/" + chrom + "_percent_which_shape", 'a')
     intensity = wsu.get_intensity_percentile(0.995, wig, min_val)
     print("\n")
     wig.close()
@@ -251,13 +250,11 @@ def save_significant(percentages, shape_names, shapes, wig_name, out_name, chrom
             if joined.find('\n') != len(joined) - 1:
                 perc_out.write("\n")
                 out.write("\n")
-        #Print all percentages to a file to use later.
-        percentage_out.write(','.join(perc_string[:,j]) + "\n")
             
     #Close the files.
     wig.close()
     out.close()
-    percentage_out.close()
+    perc_out.close()
     
 if __name__ == "__main__":
     main()
