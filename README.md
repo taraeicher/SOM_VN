@@ -1,113 +1,174 @@
-<h1>Getting Started</h1>
-<p>This repository contains the shapes and in-house scripts used in our paper <b>"Regulatory Element Annotation of the Genome from Chromatin Accessibility Signal Shape us-ing Modified Self-Organizing Maps"</b>. The code in this repository can be used to annotate new chromatin accessibility samples, learn new shapes, or append to a set of existing shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface.
- <h2>Dependencies</h2>
-<ul><li>Python 2. Our script generates a WIG file using the tool <b>gosr binbam</b>, for which we have included a modified version. This tool is only compatible with Python 2. <b>Note: We plan to release a future version that removes the dependency on gosr binbam, thus eliminating the need to use Python 2.</b></li>
-<li>wig_split.py. This can be obtained via the following repository: https://github.com/taoliu/taolib<b> Note: We plan to release a future version without this dependency.</b></li>
-<li>The GCC compiler. Some our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.</li>
- <li>bedtools. This can be installed here: https://github.com/arq5x/bedtools2/releases</li>
-  <li>The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.</li>
-<li>The Python modules numpy and scipy.</li>
-<li>The Python modules HTSeq, argparse, logging, sys, itertools, and pysam. These are necessary for running gosr.</li>
-<li>Your version of Python must be compiled to use UCS2. You can check this by running the following commands on the Python command line:
- <p><code>>import sys</code></p>
- <p><code>>print sys.maxunicode</code></p>
- If it uses UCS2, it should print "65535".</li></ul>
- <h2>Installing gosr</h2>
- <p>While a pre-existing version of gosr exists at https://github.com/wresch/gosr, our framework uses a modified version that preserves zeros in the signal profile. gosr should automatically be downloaded when you download our repository. To install it, simply untar the file file <b>gosr.tar</b> provided in this repository.
- <ol></ol>
-<h2>Add to System Path</h2>
-<ul><li>The directory where you installed bedtools.</li>
-<li>The gosr/bin directory under the directory where you installed gosr.</li>
-<li>The directory containing the python packages for gosr.</li>
-<li>The directory containing wig_split.py.</li></ul>
-<h1>Annotating New Samples</h1>
-<p>The code you will need for this task is in the folder <b>annotation_scripts</b>. You should only need to run <b>do_annotation.sh</b> or, to run the TSS AND SOM-VN model, <b>do_annotation_and.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
-<h3>Options</h3>
-<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
-<p><b>-s:</b> The path to the shape file to use for annotation. <em>Required</em></p>
-<p><b>-b:</b> The path to the input BAM file. <em>Required</em></p>
-<p><b>-i:</b> The size of bins you wish to use in generating your WIG file (in bp). The default is 50. <em>This must be the same bin size used to learn the shapes.</em></p>
-<p><b>-w:</b> The path to wig_split. <em>Required</em></p>
-<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 8000. </p>
-<p></p>
-<p><b>Note:</b> If running the TSS AND SOM-VN model, you must first run get_tss_promoters.sh. This script contains the following options:</p>
-<p><b>-n:</b> The name you wish to assign to your sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like all files and annotations to be saved. <em>Required</em></p>
-<p><b>-t:</b> The path to a file containing the transcription start sites.  <em>Required</em></p>
-<p><b>-g:</b> The path to a file containing the chromosome sizes for the genome.  <em>Required</em></p>
-<h3>Output</h3>
-<ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
-<li>A WIG file for each chromosome in the directory <b>annotation_files</b>.</li>
-<li>The signal data for each region to annotate in the directory <b>wig_chroms_annotation</b>.</li>
-<li>An annotated file for each chromosome with the signal data for each region in the directory <b>annotated</b>.</li>
-<li>A sorted annotated file with the annotations and signal in the directory <b>annotated_sorted</b>.</li>
-<li>An annotated file without overlap and including the signal in the directory <b>annotated_consolidated</b>.</li>
-<li>A BED file of the annotations in the directory, excluding the signal, in the directory <b>annotated_consolidated</b>.</li>
-<li>A file with only the signal data for each annotation in the directory <b>annotated_consolidated</b>.</li></ul>
-<h3>Description of Helper Scripts</h3>
-<ul><li><b>make_annotated_bed.py:</b> Annotates a chromosome given the shapes, the signals for each region, and the WIG file.</li>
-<li><b>consolidate_bed.py:</b> Consolidates a set of sorted annotations to remove overlap using the ambiguity score described in the paper.</li>
-<li><b>get_file_data.c:</b> Segments WIG file into regions for annotation.</li></ul>
-<h1>Creating / Appending to a Shape List</h1>
-<p>The code you will need for this task is in the folder <b>shape_learning_scripts</b>. You should only need to run <b>learn_shapes.sh</b>. By default, the script is set to run on each of the 24 human chromosomes. You can modify this as needed by changing the value of the <code>CHROMS</code> variable.</p>
-<h3>Additional Dependencies</h3>
-This code requires the Tensorflow framework, which can be installed here: https://www.tensorflow.org/install/. It also requires the imp module to import the gap statistic code from an external repository. Alternatively, you can download the gap statistic code here: https://github.com/minddrummer/gap.
-<h3>Options</h3>
-<p><b>-n:</b> The name you wish to assign to your training sample. <em>Required</em></p>
-<p><b>-d:</b> The directory where you would like your shapes and all intermediary files to be saved. <em>Required</em></p>
-<p><b>-b:</b> The path to the ChromHMM regions. <em>Required</em></p>
-<p><b>-b:</b> The path to the training BAM file. <em>Required</em></p>
-<p><b>-i:</b> The size of bins you wish to use in training (in bp). The default is 50. <em>This must be the same bin size as you wish to use for annotation.</em></p>
-<p><b>-w:</b> The path to wig_split. <em>Required</em></p>
-<p><b>-r:</b> The size of region you wish to annotate (in bp). The default is 4000. </p>
-<p><b>-s:</b> The name of the shape list to save. To append to one of our shape lists, download it and use that name here. <em>Required</em></p>
+# Getting Started
+This repository contains the shapes and in-house scripts used in our paper *Self-Organizing Maps with Variable Neighborhoods Facilitate Learning of Chromatin Accessibility Signal Shapes Associated with Regulatory Elements*. The code in this repository can be used to annotate new chromatin accessibility samples or learn new shapes. We have also included code to replicate our results. Our code is designed for use in a Unix environment and can be run using a command-line interface.
 
-<h3>Output</h3>
-<ul><li>A WIG file for all chromosomes in the BAM file. This is in the base directory and starts with the name of the cell line.</li>
-<li>A WIG file for each chromosome in the directory <b>wig_chroms</b>.</li>
-<li>The signal data for each region to use in training in the directory <b>training</b>.</li>
- <li>The signal data for each region to annotate with shapes during training in the directory <b>training_anno</b>.</li>
- <li>The signal data for each sub-region found in our segmentation procedure in the directory <b>training_shifted</b>.</li>
- <li>The shapes learned by the SOM-VN in the directory <b>som_output</b>.</li>
- <li>The shapes with at least one mapping in the last iteration in the directory <b>som_output_filtered</b>.</li>
- <li>The shapes with all shifted regions merged in the directory <b>som_output_shifted</b>.</li>
- <li>The shapes clustered using K-means in the directory <b>som_output_final</b>.</li>
- <li>The regions in <b>training_anno</b> annotated with shapes from <b>som_output_final</b> in the directory <b>anno_beds</b>.</li>
-<li>The sorted list of regions annotated with these shapes in the directory <b>anno_beds_sorted</b>.</li>
-<li>The consolidated non-overlapping list of regions annotated with these shapes in the directory <b>anno_beds_final</b>.</li>
-<li>The intersections between our shapes and the ChromHMM regulatory annotations in <b>anno_intersects</b>.</li>
-<li>The shapes containing all learned shapes on all chromosomes in the file <b>shapes_all</b>.</li>
-<li>The shapes containing a consolidated list of shapes merged using cross-correlation in the file you specified.</li>
-</ul>
-<h3>Description of Helper Scripts</h3>
-<ul><li><b>get_file_data.c:</b> Generates sub-regions to use both in training and in finding the associations between shapes and ChromHMM annotations.</li>
- <li><b>shift_input.py:</b> Collects sub-regions to use in training the SOM-VN given the training regions with margins.</li>
- <li><b>som_vn.py:</b> The central SOM-VN script. It learnes the shapes given the input regions.</li>
- <li><b>remove_by_cutoff.py:</b> Removes shapes learned by the SOM-VN that did not have any regions mapping to them in the last iteration of the algorithm.</li>
- <li><b>merge_shifted.py:</b> Consolidates shifted shapes learned by the SOM-VN using cross-correlation.</li>
- <li><b>kmeans_shapes.py:</b> Clusters shapes learned by the SOM-VN using K-means.</li>
- <li><b>make_shape_bed.py:</b> Annotate each region with its closest shape learned by the SOM-VN.</li>
- <li><b>consolidate_chromHMM.py:</b> Creates a shapes of regulatory-associated shapes given the intersections between our shapes and ChromHMM annotations.</li></ul>
-<h1>Replicating Our Results</h1>
-<p>To download the data used in our analysis, run the script <b>download_all_files.sh</b> under <b>common_scripts</b>. You will need to run it from the location where you wish to save the BAM files.</p>
-<h3>Additional Dependencies</h3>
-<p>To download our data, you will need a system with wget (Most Unix systems should have this). Otherwise, you can download the data manually. You will also need the Python packages glob, pandas, sklearn, matplotlib, and seaborn to run the remaining scripts. Please note that all images will be saved to a file; you do not need a graphical user interface to run this code.</p>
-<h3>Replicating Baseline Results</h3>
-<ul><li>To replicate the permuted ChromHMM experiment, run <b>associate_from_perm_chromhmm.sh</b>. Options are <b>-s</b>, the source cell line from which the shapes were learned, <b>-d</b>, the name of the cell line to annotate, <b>-b</b>, the directory where to save output, <b>-w</b>, the location of the WIG chromosomes from the source cell line, <b>-a</b>, the location of the WIG chromosomes to annotate, <b>-c</b>, the ChromHMM file to permute, and <b>-p</b>, the name of the permuted ChromHMM file to save.</li>
-<li>To replicate the permuted WIG signal experiment, use <b>learn_from_perm_wig.sh</b>. The options are <b>-n</b>, the source cell line from which the shapes were learned, <b>-d</b>, the base directory from where files are saved, <b>-c</b>, the file with the ChromHMM annotations, <b>-i</b>, the bin size (default 50 bp), <b>-r</b>, the region size (default 4000 bp), and <b>-w</b>, the WIG file.</li>
-<li>To annotate promoters using transcription start sites, use <b>get_tss_predictions.sh</b>.</li>
-<li>To annotate promoters using RPKM, use <b>predict_from_rpkm.py</b> in the <b>annotation_scripts</b> directory.</li>
-<li>To replicate the PEAS experiment, use <b>associate_non_promoters_peas.sh</b>. Options are the same as for the promoted signal.</li>
-<li>To replicate the CAGT experiment, use <b>cagt_prep.py</b>, the CAGT code from https://code.google.com/archive/p/cagt/source/default/source, and <b>cagt_associate.sh</b>. Note that you will need to have Matlab installed on your system.</li></ul>
-<h3>Replicating Figures</h3>
-<p>Fig. 1 and Supplementary Fig. 1 are illustrations. All other figures can be generated as follows:</p>
-<ul>
-<li><b>Fig. 2: </b> Run <b>run_all_chromosome_iterations.sh</b> on each cell type to generate the density plot followed by <b>save_precision_recall.py</b> and <b>plot_precision_recall_densities.py</b>.</li>
-<li><b>Fig. 3: </b> Run <b>plot_precision_recall.py</b>.</li>
-<li><b>Fig. 4: </b> Run <b>plot_crosscorr_distrib.py</b>.</li>
-<li><b>Fig. 5: </b> Run <b>plot_precision_recall_nobaselines.py</b>.</li>
-<li><b>Fig. 6: </b> Run <b>plot_precision_recall_nopromoter_abovethreshonly.py</b>.</li>
-<li><b>Fig. 7: </b> Run <b>print_annotated_shapes.py</b>.</li>
-<li><b>Supplementary Fig. 2: </b> Run <b>learn_shapes.sh</b> for each bin sizes 2, 4, 8, 16, and 32 kb, followed by <b>compute_validity.py</b>.</li>
-</ul>
+## Dependencies
+* Python 2.7 or higher. Note that your version of Python must be compiled to use UCS2. You can check this by running the following commands on the Python command line:
+ `import sys`
+ `print sys.maxunicode`
+ If it uses UCS2, it should print *65535*.
+* wig_split.py. This can be obtained via the [taolib](https://github.com/taoliu/taolib) repository. **Note:** We plan to release a future version without this dependency.
+* The GCC compiler. Some our file I/O scripts are written in C and will need to be compiled using GCC. This should be available on most Unix systems.
+* bedtools. This can be installed [here](https://github.com/arq5x/bedtools2/releases).
+* The Unix utilities shuf, cut, and awk. These should be available on most Unix systems.
+* The Python modules numpy, scipy, HTSeq, argparse, logging, sys, itertools, and pysam.
+* [Python code to compute the gap statistic](https://github.com/minddrummer/gap/blob/master/gap/gap.py)
+
+* If you plan to learn new shapes, the Python module tensorflow.
+
+## Installing gosr
+While a [pre-existing version of gosr exists](https://github.com/wresch/gosr), our framework uses a modified version that preserves zeros in the signal profile. gosr should automatically be downloaded when you download our repository. To install it, simply untar the file file `gosr.tar` provided in this repository.  
+
+## Adding programs to PATH and PYTHONPATH
+You will need to add the following paths to your `PYTHONPATH` variable:
+* *<installation_path>/SOM-VN/gosr/gosr/tools*
+* *<path_to_gap_statistic_code>*
+
+You will need to add the following paths to your PATH variable:
+* *<installation_path>/SOM-VN/gosr/bin*
+* The directory where you installed bedtools.
+* The directory containing the *taolib* folder for `wig_split.py`.
+
+# Obtaining regions to annotate from a BAM file
+To segment regions for learning shapes or annotating shapes, you will need to run the following:
+1. `gosr binbam -f 0 -n 1000 -t <name_of_sample> <bam_file> 50 <name_of_sample> > <name_of_WIG_file>`
+1. `sed '3d' <name_of_WIG_file> > <name_of_WIG_file>_noheader.wig`
+1. `python wig_split.py <name_of_WIG_file>_noheader.wig <chrom_wig_file>`
+1. `gcc -pthread -lm -o run_get_data ../common_scripts/get_file_data.c`
+1. To segment files for learning shapes:
+  `./run_get_data <chrom_wig_file>.chr<chrom> 50 0 Y <chrom> <regions_to_train> 4000`
+  `./run_get_data <chrom_wig_file>.chr<chrom> 50 0 N <chrom> <regions_to_annotate> 4000`
+  To segment files for annotating shapes:
+  `./run_get_data <chrom_wig_file>.chr<chrom> 50 0 N <chrom> <regions_to_annotate> 4000`
+
+# Annotating New Samples
+You may annotate new samples using the shape files we provide or using new shapes that you have learned. In the pipeline below, *file_containing_shapes* refers to the shape file you are using.
+The code you will need for this task is in the folder *annotation_scripts*. To annotate the new samples, you will need to do the following for each chromosome. Here, the *annotation_file* is the location where you wish to store the annotated regions.
+
+1. `python make_annotated_bed.py <regions_to_annotate> <file_containing_shapes> <annotation_file> <chrom_wig_file>  0.0`
+ This will generate two files: one that contains the annotated regions and their scores, and one that also includes the annotated regions with the original signal, saved as *<annotation_file>clust*.
+1. `bedtools sort -i  <annotation_file> > <annotation_sorted_file>`
+1. `bedtools sort -i  <annotation_file>clust > <annotation_sorted_file>clust`
+1. `python ../common_scripts/consolidate_bed.py <annotation_sorted_file> <annotation_consolidated_file>`
+
+# Learning Shapes
+The code you will need for this task is in the folder *shape_learning_scripts*. To learn shapes for one chromosome, you will need to do the following:
+1. `shuf <regions_to_train> > <shuffled_regions_to_train>`
+1. `python shift_input.py <shuffled_regions_to_train> <shuffled_regions_to_train> 50 4000 <chrom_wig_file>.chr<chrom> false 0`
+1. `python som_vn.py <shuffled_regions_to_train> <som_shapes_learned> <chrom_wig_file>.chr<chrom> 4000 50 0 False`
+1. `python remove_by_cutoff.py <som_shapes_learned> 1 <som_shapes_filtered>`
+1. `python merge_shifted.py <som_shapes_filtered> <som_shapes_shifted> 0`
+1. `python kmeans_shapes.py <som_shapes_shifted> <som_shapes_final>`
+1. `python make_shape_bed.py <regions_to_annotate> <som_shapes_final> <regions_annotated> 0
+1. `bedtools sort -i  <regions_annotated> > <regions_annotated_sorted>`
+1. `python consolidate.py <regions_annotated_sorted> <regions_annotated_final>`
+1. `cut -d$'\t' -f 1,2,3,4,5 <regions_annotated_final> > <regions_annotated_final>.bed`
+1. `awk '{ print $6}' <regions_annotated_final> > <clusters_annotated_final>`
+1. `cut -d$'\t' -f 7,8,9,10 <regions_annotated_final> > <scores_annotated_final>`
+1. `bedtools intersect -wao -a <regions_annotated_final>.bed -b <chromhmm_mnemonic_file> > <intersects>`
+1. `bedtools sort -i <intersects> > <intersects_sorted>`
+1. `python consolidate_chromHMM.py <intersects_sorted> <som_shapes_final> <shapes> <chrom_wig_file>.chr<chrom> <name_of_sample> <regions_to_annotate> 0`
+
+To merge shapes learned across multiple chromosomes, run the following:
+`python ../common_scripts/merge_significant.py <shapes> <shapes_all> <shapes_log>`
+
+# Replicating Our Results
+
+## Downloading the data
+All of our data can be downloaded by running `download_all_files.sh` in the location where you wish to save your BAM files. They will be index by the cell type and SPOT score.
+
+## Evaluating null models
+To evaluate null models, you will need to learn shapes using SOM-VN with unpermuted input and SOM-VN with permuted input. You will then need to associate the learned shapes with both orignal, unpermuted ChromHMM RE and permuted ChromHMM RE.
+
+### Learning SOM-VN shapes
+1. Run the following scripts. Note that they are designed to be run in a SLURM supercomputing environment, but can be modified to be run on a local machine.
+  * `learn_shapes_A549_slurm.sh`
+  * `learn_shapes_b_cell_low_slurm.sh`
+  * `learn_shapes_b_cell_high_slurm.sh`
+  * `learn_shapes_Brain_low_slurm.sh`
+  * `learn_shapes_Brain_high_slurm.sh`
+  * `learn_shapes_H1_low_slurm.sh`
+  * `learn_shapes_H1_high_slurm.sh`
+  * `learn_shapes_HeLa_low_slurm.sh`
+  * `learn_shapes_HeLa_high_slurm.sh`
+  * `learn_shapes_heart_low_slurm.sh`
+  * `learn_shapes_heart_high_slurm.sh`
+  * `learn_shapes_stomach_low_slurm.sh`
+  * `learn_shapes_stomach_high_slurm.sh`
+2. Merge shapes learned across chromosomes. To do this, run:
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_A549_consolidated <shapes_all_A549> <shapes_log_A549>`
+	...
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_stomach_high_consolidated <shapes_all_stomach_high> <shapes_log_stomach_high>`
+	
+### Learning SOM-VN shapes from permuted signal
+1. Run the following scripts. Note that they are designed to be run in a SLURM supercomputing environment, but can be modified to be run on a local machine.
+  * `learn_from_perm_wig_A549_slurm.sh`
+  * `learn_from_perm_wig_b_cell_low_slurm.sh`
+  * `learn_from_perm_wig_b_cell_high_slurm.sh`
+  * `learn_from_perm_wig_Brain_low_slurm.sh`
+  * `learn_from_perm_wig_Brain_high_slurm.sh`
+  * `learn_from_perm_wig_H1_low_slurm.sh`
+  * `learn_from_perm_wig_H1_high_slurm.sh`
+  * `learn_from_perm_wig_HeLa_low_slurm.sh`
+  * `learn_from_perm_wig_HeLa_high_slurm.sh`
+  * `learn_from_perm_wig_heart_low_slurm.sh`
+  * `learn_from_perm_wig_heart_high_slurm.sh`
+  * `learn_from_perm_wig_stomach_low_slurm.sh`
+  * `learn_from_perm_wig_stomach_high_slurm.sh`
+2. Merge shapes learned across chromosomes. To do this, run:
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_A549_consolidated_perm <shapes_all_A549_perm> <shapes_log_A549_perm>`
+	...
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_stomach_high_consolidated_perm <shapes_all_stomach_high_perm> <shapes_log_stomach_high_perm>`
+	
+### Associating SOM-VN shapes with permuted RE
+1. Run `python permute_chromhmm.py <chromhmm_mnemonic_file> <permuted chromhmm_mnemonic_file>`
+1. Run the following scripts. Note that they are designed to be run in a SLURM supercomputing environment, but can be modified to be run on a local machine.
+  * `associate_from_perm_chromhmm_A549_slurm.sh`
+  * `associate_from_perm_chromhmm_b_cell_low_slurm.sh`
+  * `associate_from_perm_chromhmm_b_cell_high_slurm.sh`
+  * `associate_from_perm_chromhmm_Brain_low_slurm.sh`
+  * `associate_from_perm_chromhmm_Brain_high_slurm.sh`
+  * `associate_from_perm_chromhmm_H1_low_slurm.sh`
+  * `associate_from_perm_chromhmm_H1_high_slurm.sh`
+  * `associate_from_perm_chromhmm_HeLa_low_slurm.sh`
+  * `associate_from_perm_chromhmm_HeLa_high_slurm.sh`
+  * `associate_from_perm_chromhmm_heart_low_slurm.sh`
+  * `associate_from_perm_chromhmm_heart_high_slurm.sh`
+  * `associate_from_perm_chromhmm_stomach_low_slurm.sh`
+  * `associate_from_perm_chromhmm_stomach_high_slurm.sh`
+2. Merge shapes learned across chromosomes. To do this, run:
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_A549_consolidated_chromhmm_perm <shapes_all_A549_chromhmm_perm> <shapes_log_A549_chromhmm_perm>`
+	...
+	`python ../common_scripts/merge_significant.py $BASE_PATH/anno_stomach_high_consolidated_chromhmm_perm <shapes_all_stomach_high_chromhmm_perm> <shapes_log_stomach_high_chromhmm_perm>`
+	
+### Plotting cross-correlation
+
+## Evaluating SOM-VN against CAGT
+To run CAGT, note that you must have MATLAB installed. In addition, while [CAGT is available for download separately](https://github.com/sofiakp/cagt/tree/master/matlab), our local copy of CAGT contains a slight modification that prevents the program from stopping early in the case of slow convergence.
+1. Learn SOM-VN shapes as in (###Learning SOM-VN shapes from permuted signal).
+1. For each chromosome and cell type, run the following:
+  1. `matlab -nodisplay -nodesktop -r "run_cagt('/data/eichertd/som_vn_data/training_<cell_type>_shifted/chrom<chrom>','/data/eichertd/som_vn_data/matlab_matrix_<cell_type>','<chrom>','/data/eichertd/som_vn_data/cagt_out_<cell_type>/<chrom>.csv','/home/eichertd/som_vn_code/SOM_VN/cagt/trunk/matlab/src/', '0.8', '1000', '40')"`
+1. Run the following scripts:
+  * `run_cagt_analysis_A549_slurm.sh`
+  * `run_cagt_analysis_b_cell_low_slurm.sh`
+  * `run_cagt_analysis_b_cell_high_slurm.sh`
+  * `run_cagt_analysis_Brain_low_slurm.sh`
+  * `run_cagt_analysis_Brain_high_slurm.sh`
+  * `run_cagt_analysis_H1_low_slurm.sh`
+  * `run_cagt_analysis_H1_high_slurm.sh`
+  * `run_cagt_analysis_HeLa_low_slurm.sh`
+  * `run_cagt_analysis_HeLa_high_slurm.sh`
+  * `run_cagt_analysis_heart_low_slurm.sh`
+  * `run_cagt_analysis_heart_high_slurm.sh`
+  * `run_cagt_analysis_stomach_low_slurm.sh`
+  * `run_cagt_analysis_stomach_high_slurm.sh`
+1. Merge shapes learned using CAGT for each cell type, e.g.
+  `python ../common_scripts/merge_significant.py $BASE_PATH/anno_A549_consolidated_cagt <shapes_all_A549_cagt> <shapes_log_A549_cagt>`
+1. Run `python plot_precision_recall_nobaselines.py $BASE_PATH/annotated_merged_<cell_type> $BASE_PATH/annotated_consolidated_<cell_type> $BASE_PATH/pr_<cell_type>.png "<cell_type> SOM-VN $BASE_PATH/wig/<cell_type>/<cell_type>.` to plot precision and recall for SOM-VN.
+1. Run `python plot_precision_recall_nobaselines.py $BASE_PATH/annotated_merged_<cell_type>_cagt $BASE_PATH/annotated_consolidated_<cell_type>_cagt $BASE_PATH/pr_<cell_type>_cagt.png "<cell_type> CAGT $BASE_PATH/wig/<cell_type>/<cell_type>.` to plot precision and recall for CAGT.
+
+## Evaluating cross-chromosome performance
+
+## Evaluating cross-cell-type performance
+
+## Learning the magnitudes
+
