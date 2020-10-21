@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import math
 import os
+import glob
 sys.path.append(os.path.abspath("../common_scripts"))
 import wig_and_signal_utils as wsu
 
@@ -19,15 +20,17 @@ def main():
     shape_list = []
     shape_anno = []
     shape_names = []
-    file = open(file_path, 'r')
     mlog = open(merge_log, 'w')
-    next_line = file.readline()
-    while next_line:
-        split_tabs = next_line.split("\t")
-        shape_list.append([float(i) for i in split_tabs[2].split(",")])
-        shape_anno.append(split_tabs[0])
-        shape_names.append(split_tabs[1])
+    
+    for f in glob.glob(file_path + "/*_consolidated"):
+        file = open(f, 'r')
         next_line = file.readline()
+        while next_line:
+            split_tabs = next_line.split("\t")
+            shape_list.append([float(i) for i in split_tabs[2].split(",")])
+            shape_anno.append(split_tabs[0])
+            shape_names.append(split_tabs[1])
+            next_line = file.readline()
             
     #Compare each shape to all shapes after it.
     #If the shapes should be merged and have the same annotation, shift the prior one as needed,
@@ -35,6 +38,7 @@ def main():
     #If the shapes should be merged and one is unknown, keep the one that is not unknown.
     #If the shapes should be merged and have different annotations, remove both.
     #A threshold of 0.75 is used like in CoSBI
+    outfile = None
     length = len(shape_list)
     prev_j = 0
     for i in range(length - 1):
