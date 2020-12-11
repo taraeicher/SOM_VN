@@ -109,10 +109,11 @@
 #Output RPKM intensities in a WIG file.
     module load python/$PYTHON_VERSION
 	gosr binbam -f 0 -n 1000 -t $CELL_LINE $BAM $BIN_SIZE $CELL_LINE > $BASE_PATH/$CELL_LINE.wig
+	sed '3d' $BASE_PATH/$CELL_LINE.wig > $BASE_PATH/${CELL_LINE}_noheader.wig
 	echo -e "------------------------------------------------------WIG file complete.-------------------------------------------------\n"
 	
 # Split WIG files by chromosome.
-	python $WIG_SPLIT_PATH/wig_split.py $BASE_PATH/$CELL_LINE.wig $WIG/$CELL_LINE
+	python $WIG_SPLIT_PATH/wig_split.py $BASE_PATH/${CELL_LINE}_noheader.wig $WIG/$CELL_LINE
 	if [[ -e $WIG/*chrM* ]]; then
 		rm $$WIG/*chrM*
 	fi
@@ -155,6 +156,8 @@
 		echo -e "----------------------------------------------Shifting complete for chrom $c.-----------------------------------------\n"
 		
 		#Run the SOM.
+		sinteractive --gres=gpu:k20x:1 --mem=1G --time=02:00:00
+		module load cuDNN/7.6.5/CUDA-10.1 python/3.7
 		python som_vn.py $TRAINING_SHIFTED/chrom$c $SOM_OUT/chrom$c $WIG/$CELL_LINE.chr$c.wig $REGION_SIZE $BIN_SIZE 0 False
 		echo -e "---------------------------------------------SOM model is ready for chrom $c.-----------------------------------------\n"
 		
@@ -171,7 +174,7 @@
 		# echo -e "-------------------------------------------------K-means complete for chrom $c.---------------------------------------\n"
 		
 		#Annotate regions with shape.
-		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c}window3 $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
+		python make_shape_bed.py $TRAINING_ANNOTATION_FILES/chrom${c} $SOM_OUT_FINAL/chrom${c}som_centroid $SHAPE_ANNOTATED/anno$c 0
         echo -e "\n------------------------------------Initial annotations complete for chrom $c.-----------------------------\n"
         
         bedtools sort -i  $SHAPE_ANNOTATED/anno${c} > $SHAPE_ANNOTATED_SORTED/anno${c}
@@ -184,7 +187,7 @@
         #Save shapes to file.
         bedtools intersect -wao -a $SHAPE_ANNOTATED_FINAL/anno${c}.bed -b $CHROMHMM/${CELL_LINE}_chromhmm_15_liftOver.bed > $CHROMHMM_INTERSECTS/anno${c}.bed			
         bedtools sort -i $CHROMHMM_INTERSECTS/anno${c}.bed > $CHROMHMM_INTERSECTS/anno${c}_sorted.bed
-        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid ${SHAPES_COMPREHENSIVE} ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c}window3 0
+        python consolidate_chromHMM.py $CHROMHMM_INTERSECTS/anno${c}_sorted.bed $SOM_OUT_FINAL/chrom${c}som_centroid ${SHAPES_COMPREHENSIVE} ${WIG}/${CELL_LINE}.chr${c}.wig ${c} $CELL_LINE $TRAINING_ANNOTATION_FILES/chrom${c} 0
 	}
     
     #Run the pipeline from split WIG files to final set of annotations.

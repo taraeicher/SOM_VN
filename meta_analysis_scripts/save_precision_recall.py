@@ -1,5 +1,5 @@
 import sys
-import plot_precision_recall as ppr
+import plot_precision_recall_nobaselines as ppr
 import numpy as np
 import glob, os
 sys.path.append(os.path.abspath("../common_scripts"))
@@ -16,9 +16,8 @@ def main():
 
     #Read in the chromHMM and annotated files.
     pr_path = sys.argv[4]
-    win = sys.argv[5]
-    cell = sys.argv[6]
-    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+    all_chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
+    precision_recall_list = []
 
     #Plot ROC curve for each chromosome. Plot curve for each annotation separately.
     c = 0
@@ -33,22 +32,20 @@ def main():
             open_test.close()
             
             #Get all precision and recall values.
-            [precision, recall] = get_all_precision_or_recall(our_bed, our_sig, wig, chrom, win, cell)
+            [chrom, precision, recall] = get_all_precision_or_recall(our_bed, our_sig, wig, chrom)
+            precision_recall_list.append([chrom, precision, recall])
             
-            #Output reports for all types of annotations, including unknown.
-            if len(precision) > 0:
-                print_report(precision, recall, chrom, cell, win, pr_path)
-
-        except FileNotFoundError:
+        except OSError:
             pass
+    print_report(precision_recall_list, pr_path)
     
 #Plot the ROC curve based on ground truth and prediction for each cutoff. Plot separate lines for each
 #annotation type. Consolidate all chromosomes.
 #def get_all_precision_or_recall(bed, sig, tss_bed, tss_sig, or_bed, or_sig, perm_bed, perm_sig, rpkm_bed, rpkm_sig, wig, chrom, win, cell):
-def get_all_precision_or_recall(bed, sig, wig, chrom, win, cell):
+def get_all_precision_or_recall(bed, sig, wig, chrom):
 
     #Get actual annotation and ground truth for all annotations and for all unannotated regions.
-    threshold = ops.get_intensity_percentile(0.75, open(wig, 'r'))
+    threshold = wsu.get_intensity_percentile(0.75, open(wig, 'r'), 0)
     annotations = ["Promoter", "Enhancer", "Weak"]
     length = len(annotations)
 
@@ -61,22 +58,22 @@ def get_all_precision_or_recall(bed, sig, wig, chrom, win, cell):
             precision[i] = precision_score(gt[:, i], pred[:, i])
             recall[i] = recall_score(gt[:, i], pred[:, i])
         
-    return [precision, recall]
+    return [chrom, precision, recall]
     
 """
 Print precision and recall for all chromosomes.
 """ 
-def print_report(precision, recall, chrom, win, cell, pr):
-    #Print the cell line, chromosome, and window information
-    report = open(pr + "/report_" + chrom, "w")
-    report.write(cell + "\n")
-    report.write(chrom + "\n")
-    report.write(win + "\n\n")
+def print_report(precision_recall_list, pr):
+
+    report = open(pr, "w")
     
     #All shape-based predictions
-    for i in range(0, 3):
-        report.write(str(precision[i]) + "\t" + str(recall[i]) + "\n")
-    report.write("\n")
+    report.write("Chrom,Promoter_Precision,Promoter_Recall,Enhancer_Precision,Enhancer_Recall,Weak_Precision,Weak_Recall\n")
+    for j in range(len(precision_recall_list)):
+        report.write(precision_recall_list[j][0] + ",")
+        report.write(str(precision_recall_list[j][1][0]) + "," + str(precision_recall_list[j][2][0]) + ",")
+        report.write(str(precision_recall_list[j][1][1]) + "," + str(precision_recall_list[j][2][1]) + ",")
+        report.write(str(precision_recall_list[j][1][2]) + "," + str(precision_recall_list[j][2][2]) + "\n")
     
     #Close the report.
     report.close()
